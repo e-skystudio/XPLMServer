@@ -17,14 +17,6 @@ Logger::Logger(std::string filename, std::string module, bool erease)
 	}
 }
 
-//Logger::Logger(std::ofstream* logfile, bool erease)
-//{
-//}
-//
-//Logger::Logger(const Logger& cpy)
-//{
-//}
-
 Logger::~Logger()
 {
 }

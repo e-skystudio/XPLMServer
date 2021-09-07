@@ -9,15 +9,18 @@
 
 class Logger
 {
+/*
+* Class used to manage logger object.
+* Logger output a "csv" style log (data separated by a tabulation")
+*/
 public:
 	enum class Severity {
-		TRACE,
-		DEBUG,
-		WARNING,
-		CRITICAL,
-		FATAL
+		TRACE, // Basic information
+		DEBUG, // Debug information
+		WARNING, // Cautionous information
+		CRITICAL, // Information are critical but program can keep running
+		FATAL // Crashed
 	};
-
 	Logger();
 	Logger(std::string filename, std::string module="", bool erease = false);
 	~Logger();
