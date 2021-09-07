@@ -10,15 +10,25 @@
 class Logger
 {
 public:
+	enum class Severity {
+		TRACE,
+		DEBUG,
+		WARNING,
+		CRITICAL,
+		FATAL
+	};
+
 	Logger();
-	Logger(std::string filename, bool erease = false);
-	//Logger(std::ofstream* logfile, bool erease = false);
-	//Logger(const Logger &cpy);
+	Logger(std::string filename, std::string module="", bool erease = false);
 	~Logger();
-	virtual void Log(std::string message);
+	std::string GetModuleName();
+	void SetModuleName(std::string module);
+	virtual void Log(std::string message, Logger::Severity severity= Logger::Severity::DEBUG);
 	const char* CurrentDateTime();
 	void operator+=(const std::string& message);
 protected:
+	std::string getSeverityStr(Logger::Severity severity);
+	std::string m_module;
 	std::ofstream* m_logfile;
 };
 

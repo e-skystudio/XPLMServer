@@ -1,11 +1,12 @@
 #include "../include/Logger.h"
 
-Logger::Logger() : m_logfile(nullptr)
+Logger::Logger() : m_logfile(nullptr), m_module("")
 {
 }
 
-Logger::Logger(std::string filename, bool erease)
+Logger::Logger(std::string filename, std::string module, bool erease)
 {
+	m_module = module;
 	if (erease)
 		m_logfile = new std::ofstream(filename, std::ios::out);
 	else
@@ -28,11 +29,22 @@ Logger::~Logger()
 {
 }
 
-void Logger::Log(std::string message)
+std::string Logger::GetModuleName()
+{
+	return m_module;
+}
+
+void Logger::SetModuleName(std::string module)
+{
+	m_module = module;
+}
+
+void Logger::Log(std::string message, Logger::Severity severity)
 {
 	if (m_logfile == nullptr || m_logfile->fail())
 		return;
-	*m_logfile << CurrentDateTime() << "\t" << message << "\n";
+	*m_logfile << CurrentDateTime() << "\t" << m_module << "\t" << this->getSeverityStr(severity) \
+		<< "\t" << message << "\n";
 }
 
 const char* Logger::CurrentDateTime()
@@ -52,4 +64,23 @@ const char* Logger::CurrentDateTime()
 void Logger::operator+=(const std::string& message)
 {
 	Log(message);
+}
+
+std::string Logger::getSeverityStr(Logger::Severity severity)
+{
+	switch (severity)
+	{
+	case Logger::Severity::TRACE:
+		return "TRACE";
+	case Logger::Severity::DEBUG:
+		return "DEBUG";
+	case Logger::Severity::WARNING:
+		return "WARINING";
+	case Logger::Severity::CRITICAL:
+		return "CRITICAL";
+	case Logger::Severity::FATAL:
+		return "FATAL";
+	default:
+		return "";
+	}
 }

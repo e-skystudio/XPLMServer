@@ -4,7 +4,7 @@
 
 int main(int argc, char* argv[])
 {
-	Logger l("testlog.log", true);
+	Logger l("testlog.log", "Tester", true);
 	l.Log("This is log 1");
 	l += "This is log2";
 	return 0;
