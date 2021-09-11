@@ -4,7 +4,10 @@
 #include <XPLM/XPLMDataAccess.h>
 
 class Dataref
-//This class represent an X-Plane dataref in OOP format.
+/*
+* \brief This class represent an X-Plane dataref in OOP format.
+*  Allow to register, get, set (if not readonly) value to specific datarefs.
+*/
 {
 public:
 	enum class Type {
@@ -28,8 +31,8 @@ public:
 	Dataref::Type LoadType();
 	void SetType(Dataref::Type newType); 
 protected:
-	XPLMDataRef m_dataref;
-	Dataref::Type m_type;
-	Logger m_logger;
+	XPLMDataRef m_dataref; /*!< Represent a void pointer locating the dataref as X-Plane SDK */
+	Dataref::Type m_type; /*!< Represent the underlying data type of the dataref */
+	Logger m_logger; /*!< The logger */
 };
 
