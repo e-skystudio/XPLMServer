@@ -1,7 +1,7 @@
 #pragma once
 #include <string>
 #include <Logger.h>
-#include <XPLM/XPLMDataAccess.h>
+#include <XPLMDataAccess.h>
 
 class Dataref
 /*
@@ -19,17 +19,23 @@ public:
 		IntArray=16,
 		Data=32
 	};
-
+	/* \brief Default Constructor */
 	Dataref();
+	/* \brief Copy Constructor */
 	Dataref(const Dataref& rhs);
 	~Dataref();
-
+	/* \brief Load a dataref with a specific path
+	* \param[in] path the path of the dataref
+	* \return boolean True if the path return a valid dataref
+	*/
 	bool Load(std::string path);
 	bool CanWrite();
 	bool IsGood();
 	Dataref::Type GetType();
 	Dataref::Type LoadType();
 	void SetType(Dataref::Type newType); 
+	std::string GetValue();
+	void SetValue(std::string value);
 protected:
 	XPLMDataRef m_dataref; /*!< Represent a void pointer locating the dataref as X-Plane SDK */
 	Dataref::Type m_type; /*!< Represent the underlying data type of the dataref */
