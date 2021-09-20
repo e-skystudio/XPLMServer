@@ -13,9 +13,6 @@ PLUGIN_API int XPluginStart(char* outName, char* outSig, char* outDesc)
 	strcpy(outName, "XPLMServer 1.0.0.0");
 	strcpy(outSig, "eskystudio.tools.XPLMServer");
 	strcpy(outDesc, "A Server for XPlane");
-	visibility = Dataref();
-	visibility.Load("sim/weather/visibility_reported_m");
-	XPLMRegisterFlightLoopCallback(InitlaisedCallback, -1.0f, NULL);
 	return 1;
 }
 
@@ -29,6 +26,9 @@ PLUGIN_API void XPluginDisable(void)
 
 PLUGIN_API int  XPluginEnable(void)
 { 
+	visibility = Dataref();
+	visibility.Load("sim/weather/visibility_reported_m");
+	XPLMRegisterFlightLoopCallback(InitlaisedCallback, -1.0f, NULL);
 	return 1;
 }
 

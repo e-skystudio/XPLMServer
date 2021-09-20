@@ -207,6 +207,7 @@
     </Lib>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="src\CallbackManager.cpp" />
     <ClCompile Include="src\Dataref.cpp" />
     <ClCompile Include="src\Logger.cpp" />
     <ClCompile Include="src\main.cpp" />
@@ -215,6 +216,7 @@
     <None Include="cpp.hint" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="src\CallbackManager.h" />
     <ClInclude Include="src\Dataref.h" />
     <ClInclude Include="src\Logger.h" />
   </ItemGroup>
