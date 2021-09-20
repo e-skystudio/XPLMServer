@@ -213,9 +213,6 @@
     <ClCompile Include="src\main.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="cpp.hint" />
-  </ItemGroup>
-  <ItemGroup>
     <ClInclude Include="src\CallbackManager.h" />
     <ClInclude Include="src\Dataref.h" />
     <ClInclude Include="src\Logger.h" />
