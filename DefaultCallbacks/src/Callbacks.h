@@ -21,7 +21,7 @@ using json = nlohmann::json;
 //
 //typedef int(*callback)(json*, CallbackManager*); ///The callback reference
 
-constexpr int CallbackNumber = 1;
+constexpr int CallbackNumber = 2;
 
 ///<summary>
 /// Manadatory function to implement.
@@ -36,3 +36,8 @@ constexpr int CallbackNumber = 1;
 CALLBACK_FUNC void GetCallbacks(CallbackFunction** callbacks, int* size);
 
 CALLBACK_FUNC int SetVisibility(json jdata, CallbackManager* callbackManager);
+///<summary>
+/// Default callback to load a DLL.
+/// This callback should be used carefully as DLLs shall not be thursted.
+///</summary>
+CALLBACK_FUNC int LoadDll(json jdata, CallbackManager* callbackManager);
