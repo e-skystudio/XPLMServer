@@ -364,4 +364,6 @@ FodyWeavers.xsd
 
 # Romain's delete
 .tlog
+.idb
 temp/
+lib/
