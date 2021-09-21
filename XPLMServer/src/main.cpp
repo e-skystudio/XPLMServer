@@ -9,7 +9,7 @@
 
 static CallbackManager* callbackManager;
 static Dataref visibility;
-float InitlaisedCallback(float elapsedSinceCall, float elapsedSinceLastTime, int inCounter, void* inRef);
+float InitializerCallback(float elapsedSinceCall, float elapsedSinceLastTime, int inCounter, void* inRef);
 
 PLUGIN_API int XPluginStart(char* outName, char* outSig, char* outDesc)
 {
@@ -49,6 +49,7 @@ PLUGIN_API int  XPluginEnable(void)
 	debug << "Loading callback from DLL returned " << res << "\n Dll Path was: " << dllPath << "\n";
 	XPLMDebugString(debug.str().c_str());
 	XPLMSpeakString(debug.str().c_str());
+	XPLMRegisterFlightLoopCallback(InitializerCallback, -1.0f, nullptr);
 	return 1;
 }
 
@@ -56,11 +57,10 @@ PLUGIN_API void XPluginReceiveMessage(XPLMPluginID inFrom, int inMsg, void* inPa
 {
 }
 
-float InitlaisedCallback(float elapsedSinceCall, float elapsedSinceLastTime, int inCounter, void* inRef)
+float InitializerCallback(float elapsedSinceCall, float elapsedSinceLastTime, int inCounter, void* inRef)
 {
-	std::stringstream ss("Visibility is ");
-	ss << visibility.GetValue() << " meters";
-	XPLMSpeakString(ss.str().c_str());
-	visibility.SetValue("2500.0");
+	json data;
+	data["Value"] = "2500.0";
+	callbackManager->ExecuteCallback("VISIBILITY", data);
 	return 5.0f;
 }
