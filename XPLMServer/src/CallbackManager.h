@@ -54,6 +54,16 @@ public:
 	/// CAN BE NULL !
 	/// </returns>
 	std::map<std::string, Dataref*>* GetSubscribedDataref() const;
+	/// <summary>
+	/// Load callbacks from DLL file.
+	/// DLL Must implement the GetCallbacks();
+	/// </summary>
+	/// <param name="inDllPath">The path to the DLL</param>
+	/// <returns>
+	///	An integer with the number of callback added.
+	/// If it's negative then it report an error
+	/// </returns
+	int LoadCallbackDLL(std::string inDllPath);
 
 protected:
 	std::map<std::string, std::function<int(json, CallbackManager*)>*>* m_callbacks;

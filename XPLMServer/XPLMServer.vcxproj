@@ -106,7 +106,7 @@
       <ConformanceMode>true</ConformanceMode>
       <LanguageStandard>stdcpp20</LanguageStandard>
       <LanguageStandard_C>stdc17</LanguageStandard_C>
-      <AdditionalIncludeDirectories>$(xplanelib)include\win32\Widgets;$(xplanelib)include\win32\Wrappers;$(xplanelib)include\win32\XPLM;$(SolutionDir)Logger\include;$(SolutionDir)Datarefs\include</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir)CallbackManager\include\;$(xplanelib)include\win32\Widgets;$(xplanelib)include\win32\Wrappers;$(xplanelib)include\win32\XPLM;$(SolutionDir)Logger\include;$(SolutionDir)Datarefs\include;$(SolutionDir)</AdditionalIncludeDirectories>
       <UndefinePreprocessorDefinitions>
       </UndefinePreprocessorDefinitions>
       <GenerateXMLDocumentationFiles>true</GenerateXMLDocumentationFiles>
@@ -115,8 +115,8 @@
     <Link>
       <SubSystem>Console</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalLibraryDirectories>$(xplanelib)lib\Win\;</AdditionalLibraryDirectories>
-      <AdditionalDependencies>XPLM.lib;XPWidgets.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalLibraryDirectories>$(xplanelib)lib\Win\;$(SolutionDir)CallbackManager\Lib\</AdditionalLibraryDirectories>
+      <AdditionalDependencies>CallbackManager-d.lib;XPLM.lib;XPWidgets.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
     <Lib>
       <AdditionalLibraryDirectories>$(xplanelib)lib\Win\</AdditionalLibraryDirectories>
@@ -133,7 +133,7 @@
       <ConformanceMode>true</ConformanceMode>
       <LanguageStandard>stdcpp20</LanguageStandard>
       <LanguageStandard_C>stdc17</LanguageStandard_C>
-      <AdditionalIncludeDirectories>$(xplanelib)include\win32\Widgets;$(xplanelib)include\win32\Wrappers;$(xplanelib)include\win32\XPLM;$(SolutionDir)Logger\include;$(SolutionDir)Datarefs\include</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir)CallbackManager\include\;$(xplanelib)include\win32\Widgets;$(xplanelib)include\win32\Wrappers;$(xplanelib)include\win32\XPLM;$(SolutionDir)Logger\include;$(SolutionDir)Datarefs\include;$(SolutionDir)</AdditionalIncludeDirectories>
       <UndefinePreprocessorDefinitions>
       </UndefinePreprocessorDefinitions>
       <GenerateXMLDocumentationFiles>true</GenerateXMLDocumentationFiles>
@@ -144,8 +144,8 @@
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalLibraryDirectories>$(xplanelib)lib\Win\;</AdditionalLibraryDirectories>
-      <AdditionalDependencies>XPLM.lib;XPWidgets.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalLibraryDirectories>$(xplanelib)lib\Win\;$(SolutionDir)CallbackManager\Lib\</AdditionalLibraryDirectories>
+      <AdditionalDependencies>CallbackManager.lib;XPLM.lib;XPWidgets.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
     <Lib>
       <AdditionalLibraryDirectories>$(xplanelib)lib\Win\</AdditionalLibraryDirectories>
@@ -156,11 +156,11 @@
     <ClCompile>
       <WarningLevel>Level3</WarningLevel>
       <SDLCheck>true</SDLCheck>
-      <PreprocessorDefinitions>_CRT_SECURE_NO_WARNINGS;IBM=1</PreprocessorDefinitions>
+      <PreprocessorDefinitions>_CRT_SECURE_NO_WARNINGS;IBM=1;WIN64=1</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
       <LanguageStandard>stdcpp20</LanguageStandard>
       <LanguageStandard_C>stdc17</LanguageStandard_C>
-      <AdditionalIncludeDirectories>$(xplanelib)include\win64\Widgets;$(xplanelib)include\win64\Wrappers;$(xplanelib)include\win64\XPLM;$(SolutionDir)Logger\include;$(SolutionDir)Datarefs\include</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir)CallbackManager\include\;$(xplanelib)include\win64\Widgets;$(xplanelib)include\win64\Wrappers;$(xplanelib)include\win64\XPLM;$(SolutionDir)Logger\include;$(SolutionDir)Datarefs\include;$(SolutionDir)</AdditionalIncludeDirectories>
       <UndefinePreprocessorDefinitions>
       </UndefinePreprocessorDefinitions>
       <GenerateXMLDocumentationFiles>true</GenerateXMLDocumentationFiles>
@@ -169,8 +169,8 @@
     <Link>
       <SubSystem>Console</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalLibraryDirectories>$(xplanelib)lib\Win\;</AdditionalLibraryDirectories>
-      <AdditionalDependencies>XPLM_64.lib;XPWidgets_64.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalLibraryDirectories>$(xplanelib)lib\Win\;$(SolutionDir)CallbackManager\Lib\</AdditionalLibraryDirectories>
+      <AdditionalDependencies>CallbackManager_64-d.lib;XPLM_64.lib;XPWidgets_64.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
     <Lib>
       <AdditionalLibraryDirectories>$(xplanelib)lib\Win\</AdditionalLibraryDirectories>
@@ -183,11 +183,11 @@
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <SDLCheck>true</SDLCheck>
-      <PreprocessorDefinitions>_CRT_SECURE_NO_WARNINGS;IBM=1</PreprocessorDefinitions>
+      <PreprocessorDefinitions>_CRT_SECURE_NO_WARNINGS;IBM=1;WIN64=1</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
       <LanguageStandard>stdcpp20</LanguageStandard>
       <LanguageStandard_C>stdc17</LanguageStandard_C>
-      <AdditionalIncludeDirectories>$(xplanelib)include\win64\Widgets;$(xplanelib)include\win64\Wrappers;$(xplanelib)include\win64\XPLM;$(SolutionDir)Logger\include;$(SolutionDir)Datarefs\include</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir)CallbackManager\include\;$(xplanelib)include\win64\Widgets;$(xplanelib)include\win64\Wrappers;$(xplanelib)include\win64\XPLM;$(SolutionDir)Logger\include;$(SolutionDir)Datarefs\include;$(SolutionDir)</AdditionalIncludeDirectories>
       <UndefinePreprocessorDefinitions>
       </UndefinePreprocessorDefinitions>
       <GenerateXMLDocumentationFiles>true</GenerateXMLDocumentationFiles>
@@ -198,8 +198,8 @@
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalLibraryDirectories>$(xplanelib)lib\Win\;</AdditionalLibraryDirectories>
-      <AdditionalDependencies>XPLM_64.lib;XPWidgets_64.lib;Datarefs_64.lib%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalLibraryDirectories>$(xplanelib)lib\Win\;$(SolutionDir)CallbackManager\Lib\</AdditionalLibraryDirectories>
+      <AdditionalDependencies>CallbackManager_64.lib;XPLM_64.lib;XPWidgets_64.lib;Datarefs_64.lib%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
     <Lib>
       <AdditionalLibraryDirectories>$(xplanelib)lib\Win\</AdditionalLibraryDirectories>
@@ -207,15 +207,12 @@
     </Lib>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="src\CallbackManager.cpp" />
-    <ClCompile Include="src\Dataref.cpp" />
-    <ClCompile Include="src\Logger.cpp" />
     <ClCompile Include="src\main.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="src\CallbackManager.h" />
-    <ClInclude Include="src\Dataref.h" />
-    <ClInclude Include="src\Logger.h" />
+    <ProjectReference Include="..\CallbackManager\CallbackManager.vcxproj">
+      <Project>{9d32d8cc-f61d-4547-83c2-67466f43a0a9}</Project>
+    </ProjectReference>
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
