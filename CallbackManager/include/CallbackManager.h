@@ -21,7 +21,7 @@ struct CallbackFunction {
 };
 
 typedef void(*callbackLoader)(CallbackFunction**, int*);
-typedef int(*callback)(const char* json, void* CallbackManager); ///The callback reference
+typedef int(*callback)(json json, void* CallbackManager); ///The callback reference
 #pragma endregion
 
 ///<summary>
@@ -44,7 +44,7 @@ public:
 	/// <param name="name">The name of the callback</param>
 	/// <param name="newCallback">Function pointer to the callback</param>
 	/// <returns>EXIT_SUCESS if the name was not already in use and callback addition was sucessfull</returns>
-	int AppendCallback(std::string name, std::function<int(json, CallbackManager*)>* newCallback);
+	int AppendCallback(std::string name, callback newCallback);
 	/// <summary>
 	///  Append callback to the stored callback
 	/// </summary>
@@ -80,7 +80,7 @@ public:
 	int LoadCallbackDLL(std::string inDllPath);
 
 protected:
-	std::map<std::string, std::function<int(json, CallbackManager*)>*>* m_callbacks;
+	std::map<std::string, callback>* m_callbacks;
 	std::map<std::string, Dataref*>* m_namedDatarefs; //The datarefs stored while plugin is in used
 	std::map<std::string, Dataref*>* m_subscribedDatarefs; //The datarefs that value is returned per timed basis
 	Logger m_logger; /* The logger */
