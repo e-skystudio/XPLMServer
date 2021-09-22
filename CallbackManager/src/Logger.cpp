@@ -43,6 +43,7 @@ void Logger::Log(std::string message, Logger::Severity severity)
 	}
 	*m_logfile << CurrentDateTime() << "\t" << m_module << "\t" << this->getSeverityStr(severity) \
 		<< "\t" << message << "\n";
+	m_logfile->flush();
 }
 
 const char* Logger::CurrentDateTime()
