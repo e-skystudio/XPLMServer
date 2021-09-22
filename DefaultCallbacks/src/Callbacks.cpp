@@ -118,8 +118,36 @@ int UnsubscribeDataref(json* jdata, CallbackManager* callbackManager)
 	return 0;
 }
 
-int GetRegisterDatarefValue(json* jdata, CallbackManager* callbackManager)
+int GetRegisterDatarefValue(json* jdata, CallbackManager* callback)
 {
+	if (!jdata->contains("Name"))
+	{
+		callback->Log("Name properties missing from JSON", Logger::Severity::CRITICAL);
+		return 0x01;
+	}
+	std::string name = jdata->at("Name").get<std::string>();
+	callback->Log("Looking for dataref '" + name + "' to get value");
+	auto p_datarefMap = callback->GetNamedDataref();
+	callback->Log("Obtaining the registered datarefs...[DONE]");
+	if (!p_datarefMap->contains(name))
+	{
+		callback->Log("Registered Dataref don't contain '" + name + "'", Logger::Severity::DEBUG);
+		return 0x02;
+	}
+#ifdef _DEBUG
+	callback->Log("Dataref '" + name + "' found!");
+#endif
+	auto p_dataref = p_datarefMap->at(name);
+#ifdef _DEBUG
+	callback->Log("Obtaining Dataref '" + name + "'...[DONE]");
+#endif
+	std::string val = p_dataref->GetValue();
+	callback->Log("Value is '" + val + "'");
+	//BUG
+	jdata->operator[]("Value") = val;
+	//jdata->push_back(std::pair<std::string, std::string>("Value", val));
+	callback->Log("Value added to json");
+	//!BUG
 	return 0;
 }
 
@@ -152,8 +180,31 @@ int SetRegisterDatarefValue(json* jdata, CallbackManager* callback)
 	return 0;
 }
 
-int GetDatarefValue(json* jdata, CallbackManager* callbackManager)
+int GetDatarefValue(json* jdata, CallbackManager* callback)
 {
+	if (!jdata->contains("Link"))
+	{
+		callback->Log("Link propertie missing from JSON", Logger::Severity::CRITICAL);
+		return 0x01;
+	}
+	std::string link = jdata->at("Link").get<std::string>();
+	callback->Log("Will be reading dataref at location :'" + link + "'");
+	auto p_dataref = new Dataref();
+	p_dataref->Load(link);
+	if (!jdata->contains("Type"))
+	{
+		Dataref::Type type = p_dataref->LoadType();
+		callback->Log("Dataref is of type '" + std::to_string((int)type) + "'");
+	}
+	else {
+		callback->Log("Manually setting type of dataref is not yet implemented.", Logger::Severity::CRITICAL);
+		return 0x02;
+	}
+	std::string val = p_dataref->GetValue();
+	callback->Log("Value is '" + val + "'");
+	//jdata->push_back(std::pair<std::string, std::string>("Value", val));
+	jdata->operator[]("Value") = val;
+	callback->Log("Value added to json");
 	return 0;
 }
 

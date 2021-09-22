@@ -82,24 +82,35 @@ float InitializerCallback(float elapsedSinceCall, float elapsedSinceLastTime, in
 
 float LoopCallback(float elapsedSinceCall, float elapsedSinceLastTime, int inCounter, void* inRef)
 {
-	json data;
-	data["Operation"] = "SET_REG_DATA";
-	data["Name"] = "VISIBILITY";
-	json data2;
-	data2["Operation"] = "SET_DATA";
-	data2["Link"] = "sim/weather/rain_percent";
+	json setData1;
+	setData1["Operation"] = "SET_REG_DATA";
+	setData1["Name"] = "VISIBILITY";
+	json setData2;
+	setData2["Operation"] = "SET_DATA";
+	setData2["Link"] = "sim/weather/rain_percent";
 	if (counter % 2 == 0)
 	{
-		data["Value"] = "500.0";
-		data2["Value"] = "0.0";
+		setData1["Value"] = "500.0";
+		setData2["Value"] = "0.0";
 	}
 	else
 	{
-		data2["Value"] = "1.0";
-		data["Value"] = "10000.0";
+		setData1["Value"] = "1.0";
+		setData2["Value"] = "10000.0";
 	}
-	int res = callbackManager->ExecuteCallback(&data);
-	int res2 = callbackManager->ExecuteCallback(&data2);
+	int res = callbackManager->ExecuteCallback(&setData1);
+	int res2 = callbackManager->ExecuteCallback(&setData2);
 	counter++;
+	json getData1;
+	getData1["Operation"] = "GET_REG_DATA";
+	getData1["Name"] = "VISIBILITY";
+	json getData2;
+	getData2["Operation"] = "GET_DATA";
+	getData2["Link"] = "sim/weather/rain_percent";
+	
+	callbackManager->ExecuteCallback(&getData1);
+	callbackManager->ExecuteCallback(&getData2);
+	XPLMSpeakString(("Visibility : " + getData1["Value"].get<std::string>() +
+		" meters\nRain : " + getData2["Value"].get<std::string>() + " percent").c_str());
 	return 5.0f;
 }
