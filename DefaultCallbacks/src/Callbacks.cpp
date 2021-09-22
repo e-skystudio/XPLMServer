@@ -17,16 +17,16 @@ void GetCallbacks(CallbackFunction** callbacks, int* size)
 	return;
 }
 
-int SetVisibility(json jdata, CallbackManager* callbackManager)
+int SetVisibility(json* jdata, CallbackManager* callbackManager)
 {
 	Dataref vis;
 	vis.Load("sim/weather/visibility_reported_m");
-	vis.SetValue(jdata["Value"].get<std::string>());
+	vis.SetValue(jdata->at("Value").get<std::string>());
 	return 0;
 }
 
-int LoadDll(json jdata, CallbackManager* callbackManager)
+int LoadDll(json* jdata, CallbackManager* callbackManager)
 {
-	callbackManager->LoadCallbackDLL(jdata["DLLPath"]);
+	callbackManager->LoadCallbackDLL(jdata->at("DLLPath").get<std::string>());
 	return 0;
 }
