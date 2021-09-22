@@ -61,6 +61,6 @@ float InitializerCallback(float elapsedSinceCall, float elapsedSinceLastTime, in
 {
 	json data;
 	data["Value"] = "2500.0";
-	callbackManager->ExecuteCallback("VISIBILITY", data);
+	callbackManager->ExecuteCallback("VISIBILITY", &data);
 	return 5.0f;
 }
