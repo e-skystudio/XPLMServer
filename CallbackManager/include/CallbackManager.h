@@ -21,7 +21,7 @@ struct CallbackFunction {
 };
 
 typedef void(*callbackLoader)(CallbackFunction**, int*);
-typedef int(*callback)(json json, void* CallbackManager); ///The callback reference
+typedef int(*callback)(json* json, void* CallbackManager); ///The callback reference
 #pragma endregion
 
 ///<summary>
