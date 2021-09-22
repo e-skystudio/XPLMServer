@@ -96,6 +96,7 @@
       <PreprocessorDefinitions>MAKE_DLL;IBM;WIN32;_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
       <AdditionalIncludeDirectories>$(SolutionDir)CallbackManager\include\;$(xplanelib)include\win32\Widgets;$(xplanelib)include\win32\Wrappers;$(xplanelib)include\win32\XPLM;$(SolutionDir)Logger\include;$(SolutionDir)Datarefs\include;$(SolutionDir)</AdditionalIncludeDirectories>
+      <LanguageStandard>stdcpp20</LanguageStandard>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -113,6 +114,7 @@
       <PreprocessorDefinitions>MAKE_DLL;IBM;WIN32;NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
       <AdditionalIncludeDirectories>$(SolutionDir)CallbackManager\include\;$(xplanelib)include\win32\Widgets;$(xplanelib)include\win32\Wrappers;$(xplanelib)include\win32\XPLM;$(SolutionDir)Logger\include;$(SolutionDir)Datarefs\include;$(SolutionDir)</AdditionalIncludeDirectories>
+      <LanguageStandard>stdcpp20</LanguageStandard>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -130,6 +132,7 @@
       <PreprocessorDefinitions>MAKE_DLL;IBM;_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
       <AdditionalIncludeDirectories>$(SolutionDir)CallbackManager\include\;$(xplanelib)include\win64\Widgets;$(xplanelib)include\win64\Wrappers;$(xplanelib)include\win64\XPLM;$(SolutionDir)Logger\include;$(SolutionDir)Datarefs\include;$(SolutionDir)</AdditionalIncludeDirectories>
+      <LanguageStandard>stdcpp20</LanguageStandard>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -147,6 +150,7 @@
       <PreprocessorDefinitions>MAKE_DLL;IBM;NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
       <AdditionalIncludeDirectories>$(SolutionDir)CallbackManager\include\;$(xplanelib)include\win64\Widgets;$(xplanelib)include\win64\Wrappers;$(xplanelib)include\win64\XPLM;$(SolutionDir)Logger\include;$(SolutionDir)Datarefs\include;$(SolutionDir)</AdditionalIncludeDirectories>
+      <LanguageStandard>stdcpp20</LanguageStandard>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>

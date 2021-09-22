@@ -15,6 +15,21 @@ CallbackManager::CallbackManager(const CallbackManager& rhs)
 	m_logger = rhs.m_logger;
 }
 
+CallbackManager::~CallbackManager()
+{
+	auto kv = m_namedDatarefs->begin();
+	while(kv != m_namedDatarefs->end())
+	{
+		m_namedDatarefs->erase(kv->first);
+		if (m_subscribedDatarefs->contains(kv->first))
+		{
+			m_subscribedDatarefs->erase(kv->first);
+		}
+		delete kv->second;
+		kv++;
+	}
+}
+
 int CallbackManager::AppendCallback(std::string name, callback newCallback)
 {
 	if (m_callbacks->contains(name))
@@ -41,13 +56,13 @@ int CallbackManager::LoadCallbackDLL(std::string inDllPath)
 	if (hDLL == nullptr)
 	{
 		std::stringstream ss;
-		ss << "DLL : '" << inDllPath << "' WAS NOT FOUND !\n";
+		ss << "DLL : '" << inDllPath << "' WAS NOT FOUND !";
 		m_logger.Log(ss.str(), Logger::Severity::CRITICAL);
 		m_logger.Log(ss.str().c_str());
 		return -1;
 	}
 	std::stringstream ss;
-	ss << "DLL : '" << inDllPath << "' LOADED SUCESSFULLY !\n";
+	ss << "DLL : '" << inDllPath << "' LOADED SUCESSFULLY !";
 	m_logger.Log(ss.str(), Logger::Severity::TRACE);
 	m_logger.Log(ss.str().c_str());
 
@@ -56,7 +71,7 @@ int CallbackManager::LoadCallbackDLL(std::string inDllPath)
 	loader(nullptr, &size);
 
 	ss = std::stringstream();
-	ss << "There is/are " << size << " callback(s) loadable\n";
+	ss << "There is/are " << size << " callback(s) loadable";
 	//m_logger.Log(ss.str(), Logger::Severity::DEBUG);
 	m_logger.Log(ss.str().c_str());
 
@@ -97,11 +112,34 @@ int CallbackManager::LoadCallbackDLL(std::string inDllPath)
 	return size;
 }
 
-int CallbackManager::ExecuteCallback(std::string operation, json* jsonData)
+void CallbackManager::Log(std::string data, Logger::Severity severity)
 {
+	m_logger.Log(data, severity);
+}
+
+int CallbackManager::ExecuteCallback(json* jsonData)
+{
+	if (!jsonData->contains("Operation"))
+		return 0x01;
+	
+	std::string operation = jsonData->at("Operation").get<std::string>();
+	m_logger.Log("Operation '" + operation + "' was requested");
+	XPLMDebugString(("Operation '" + operation + "' was requested").c_str());
+
 	if (!m_callbacks->contains(operation))
-		return EXIT_FAILURE;
-	//m_callbacks->at(operation)->operator()(jsonData, this);
-	m_callbacks->at(operation)(jsonData, this);
-	return 0;
+	{
+		m_logger.Log("Operation '" + operation + "' was not found", Logger::Severity::WARNING);
+		XPLMDebugString(("Operation '" + operation + "' was not found").c_str());
+		return 0x02;
+	}
+
+	XPLMDebugString(("Operation '" + operation + "' founded in callback").c_str());
+	m_logger.Log("Operation '" + operation + "' founded in callback");
+
+	int res = m_callbacks->at(operation)(jsonData, this);
+	
+	XPLMDebugString(("Operation '" + operation + "' executed and returned code : '" + std::to_string(res) + "'").c_str());
+	m_logger.Log("Operation '" + operation + "' executed and returned code : '" + std::to_string(res) + "'");
+	
+	return res;
 }

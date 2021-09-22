@@ -25,11 +25,11 @@ constexpr int CallbackNumber = 10;
 ///</params>
 CALLBACK_FUNC void GetCallbacks(std::vector<CallbackFunction*>* callbacks, int* size);
 
-
 ///<summary>
 /// Debug callback to set visibility to the value passed.
 ///</summary>
 CALLBACK_FUNC int SetVisibility(json* jdata, CallbackManager* callbackManager);
+
 ///<summary>
 /// Default callback to load a DLL.
 /// This callback should be used carefully as DLLs shall not be thursted.

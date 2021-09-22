@@ -9,7 +9,9 @@
 
 static CallbackManager* callbackManager;
 static Dataref visibility;
+static int counter = 0;
 float InitializerCallback(float elapsedSinceCall, float elapsedSinceLastTime, int inCounter, void* inRef);
+float LoopCallback(float elapsedSinceCall, float elapsedSinceLastTime, int inCounter, void* inRef);
 
 PLUGIN_API int XPluginStart(char* outName, char* outSig, char* outDesc)
 {
@@ -58,6 +60,7 @@ PLUGIN_API int  XPluginEnable(void)
 	XPLMSpeakString(debug.str().c_str());
 	XPLMDebugString("[XPLMServer]Registering callback to next display frame[DONE]\n");
 	XPLMRegisterFlightLoopCallback(InitializerCallback, -1.0f, nullptr);
+	XPLMRegisterFlightLoopCallback(LoopCallback, 0.0f, nullptr);
 	return 1;
 }
 
@@ -68,7 +71,40 @@ PLUGIN_API void XPluginReceiveMessage(XPLMPluginID inFrom, int inMsg, void* inPa
 float InitializerCallback(float elapsedSinceCall, float elapsedSinceLastTime, int inCounter, void* inRef)
 {
 	json data;
-	data["Value"] = "2500.0";
-	callbackManager->ExecuteCallback("VISIBILITY", &data);
+	data["Operation"] = "REG_DATA";
+	data["Name"] = "VISIBILITY";
+	data["Link"] = "sim/weather/visibility_reported_m";
+	int res = callbackManager->ExecuteCallback(&data);
+	XPLMDebugString(("[XPLMServer] CallbackManager::ExecuteCallback returned :'" + std::to_string(res) + "'\n").c_str());
+	XPLMSetFlightLoopCallbackInterval(LoopCallback, 1.0, 1, nullptr);
+ 	return 0.0f;
+}
+
+float LoopCallback(float elapsedSinceCall, float elapsedSinceLastTime, int inCounter, void* inRef)
+{
+	XPLMDebugString("[XPLMServer] LoopCallback start..\n");
+	auto p_datarefMap = callbackManager->GetNamedDataref();
+	XPLMDebugString("[XPLMServer]Obtaining the registered datarefs... [DONE]\n");
+	if (!p_datarefMap->contains("VISIBILITY"))
+	{
+		XPLMDebugString("[XPLMServer][CRITICAL]Visibility dataref not found... \n");
+		return 0.0;
+	}
+	XPLMDebugString("[XPLMServer]Visibility dataref exist... \n");
+	auto p_dataref = p_datarefMap->at("VISIBILITY");
+	XPLMDebugString("[XPLMServer]Obtaining visibility... [DONE]\n");
+	if (counter % 2 == 0)
+	{
+		XPLMDebugString("[XPLMServer]Setting value to 10_000...");
+		p_dataref->SetValue("10000.0");
+		XPLMDebugString("[Done]\n");
+	}
+	else
+	{
+		XPLMDebugString("[XPLMServer]Setting value to 500...");
+		p_dataref->SetValue("500.0");
+		XPLMDebugString("[Done]\n");
+	}
+	counter++;
 	return 5.0f;
 }

@@ -50,6 +50,10 @@ public:
 	///</summary>
 	CallbackManager(const CallbackManager& rhs);
 	/// <summary>
+	/// Default destructor
+	/// </summary>
+	~CallbackManager();
+	/// <summary>
 	///  Append callback to the stored callback
 	/// </summary>
 	/// <param name="name">The name of the callback</param>
@@ -62,7 +66,7 @@ public:
 	/// <param name="operation"> The name of the callback</param>
 	/// <param name="jsonData"> The json object and argument to be passed to the function</param>
 	/// <returns>EXIT_SUCESS if the execution was sucessful</returns>
-	int ExecuteCallback(std::string operation, json* jsonData);
+	int ExecuteCallback(json* jsonData);
 	/// <summary>
 	///  Return the full map of stored named Dataref(s)
 	/// </summary>
@@ -89,6 +93,13 @@ public:
 	/// If it's negative then it report an error
 	/// </returns
 	int LoadCallbackDLL(std::string inDllPath);
+	/// <summary>
+	///	Access the underlying logger, to be used only by DLLs callback
+	/// wanted to make an entry to the logger.
+	/// </summary>
+	/// <param name="data">The data to log</param>
+	/// <param name="severity">The severity of the log DEFAULT: Debug</param>
+	void Log(std::string data, Logger::Severity severity = Logger::Severity::DEBUG);
 
 protected:
 	std::map<std::string, callback>* m_callbacks;
