@@ -51,7 +51,7 @@ public:
 	/// <param name="operation"> The name of the callback</param>
 	/// <param name="jsonData"> The json object and argument to be passed to the function</param>
 	/// <returns>EXIT_SUCESS if the execution was sucessful</returns>
-	int ExecuteCallback(std::string operation, json jsonData);
+	int ExecuteCallback(std::string operation, json* jsonData);
 	/// <summary>
 	///  Return the full map of stored named Dataref(s)
 	/// </summary>

@@ -80,7 +80,7 @@ int CallbackManager::LoadCallbackDLL(std::string inDllPath)
 	return size;
 }
 
-int CallbackManager::ExecuteCallback(std::string operation, json jsonData)
+int CallbackManager::ExecuteCallback(std::string operation, json* jsonData)
 {
 	if (!m_callbacks->contains(operation))
 		return EXIT_FAILURE;
