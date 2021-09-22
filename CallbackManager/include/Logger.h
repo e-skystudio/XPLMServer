@@ -6,6 +6,7 @@
 #include <sstream>
 #include <ctime>
 
+#include <XPLMUtilities.h>
 
 class Logger
 {

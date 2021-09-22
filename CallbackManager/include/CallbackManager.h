@@ -6,6 +6,8 @@
 #include <map>
 #include <sstream>
 
+#include <XPLMUtilities.h>
+
 
 #include <nlohmann/json.hpp>
 
@@ -16,20 +18,20 @@ using json = nlohmann::json;
 
 #pragma region DLLManagement
 struct CallbackFunction {
-	const char* operation; ///The json Operation value to execute the callback
-	const char* function; /// The name of the function in the DLL.
+	std::string operation; ///The json Operation value to execute the callback
+	std::string function; /// The name of the function in the DLL.
 	
 	CallbackFunction() : operation(""), function("")
 	{
 	}
 
-	CallbackFunction(const char* operation, const char* functionName) :
+	CallbackFunction(std::string operation, std::string functionName) :
 		operation(operation), function(functionName)
 	{
 	}
 };
 
-typedef void(*callbackLoader)(CallbackFunction**, int*);
+typedef void(*callbackLoader)(std::vector<CallbackFunction*>*, int*);
 typedef int(*callback)(json* json, void* CallbackManager); ///The callback reference
 #pragma endregion
 

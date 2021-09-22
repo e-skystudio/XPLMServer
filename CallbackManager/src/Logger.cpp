@@ -34,7 +34,13 @@ void Logger::SetModuleName(std::string module)
 void Logger::Log(std::string message, Logger::Severity severity)
 {
 	if (m_logfile == nullptr || m_logfile->fail())
+	{
+		std::stringstream ss;
+		ss << CurrentDateTime() << "\t" << m_module << "\t" << this->getSeverityStr(severity) \
+			<< "\t" << message << "\n";
+		XPLMDebugString(ss.str().c_str());
 		return;
+	}
 	*m_logfile << CurrentDateTime() << "\t" << m_module << "\t" << this->getSeverityStr(severity) \
 		<< "\t" << message << "\n";
 }

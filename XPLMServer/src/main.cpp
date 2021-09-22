@@ -29,6 +29,7 @@ PLUGIN_API void XPluginDisable(void)
 
 PLUGIN_API int  XPluginEnable(void)
 { 
+	XPLMDebugString("[XPLMServer]Enabled");
 	std::string dllPath;
 	#ifdef WIN64
 		#ifdef _DEBUG
@@ -43,12 +44,19 @@ PLUGIN_API int  XPluginEnable(void)
 			dllPath = ".\\Resources\\plugins\\XPLMServer\\DefaultCallbacks.dll";
 		#endif
 	#endif
+	std::string dllLog = "[XPLMServer]Trying to load dll from path : '" + dllPath + "'\n";
+	XPLMDebugString(dllLog.c_str());
+	XPLMDebugString("[XPLMServer]Creating a callback manager...\n");
 	callbackManager = new CallbackManager();
+	XPLMDebugString("[XPLMServer]Creating a callback manager...[DONE]\n");
+	XPLMDebugString("[XPLMServer]Loading the dlls");
 	int res = callbackManager->LoadCallbackDLL(dllPath);
+	XPLMDebugString("[XPLMServer]Loading the dlls [DONE]\n");
 	std::stringstream debug;
-	debug << "Loading callback from DLL returned " << res << "\n Dll Path was: " << dllPath << "\n";
+	debug << "[XPLMServer]Loading callback from DLL returned " << res << "\n Dll Path was: " << dllPath << "\n";
 	XPLMDebugString(debug.str().c_str());
 	XPLMSpeakString(debug.str().c_str());
+	XPLMDebugString("[XPLMServer]Registering callback to next display frame[DONE]\n");
 	XPLMRegisterFlightLoopCallback(InitializerCallback, -1.0f, nullptr);
 	return 1;
 }
