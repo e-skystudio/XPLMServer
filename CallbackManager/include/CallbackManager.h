@@ -18,6 +18,11 @@ using json = nlohmann::json;
 struct CallbackFunction {
 	const char* operation; ///The json Operation value to execute the callback
 	const char* function; /// The name of the function in the DLL.
+	
+	CallbackFunction() : operation(""), function("")
+	{
+	}
+
 	CallbackFunction(const char* operation, const char* functionName) :
 		operation(operation), function(functionName)
 	{
