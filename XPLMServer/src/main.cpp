@@ -82,29 +82,18 @@ float InitializerCallback(float elapsedSinceCall, float elapsedSinceLastTime, in
 
 float LoopCallback(float elapsedSinceCall, float elapsedSinceLastTime, int inCounter, void* inRef)
 {
-	XPLMDebugString("[XPLMServer] LoopCallback start..\n");
-	auto p_datarefMap = callbackManager->GetNamedDataref();
-	XPLMDebugString("[XPLMServer]Obtaining the registered datarefs... [DONE]\n");
-	if (!p_datarefMap->contains("VISIBILITY"))
-	{
-		XPLMDebugString("[XPLMServer][CRITICAL]Visibility dataref not found... \n");
-		return 0.0;
-	}
-	XPLMDebugString("[XPLMServer]Visibility dataref exist... \n");
-	auto p_dataref = p_datarefMap->at("VISIBILITY");
-	XPLMDebugString("[XPLMServer]Obtaining visibility... [DONE]\n");
+	json data;
+	data["Operation"] = "SET_REG_DATA";
+	data["Name"] = "VISIBILITY";
 	if (counter % 2 == 0)
 	{
-		XPLMDebugString("[XPLMServer]Setting value to 10_000...");
-		p_dataref->SetValue("10000.0");
-		XPLMDebugString("[Done]\n");
+		data["Value"] = "500.0";
 	}
 	else
 	{
-		XPLMDebugString("[XPLMServer]Setting value to 500...");
-		p_dataref->SetValue("500.0");
-		XPLMDebugString("[Done]\n");
+		data["Value"] = "10000.0";
 	}
+	int res = callbackManager->ExecuteCallback(&data);
 	counter++;
 	return 5.0f;
 }

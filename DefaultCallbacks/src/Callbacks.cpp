@@ -123,8 +123,32 @@ int GetRegisterDatarefValue(json* jdata, CallbackManager* callbackManager)
 	return 0;
 }
 
-int SetRegisterDatarefValue(json* jdata, CallbackManager* callbackManager)
+int SetRegisterDatarefValue(json* jdata, CallbackManager* callback)
 {
+	if (!jdata->contains("Name") || !jdata->contains("Value"))
+	{
+		callback->Log("Name or Value properties missing from JSON", Logger::Severity::CRITICAL);
+		return 0x01;
+	}
+	std::string name = jdata->at("Name").get<std::string>();
+	std::string value = jdata->at("Value").get<std::string>();
+	callback->Log("Looking for dataref '" + name + "' to set value to : '" + value + "'");
+
+	auto p_datarefMap = callback->GetNamedDataref();
+	callback->Log("Obtaining the registered datarefs...[DONE]");
+	if (!p_datarefMap->contains(name))
+	{
+		callback->Log("Registered Dataref don't contain '" + name +"'", Logger::Severity::DEBUG);
+		return 0x02;
+	}
+#ifdef _DEBUG
+	callback->Log("Dataref '"+ name + "' found!");
+#endif
+	auto p_dataref = p_datarefMap->at(name);
+#ifdef _DEBUG
+	callback->Log("Obtaining Dataref '" + name + "'...[DONE]");
+#endif
+	p_dataref->SetValue(value);
 	return 0;
 }
 
