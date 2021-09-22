@@ -85,15 +85,21 @@ float LoopCallback(float elapsedSinceCall, float elapsedSinceLastTime, int inCou
 	json data;
 	data["Operation"] = "SET_REG_DATA";
 	data["Name"] = "VISIBILITY";
+	json data2;
+	data2["Operation"] = "SET_DATA";
+	data2["Link"] = "sim/weather/rain_percent";
 	if (counter % 2 == 0)
 	{
 		data["Value"] = "500.0";
+		data2["Value"] = "0.0";
 	}
 	else
 	{
+		data2["Value"] = "1.0";
 		data["Value"] = "10000.0";
 	}
 	int res = callbackManager->ExecuteCallback(&data);
+	int res2 = callbackManager->ExecuteCallback(&data2);
 	counter++;
 	return 5.0f;
 }

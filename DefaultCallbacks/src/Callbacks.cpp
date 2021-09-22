@@ -127,7 +127,7 @@ int SetRegisterDatarefValue(json* jdata, CallbackManager* callback)
 {
 	if (!jdata->contains("Name") || !jdata->contains("Value"))
 	{
-		callback->Log("Name or Value properties missing from JSON", Logger::Severity::CRITICAL);
+		callback->Log("Name and/or Value properties missing from JSON", Logger::Severity::CRITICAL);
 		return 0x01;
 	}
 	std::string name = jdata->at("Name").get<std::string>();
@@ -157,7 +157,27 @@ int GetDatarefValue(json* jdata, CallbackManager* callbackManager)
 	return 0;
 }
 
-int SetDatarefValue(json* jdata, CallbackManager* callbackManager)
+int SetDatarefValue(json* jdata, CallbackManager* callback)
 {
+	if (!jdata->contains("Link") || !jdata->contains("Value"))
+	{
+		callback->Log("Value and/or Link propertie(s) missing from JSON", Logger::Severity::CRITICAL);
+		return 0x01;
+	}
+	std::string value = jdata->at("Value").get<std::string>();
+	std::string link = jdata->at("Link").get<std::string>();
+	callback->Log("Will be setting dataref at location :'" + link + "' to value + :'" + value + "'");
+	auto p_dataref = new Dataref();
+	p_dataref->Load(link);
+	if (!jdata->contains("Type"))
+	{
+		Dataref::Type type = p_dataref->LoadType();
+		callback->Log("Dataref is of type '" + std::to_string((int)type) + "'");
+	}
+	else {
+		callback->Log("Manually setting type of dataref is not yet implemented.", Logger::Severity::CRITICAL);
+		return 0x02;
+	}
+	p_dataref->SetValue(value);
 	return 0;
 }
