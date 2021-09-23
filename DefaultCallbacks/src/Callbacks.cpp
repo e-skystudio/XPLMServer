@@ -83,6 +83,10 @@ int RegisterDataref(json* jdata, CallbackManager* callback)
 
 int UnregisterDataref(json* jdata, CallbackManager* callback)
 {
+	/*TODO : 
+	*	- Test implementation, this will required to implement a menu.
+	* allowing to register or unregister specific dataref.
+	*/
 	std::string name;
 	if (!jdata->contains("Name"))
 	{

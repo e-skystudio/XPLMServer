@@ -67,7 +67,9 @@ PLUGIN_API int  XPluginEnable(void)
 PLUGIN_API void XPluginReceiveMessage(XPLMPluginID inFrom, int inMsg, void* inParam) 
 {
 }
-
+/* TODO:
+*	Replace both callback by a menu, allowing to more precisly test callbacks implementation
+*/
 float InitializerCallback(float elapsedSinceCall, float elapsedSinceLastTime, int inCounter, void* inRef)
 {
 	json data;
