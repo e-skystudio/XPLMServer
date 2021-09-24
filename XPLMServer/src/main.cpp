@@ -19,7 +19,6 @@ static CallbackManager* callbackManager;
 static Dataref visibility;
 static int counter = 0;
 float InitializerCallback(float elapsedSinceCall, float elapsedSinceLastTime, int inCounter, void* inRef);
-float LoopCallback(float elapsedSinceCall, float elapsedSinceLastTime, int inCounter, void* inRef);
 static int g_menu_container_idx; // The index of our menu item in the Plugins menu
 static XPLMMenuID g_menu_id; // The menu container we'll append all our menu items to
 void menu_handler_callback(void*, void*);
@@ -47,10 +46,10 @@ PLUGIN_API int XPluginStart(char* outName, char* outSig, char* outDesc)
 	g_menu_container_idx = XPLMAppendMenuItem(XPLMFindPluginsMenu(), "XPLM Server Debug", 0, 0);
 	g_menu_id = XPLMCreateMenu("XPLM Server Debug", XPLMFindPluginsMenu(), 
 		g_menu_container_idx, menu_handler_callback, NULL);
-	XPLMAppendMenuItem(g_menu_id, "Set CAVOK Visibility", (void*)"1", 1);
-	XPLMAppendMenuItem(g_menu_id, "Set  LVO  Visibility", (void*)"2", 1);
-	XPLMAppendMenuItem(g_menu_id, "Set  000%  Rain", (void*)"3", 1);
-	XPLMAppendMenuItem(g_menu_id, "Set  10%  Rain", (void*)"4", 1);
+	XPLMAppendMenuItem(g_menu_id, "Set CAVOK", (void*)"1", 1);
+	XPLMAppendMenuItem(g_menu_id, "Set LVO", (void*)"2", 1);
+	XPLMAppendMenuItem(g_menu_id, "Set 0% Rain", (void*)"3", 1);
+	XPLMAppendMenuItem(g_menu_id, "Set 100% Rain", (void*)"4", 1);
 	XPLMAppendMenuItem(g_menu_id, "Get Visibility", (void*)"5", 1);
 	XPLMAppendMenuItem(g_menu_id, "Get Rain", (void*)"6", 1);
 	return 1;
@@ -95,16 +94,13 @@ PLUGIN_API int  XPluginEnable(void)
 	XPLMSpeakString(debug.str().c_str());
 	XPLMDebugString("[XPLMServer]Registering callback to next display frame[DONE]\n");
 	XPLMRegisterFlightLoopCallback(InitializerCallback, -1.0f, nullptr);
-	XPLMRegisterFlightLoopCallback(LoopCallback, 0.0f, nullptr);
 	return 1;
 }
 
 PLUGIN_API void XPluginReceiveMessage(XPLMPluginID inFrom, int inMsg, void* inParam) 
 {
 }
-/* TODO:
-*	Replace both callback by a menu, allowing to more precisly test callbacks implementation
-*/
+
 float InitializerCallback(float elapsedSinceCall, float elapsedSinceLastTime, int inCounter, void* inRef)
 {
 	json data;
@@ -116,42 +112,6 @@ float InitializerCallback(float elapsedSinceCall, float elapsedSinceLastTime, in
 	//XPLMSetFlightLoopCallbackInterval(LoopCallback, 1.0, 1, nullptr);
  	return 0.0f;
 }
-
-//float LoopCallback(float elapsedSinceCall, float elapsedSinceLastTime, int inCounter, void* inRef)
-//{
-//	json setData1;
-//	setData1["Operation"] = "SET_REG_DATA";
-//	setData1["Name"] = "VISIBILITY";
-//	json setData2;
-//	setData2["Operation"] = "SET_DATA";
-//	setData2["Link"] = "sim/weather/rain_percent";
-//	if (counter % 2 == 0)
-//	{
-//		setData1["Value"] = "500.0";
-//		setData2["Value"] = "0.0";
-//	}
-//	else
-//	{
-//		setData1["Value"] = "10000.0";
-//		setData2["Value"] = "1.0";
-//	}
-//	int res = callbackManager->ExecuteCallback(&setData1);
-//	int res2 = callbackManager->ExecuteCallback(&setData2);
-//	counter++;
-//	json getData1;
-//	getData1["Operation"] = "GET_REG_DATA";
-//	getData1["Name"] = "VISIBILITY";
-//	json getData2;
-//	getData2["Operation"] = "GET_DATA";
-//	getData2["Link"] = "sim/weather/rain_percent";
-//	
-//	callbackManager->ExecuteCallback(&getData1);
-//	callbackManager->ExecuteCallback(&getData2);
-//	XPLMSpeakString(("Visibility : " + getData1["Value"].get<std::string>() +
-//		" meters\nRain : " + getData2["Value"].get<std::string>() + " percent").c_str());
-//	return 5.0f;
-//}
-
 
 void menu_handler_callback(void* in_menu_ref, void* in_item_ref)
 {
