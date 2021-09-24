@@ -12,3 +12,20 @@ std::wstring s2ws(const std::string& s)
 	delete[] buf;
 	return r;
 }
+
+std::stringstream loadFile(std::string filepath)
+{
+    std::stringstream data;
+    std::ifstream myfile(filepath);
+    if (myfile.is_open())
+    {
+        std::string line;
+        while (std::getline(myfile, line))
+        {
+            data << line << '\n';
+        }
+        myfile.close();
+    }
+
+    return data;
+}

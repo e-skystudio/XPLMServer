@@ -6,18 +6,39 @@
 
 #include <Dataref.h>
 #include <CallbackManager.h>
+#include <utils.h>
 
+#include <nlohmann/json.hpp>
+
+using json = nlohmann::json;
+
+static json PluginConfiguration;
 static CallbackManager* callbackManager;
 static Dataref visibility;
 static int counter = 0;
 float InitializerCallback(float elapsedSinceCall, float elapsedSinceLastTime, int inCounter, void* inRef);
 float LoopCallback(float elapsedSinceCall, float elapsedSinceLastTime, int inCounter, void* inRef);
 
+
+
 PLUGIN_API int XPluginStart(char* outName, char* outSig, char* outDesc)
 {
-	strcpy(outName, "XPLMServer 1.0.0.0");
+	auto data = loadFile(".\\Resources\\plugins\\XPLMServer\\pluginConfig.json");
+	if (data.str().length() < 1)
+	{
+		XPLMDebugString("[XPLMServer]Unable to load configuration file");
+		return 0;
+	}
+
+	PluginConfiguration = json::parse(data.str());
+
+	std::string sig = PluginConfiguration["Plugin"]["Name"].get<std::string>();
+	std::string description = PluginConfiguration["Plugin"]["Description"].get<std::string>() ;
+
+
+	strcpy(outName, sig.c_str());
 	strcpy(outSig, "eskystudio.tools.XPLMServer");
-	strcpy(outDesc, "A Server for XPlane");
+	strcpy(outDesc, description.c_str());
 	return 1;
 }
 
@@ -35,15 +56,20 @@ PLUGIN_API int  XPluginEnable(void)
 	std::string dllPath;
 	#ifdef WIN64
 		#ifdef _DEBUG
-			dllPath = ".\\Resources\\plugins\\XPLMServer\\DefaultCallbacks_64-d.dll";
+			dllPath = PluginConfiguration["DLLFiles"]["Win64"]["Debug"];
+			//            .\Resources\ plugins\ XPLMServer\ DefaultCallbacks64-d.dll
+			//dllPath = ".\\Resources\\plugins\\XPLMServer\\DefaultCallbacks_64-d.dll";
 		#else
-			dllPath = ".\\Resources\\plugins\\XPLMServer\\DefaultCallbacks_64.dll";
+			dllPath = PluginConfiguration["DLLFiles"]["Win64"]["Release"];
+			//dllPath = ".\\Resources\\plugins\\XPLMServer\\DefaultCallbacks_64.dll";
 		#endif
 	#else
 		#ifdef _DEBUG
-			dllPath = ".\\Resources\\plugins\\XPLMServer\\DefaultCallbacks-d.dll";
+			dllPath = PluginConfiguration["DLLFiles"]["Win32"]["Debug"];
+			//dllPath = ".\\Resources\\plugins\\XPLMServer\\DefaultCallbacks-d.dll";
 		#else
-			dllPath = ".\\Resources\\plugins\\XPLMServer\\DefaultCallbacks.dll";
+			dllPath = PluginConfiguration["DLLFiles"]["Win32"]["Release"];
+			//dllPath = ".\\Resources\\plugins\\XPLMServer\\DefaultCallbacks.dll";
 		#endif
 	#endif
 	std::string dllLog = "[XPLMServer]Trying to load dll from path : '" + dllPath + "'\n";

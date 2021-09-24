@@ -1,6 +1,6 @@
 {
   "Plugin": {
-    "Name": "eskystudio.utils.xplmserver",
+    "Name": "XPLM Server v1.0.1 alpha",
     "Description": "Two-Way Server implemting DLLs callbacks",
     "Author": "Dessart Romain"
   },
@@ -10,8 +10,8 @@
       "Debug": ".\\Resources\\plugins\\XPLMServer\\DefaultCallbacks-d.dll"
     },
     "Win64": {
-      "Release": ".\\Resources\\plugins\\XPLMServer\\DefaultCallbacks64.dll",
-      "Debug": ".\\Resources\\plugins\\XPLMServer\\DefaultCallbacks64-d.dll"
+      "Release": ".\\Resources\\plugins\\XPLMServer\\DefaultCallbacks_64.dll",
+      "Debug": ".\\Resources\\plugins\\XPLMServer\\DefaultCallbacks_64-d.dll"
     }
   }
 }
