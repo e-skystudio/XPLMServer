@@ -46,10 +46,10 @@ PLUGIN_API int XPluginStart(char* outName, char* outSig, char* outDesc)
 	g_menu_container_idx = XPLMAppendMenuItem(XPLMFindPluginsMenu(), "XPLM Server Debug", 0, 0);
 	g_menu_id = XPLMCreateMenu("XPLM Server Debug", XPLMFindPluginsMenu(), 
 		g_menu_container_idx, menu_handler_callback, NULL);
-	XPLMAppendMenuItem(g_menu_id, "Set CAVOK Visibility", (void*)"1", 1);
-	XPLMAppendMenuItem(g_menu_id, "Set  LVO  Visibility", (void*)"2", 1);
-	XPLMAppendMenuItem(g_menu_id, "Set  000%  Rain", (void*)"3", 1);
-	XPLMAppendMenuItem(g_menu_id, "Set  10%  Rain", (void*)"4", 1);
+	XPLMAppendMenuItem(g_menu_id, "Set CAVOK", (void*)"1", 1);
+	XPLMAppendMenuItem(g_menu_id, "Set LVO", (void*)"2", 1);
+	XPLMAppendMenuItem(g_menu_id, "Set 0% Rain", (void*)"3", 1);
+	XPLMAppendMenuItem(g_menu_id, "Set 100% Rain", (void*)"4", 1);
 	XPLMAppendMenuItem(g_menu_id, "Get Visibility", (void*)"5", 1);
 	XPLMAppendMenuItem(g_menu_id, "Get Rain", (void*)"6", 1);
 	return 1;
