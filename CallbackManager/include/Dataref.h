@@ -1,8 +1,9 @@
 #pragma once
-
 #include <string>
+#include <map>
 #include "Logger.h"
 #include <XPLMDataAccess.h>
+
 
 ///<summary>
 /// This class represent an X-Plane dataref in OOP format.
@@ -19,6 +20,7 @@ public:
 		IntArray=16,
 		Data=32
 	};
+
 	///<summary>
 	/// Default empty consturctor
 	///</summary>
@@ -67,6 +69,11 @@ public:
 	///<param name="newType">The new type of the dataref</param>
 	void SetType(Dataref::Type newType);
 	///<summary>
+	/// Override the type of the dataref.
+	///</summary>
+	///<param name="newType">The new type as string</param>
+	void SetType(std::string newType);
+	///<summary>
 	/// Return the current value of the dataref (JSON formated).
 	///</summary>
 	///<returns>The value of the dataref as JSON</returns>
@@ -82,3 +89,13 @@ protected:
 	Logger m_logger;		/* The logger */
 };
 
+
+static std::map<std::string, Dataref::Type> const StringToType{
+	{"Unknown", Dataref::Type::Unknown},
+	{"INT", Dataref::Type::Int},
+	{"FLOAT", Dataref::Type::Float},
+	{"DOUBLE", Dataref::Type::Double},
+	{"FLOAT_ARRAY", Dataref::Type::FloatArray},
+	{"INT_ARRAY", Dataref::Type::IntArray},
+	{"DATA", Dataref::Type::Data},
+};

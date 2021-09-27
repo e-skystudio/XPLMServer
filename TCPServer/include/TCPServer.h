@@ -13,9 +13,9 @@ public:
 	TCPServer();
 	int Initialize(std::string ip, unsigned short port);
 	std::vector<SOCKET> Run();
-	void delete_connection(SOCKET socket);
-	//int receive_data(const SOCKET socket, std::string* data_received);
-	std::string receive_data(const SOCKET socket, int* OutBytes);
+	void DeleteConnection(SOCKET socket);
+	std::string ReceiveData(const SOCKET socket, int* OutBytes);
+	void BroadcastData(std::string data);
 protected:
 	WSADATA m_wsa;
 	SOCKET m_listenSocket;

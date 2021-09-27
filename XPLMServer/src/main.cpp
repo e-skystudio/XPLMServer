@@ -141,14 +141,15 @@ float NetworkCallback(float elapsedSinceCall, float elapsedSinceLastTime, int in
 	for (auto socket : socketsReadables)
 	{
 		int bytes;
-		std::string data = server->receive_data(socket, &bytes);
-		//server->receive_data(socket, &data);
+		std::string data = server->ReceiveData(socket, &bytes);
 		XPLMDebugString(("DataIn : " + data + "\n").c_str());
-		XPLMSpeakString(("DataIn : " + data + "\n").c_str());
 		json operation = json::parse(data);
+
 		callbackManager->ExecuteCallback(&operation);
+		XPLMSpeakString(operation.dump().c_str());
+		server->BroadcastData(operation.dump());
 	}
-	return 1.0f;
+	return 0.1f;
 }
 
 void menu_handler_callback(void* in_menu_ref, void* in_item_ref)

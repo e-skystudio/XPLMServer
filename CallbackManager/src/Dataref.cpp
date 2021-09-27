@@ -66,6 +66,17 @@ void Dataref::SetType(Dataref::Type newType)
 	m_type = newType;
 }
 
+void Dataref::SetType(std::string newType)
+{
+	if (StringToType.contains(newType))
+	{
+		m_type = StringToType.at(newType);
+	}
+	else {
+		m_type = Dataref::Type::Unknown;
+	}
+}
+
 std::string Dataref::GetValue()
 {
 	if (m_dataref == NULL)

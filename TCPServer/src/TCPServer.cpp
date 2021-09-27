@@ -94,7 +94,7 @@ int TCPServer::accept_connection()
     return 0;
 }
 
-std::string TCPServer::receive_data(const SOCKET socket, int* OutBytes)
+std::string TCPServer::ReceiveData(const SOCKET socket, int* OutBytes)
 {
     char* buffer = new char[4098];
     int bytes = recv(socket, buffer, 4098, 0);
@@ -110,24 +110,16 @@ std::string TCPServer::receive_data(const SOCKET socket, int* OutBytes)
 
 }
 
+void TCPServer::BroadcastData(std::string data)
+{
+    for (SOCKET so : m_clients)
+    {
+        int bytes = send(so, data.c_str(), data.length(), 0);
+    }
+}
 
-//int TCPServer::receive_data(const SOCKET socket, std::string* data_received)
-//{
-//    char* buffer = new char[4098];
-//    int bytes = recv(socket, buffer, 4098, 0);
-//    if (bytes < 0)
-//    {
-//        XPLMDebugString(("Bytes < 0 : " + std::to_string(bytes) + 
-//            " Error : " + std::to_string(WSAGetLastError()) + "\n").c_str());
-//        return bytes;
-//    }
-//    data_received = new std::string(buffer);
-//    data_received->resize(bytes);
-//    printf(" >>> %s !\n", data_received->c_str());
-//    return bytes;
-//}
 
-void TCPServer::delete_connection(SOCKET socket)
+void TCPServer::DeleteConnection(SOCKET socket)
 {
     closesocket(socket);
     auto it = std::find(m_clients.begin(), m_clients.end(), socket);

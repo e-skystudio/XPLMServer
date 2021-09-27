@@ -58,10 +58,7 @@ int RegisterDataref(json* jdata, CallbackManager* callback)
 	{
 		std::string type = jdata->at("Type").get<std::string>();
 		callback->Log("Dataref type is '" + type + "'");
-		//TODO : Implement 
-		callback->Log("String to Dataref::Type not yet implemented, please relauch callback using no Type", Logger::Severity::CRITICAL);
-		return 0x02;
-		//!TODO
+		dataref->SetType(type);
 	}
 	if (jdata->contains("ConversionFactor"))
 	{
@@ -201,8 +198,7 @@ int GetDatarefValue(json* jdata, CallbackManager* callback)
 		callback->Log("Dataref is of type '" + std::to_string((int)type) + "'");
 	}
 	else {
-		callback->Log("Manually setting type of dataref is not yet implemented.", Logger::Severity::CRITICAL);
-		return 0x02;
+		p_dataref->SetType(jdata->at("Type").get<std::string>());
 	}
 	std::string val = p_dataref->GetValue();
 	callback->Log("Value is '" + val + "'");
@@ -230,8 +226,8 @@ int SetDatarefValue(json* jdata, CallbackManager* callback)
 		callback->Log("Dataref is of type '" + std::to_string((int)type) + "'");
 	}
 	else {
-		callback->Log("Manually setting type of dataref is not yet implemented.", Logger::Severity::CRITICAL);
-		return 0x02;
+		std::string type = jdata->at("Type").get<std::string>();
+		p_dataref->SetType(type);
 	}
 	p_dataref->SetValue(value);
 	return 0;
