@@ -1,3 +1,4 @@
+#include "TCPServer.h"
 #include <sstream>
 #include <string>
 
@@ -9,8 +10,9 @@
 #include <CallbackManager.h>
 #include <utils.h>
 
+
 #include <nlohmann/json.hpp>
-#include <CallbackManager/src/utils.cpp>
+//#include <CallbackManager/src/utils.cpp>
 
 using json = nlohmann::json;
 
@@ -19,10 +21,11 @@ static CallbackManager* callbackManager;
 static Dataref visibility;
 static int counter = 0;
 float InitializerCallback(float elapsedSinceCall, float elapsedSinceLastTime, int inCounter, void* inRef);
+float NetworkCallback(float elapsedSinceCall, float elapsedSinceLastTime, int inCounter, void* inRef);
 static int g_menu_container_idx; // The index of our menu item in the Plugins menu
 static XPLMMenuID g_menu_id; // The menu container we'll append all our menu items to
 void menu_handler_callback(void*, void*);
-
+static TCPServer* server;
 
 PLUGIN_API int XPluginStart(char* outName, char* outSig, char* outDesc)
 {
@@ -90,10 +93,29 @@ PLUGIN_API int  XPluginEnable(void)
 	XPLMDebugString("[XPLMServer]Loading the dlls [DONE]\n");
 	std::stringstream debug;
 	debug << "[XPLMServer]Loading callback from DLL returned " << res << "\n Dll Path was: " << dllPath << "\n";
-	XPLMDebugString(debug.str().c_str());
-	XPLMSpeakString(debug.str().c_str());
-	XPLMDebugString("[XPLMServer]Registering callback to next display frame[DONE]\n");
-	XPLMRegisterFlightLoopCallback(InitializerCallback, -1.0f, nullptr);
+	XPLMDebugString("\n---Server Init----\n");
+	if (PluginConfiguration.contains("Server") &&
+		PluginConfiguration["Server"].contains("InIp") &&
+		PluginConfiguration["Server"].contains("InIp"))
+	{
+		XPLMDebugString("[XPLMDebugString] Creating server\n");
+		server = new TCPServer();
+		XPLMDebugString(("[XPLMDebugString] initlaizating server : " + PluginConfiguration["Server"]["InIp"].get<std::string>() + 
+		" : " + std::to_string(PluginConfiguration["Server"]["InPort"].get<int>()) + "\n").c_str());
+		res = server->Initialize(PluginConfiguration["Server"]["InIp"].get<std::string>(),
+			PluginConfiguration["Server"]["InPort"].get<int>());
+		XPLMDebugString(("Server::Initalize returned " + std::to_string(res) + "\n").c_str());
+		if (res == EXIT_SUCCESS)
+		{
+			XPLMDebugString("[XPLMDebugString] Initalization sucess\n");
+			XPLMRegisterFlightLoopCallback(InitializerCallback, -1.0f, nullptr);
+		}
+		else {
+			XPLMDebugString("[XPLMDebugString] Initalization failed\n");
+			XPLMDebugString(("[XPLMServer] res was " + std::to_string(res) + "\n").c_str());
+		}
+	}
+
 	return 1;
 }
 
@@ -109,8 +131,24 @@ float InitializerCallback(float elapsedSinceCall, float elapsedSinceLastTime, in
 	data["Link"] = "sim/weather/visibility_reported_m";
 	int res = callbackManager->ExecuteCallback(&data);
 	XPLMDebugString(("[XPLMServer] CallbackManager::ExecuteCallback returned :'" + std::to_string(res) + "'\n").c_str());
-	//XPLMSetFlightLoopCallbackInterval(LoopCallback, 1.0, 1, nullptr);
+	XPLMRegisterFlightLoopCallback(NetworkCallback, -1.0f, nullptr);
  	return 0.0f;
+}
+
+float NetworkCallback(float elapsedSinceCall, float elapsedSinceLastTime, int inCounter, void* inRef)
+{
+	auto socketsReadables = server->Run();
+	for (auto socket : socketsReadables)
+	{
+		int bytes;
+		std::string data = server->receive_data(socket, &bytes);
+		//server->receive_data(socket, &data);
+		XPLMDebugString(("DataIn : " + data + "\n").c_str());
+		XPLMSpeakString(("DataIn : " + data + "\n").c_str());
+		json operation = json::parse(data);
+		callbackManager->ExecuteCallback(&operation);
+	}
+	return 1.0f;
 }
 
 void menu_handler_callback(void* in_menu_ref, void* in_item_ref)

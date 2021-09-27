@@ -14,6 +14,7 @@ int TCPServer::Initialize(std::string ip, unsigned short port)
     m_listenSocket = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);
     if (m_listenSocket == INVALID_SOCKET)
     {
+        int error = WSAGetLastError();
         WSACleanup();
         return 0x02;
     }
@@ -23,11 +24,13 @@ int TCPServer::Initialize(std::string ip, unsigned short port)
     if (bind(m_listenSocket, (SOCKADDR*)&m_serverAddr, sizeof(m_serverAddr)) == SOCKET_ERROR)
     {
         closesocket(m_listenSocket);
+        int error = WSAGetLastError();
         WSACleanup();
         return 0x04;
     }
     if (listen(m_listenSocket, 5) != EXIT_SUCCESS)
     {
+        int error = WSAGetLastError();
         WSACleanup();
         return 0x05;
     }
@@ -88,28 +91,45 @@ int TCPServer::accept_connection()
     FD_SET(new_client, &m_current_socket);
 
     m_clients.push_back(new_client);
-    std::cout << "New client connected " << (int)new_client << "\n";
     return 0;
 }
 
-int TCPServer::receive_data(const SOCKET socket, std::string* data_received)
+std::string TCPServer::receive_data(const SOCKET socket, int* OutBytes)
 {
     char* buffer = new char[4098];
     int bytes = recv(socket, buffer, 4098, 0);
+    std::string data_received{};
     if (bytes < 0)
     {
-        return bytes;
+        *OutBytes = bytes;
+        return data_received;
     }
-    data_received = new std::string(buffer);
-    data_received->resize(bytes);
-    printf(" >>> %s !\n", data_received->c_str());
-    return bytes;
+    data_received = std::string(buffer);
+    data_received.resize(bytes);
+    return data_received;
+
 }
+
+
+//int TCPServer::receive_data(const SOCKET socket, std::string* data_received)
+//{
+//    char* buffer = new char[4098];
+//    int bytes = recv(socket, buffer, 4098, 0);
+//    if (bytes < 0)
+//    {
+//        XPLMDebugString(("Bytes < 0 : " + std::to_string(bytes) + 
+//            " Error : " + std::to_string(WSAGetLastError()) + "\n").c_str());
+//        return bytes;
+//    }
+//    data_received = new std::string(buffer);
+//    data_received->resize(bytes);
+//    printf(" >>> %s !\n", data_received->c_str());
+//    return bytes;
+//}
 
 void TCPServer::delete_connection(SOCKET socket)
 {
     closesocket(socket);
     auto it = std::find(m_clients.begin(), m_clients.end(), socket);
-    std::cout << "Client removed : " << (int)socket << "\n";
     m_clients.erase(it);
 }
