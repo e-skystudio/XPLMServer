@@ -9,6 +9,8 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "DefaultCallbacks", "Default
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "CallbackManager", "CallbackManager\CallbackManager.vcxproj", "{9D32D8CC-F61D-4547-83C2-67466F43A0A9}"
 EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "TCPServer", "TCPServer\TCPServer.vcxproj", "{4B32F1A7-9085-4B9D-B2CC-45F7FAA8556C}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|x64 = Debug|x64
@@ -41,6 +43,14 @@ Global
 		{9D32D8CC-F61D-4547-83C2-67466F43A0A9}.Release|x64.Build.0 = Release|x64
 		{9D32D8CC-F61D-4547-83C2-67466F43A0A9}.Release|x86.ActiveCfg = Release|Win32
 		{9D32D8CC-F61D-4547-83C2-67466F43A0A9}.Release|x86.Build.0 = Release|Win32
+		{4B32F1A7-9085-4B9D-B2CC-45F7FAA8556C}.Debug|x64.ActiveCfg = Debug|x64
+		{4B32F1A7-9085-4B9D-B2CC-45F7FAA8556C}.Debug|x64.Build.0 = Debug|x64
+		{4B32F1A7-9085-4B9D-B2CC-45F7FAA8556C}.Debug|x86.ActiveCfg = Debug|Win32
+		{4B32F1A7-9085-4B9D-B2CC-45F7FAA8556C}.Debug|x86.Build.0 = Debug|Win32
+		{4B32F1A7-9085-4B9D-B2CC-45F7FAA8556C}.Release|x64.ActiveCfg = Release|x64
+		{4B32F1A7-9085-4B9D-B2CC-45F7FAA8556C}.Release|x64.Build.0 = Release|x64
+		{4B32F1A7-9085-4B9D-B2CC-45F7FAA8556C}.Release|x86.ActiveCfg = Release|Win32
+		{4B32F1A7-9085-4B9D-B2CC-45F7FAA8556C}.Release|x86.Build.0 = Release|Win32
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
