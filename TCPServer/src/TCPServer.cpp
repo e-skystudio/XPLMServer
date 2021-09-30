@@ -1,9 +1,10 @@
 #include "../include/TCPServer.h"
 
 TCPServer::TCPServer() :
-    m_listenSocket(INVALID_SOCKET), m_wsa({ 0 }),
-    m_serverAddr({ 0 }), m_current_socket(),
-    m_maxsock(0), m_minsock(0), m_ready_socket()
+    m_listenSocket(INVALID_SOCKET),
+    m_wsa({ 0 }),
+    m_serverAddr({ 0 }),
+    m_maxReceivePacketSize(4096)
 {
 }
 
@@ -41,20 +42,14 @@ std::vector<SOCKET> TCPServer::Run()
 {
     std::vector<SOCKET> readySocks;
     timeval timeout({ 0, 10000 });
-    FD_ZERO(&m_current_socket);
-    FD_SET(m_listenSocket, &m_current_socket);
-    m_minsock = (unsigned int)m_listenSocket;
-    m_maxsock = (unsigned int)m_listenSocket;
+    fd_set ready_sockets;
+    FD_ZERO(&ready_sockets);
+    FD_SET(m_listenSocket, &ready_sockets);
     for (SOCKET cli : m_clients)
     {
-        FD_SET(cli, &m_current_socket);
-        if ((int)cli > m_maxsock)
-            m_maxsock = (unsigned int)cli;
-        if ((int)cli < m_minsock)
-            m_minsock = (unsigned int)cli;
+        FD_SET(cli, &ready_sockets);
     }
-    m_ready_socket = m_current_socket;
-    int res = select(FD_SETSIZE, &m_ready_socket, NULL, NULL, &timeout);
+    int res = select(FD_SETSIZE, &ready_sockets, NULL, NULL, &timeout);
     if (res < 0)
     {
         return readySocks;
@@ -63,22 +58,31 @@ std::vector<SOCKET> TCPServer::Run()
     {
         return readySocks;
     }
-
-    for (unsigned int i = m_minsock; i <= m_maxsock; i++)
+    if (FD_ISSET(m_listenSocket, &ready_sockets))
     {
-        if (FD_ISSET(i, &m_ready_socket))
+        this->accept_connection();
+    }
+    for (SOCKET sock : m_clients)
+    {
+        if (FD_ISSET(sock, &ready_sockets))
         {
-            if (i == m_listenSocket)
-            {
-                this->accept_connection();
-            }
-            else
-            {
-                readySocks.push_back((SOCKET)i);
-            }
+            readySocks.push_back(sock);
         }
     }
     return readySocks;
+}
+
+std::vector<std::string> TCPServer::RunOnce()
+{
+    std::vector<SOCKET> readySocket = this->Run();
+    std::vector<std::string> dataIn;
+    for (SOCKET s : readySocket)
+    {
+        int out{ 0 };
+        std::string data = this->ReceiveData(s, &out);
+        dataIn.push_back(data);
+    }
+    return dataIn;
 }
 
 int TCPServer::accept_connection()
@@ -88,8 +92,6 @@ int TCPServer::accept_connection()
     SOCKET new_client = accept(m_listenSocket, (sockaddr*)&new_client_addr, &new_client_len);
     if (new_client == INVALID_SOCKET)
         return 0x01;
-    FD_SET(new_client, &m_current_socket);
-
     m_clients.push_back(new_client);
     return 0;
 }
@@ -114,7 +116,7 @@ void TCPServer::BroadcastData(std::string data)
 {
     for (SOCKET so : m_clients)
     {
-        int bytes = send(so, data.c_str(), data.length(), 0);
+        int bytes = send(so, data.c_str(), (int)data.length(), 0);
     }
 }
 
