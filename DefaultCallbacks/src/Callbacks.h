@@ -104,3 +104,4 @@ CALLBACK_FUNC int GetDatarefValue(json* jdata, CallbackManager* callbackManager)
 ///    - Value: the value of the dataref
 ///</summary>
 CALLBACK_FUNC int SetDatarefValue(json* jdata, CallbackManager* callbackManager);
+CALLBACK_FUNC int Speak(json* jdata, CallbackManager* callback);

@@ -15,6 +15,7 @@ void GetCallbacks(std::vector<CallbackFunction*>* callbacks, int* size)
 		callbacks->push_back(new CallbackFunction("SET_REG_DATA", "SetRegisterDatarefValue"));
 		callbacks->push_back(new CallbackFunction("GET_DATA", "GetDatarefValue"));
 		callbacks->push_back(new CallbackFunction("SET_DATA", "SetDatarefValue"));
+		callbacks->push_back(new CallbackFunction("SPEAK", "Speak"));
 	}
 	return;
 }
@@ -231,4 +232,11 @@ int SetDatarefValue(json* jdata, CallbackManager* callback)
 	}
 	p_dataref->SetValue(value);
 	return 0;
+}
+
+int Speak(json* jdata, CallbackManager* callback)
+{
+	if(!jdata->contains("Text"))
+		return 0x01;
+	XPLMDebugString(jdata->at("Text").get<std::string>().c_str());
 }
