@@ -84,6 +84,14 @@ public:
 	/// </returns>
 	std::map<std::string, Dataref*>* GetSubscribedDataref() const;
 	/// <summary>
+	///  Return the full map of Subscribed Event(s).
+	/// </summary>
+	/// <returns>
+	///  A pointer toward the list of subscribed events.
+	/// CAN BE NULL !
+	/// </returns>
+	std::map<unsigned int, std::string>* GetSubscribedEventMap() const;
+	/// <summary>
 	/// Load callbacks from DLL file.
 	/// DLL Must implement the GetCallbacks();
 	/// </summary>
@@ -105,6 +113,7 @@ protected:
 	std::map<std::string, callback>* m_callbacks;
 	std::map<std::string, Dataref*>* m_namedDatarefs; //The datarefs stored while plugin is in used
 	std::map<std::string, Dataref*>* m_subscribedDatarefs; //The datarefs that value is returned per timed basis
+	std::map<unsigned int, std::string>* m_subscribedEvent;
 	Logger m_logger; /* The logger */
 };
 

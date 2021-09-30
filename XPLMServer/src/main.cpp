@@ -121,6 +121,14 @@ PLUGIN_API int  XPluginEnable(void)
 
 PLUGIN_API void XPluginReceiveMessage(XPLMPluginID inFrom, int inMsg, void* inParam) 
 {
+	XPLMSpeakString(("Message received : '" + std::to_string(inMsg) + "'").c_str());
+	if (callbackManager->GetSubscribedEventMap()->contains((unsigned int)inMsg))
+	{
+		json ops;
+		ops["Operation"] = "Event Triggered";
+		ops["Value"] = callbackManager->GetSubscribedEventMap()->at((unsigned int)inMsg);
+		server->BroadcastData(ops.dump());
+	}
 }
 
 float InitializerCallback(float elapsedSinceCall, float elapsedSinceLastTime, int inCounter, void* inRef)
@@ -137,16 +145,11 @@ float InitializerCallback(float elapsedSinceCall, float elapsedSinceLastTime, in
 
 float NetworkCallback(float elapsedSinceCall, float elapsedSinceLastTime, int inCounter, void* inRef)
 {
-	auto socketsReadables = server->Run();
-	for (auto socket : socketsReadables)
+	std::vector<std::string> datas = server->RunOnce();
+	for (auto const& data : datas)
 	{
-		int bytes;
-		std::string data = server->ReceiveData(socket, &bytes);
-		XPLMDebugString(("DataIn : " + data + "\n").c_str());
 		json operation = json::parse(data);
-
 		callbackManager->ExecuteCallback(&operation);
-		XPLMSpeakString(operation.dump().c_str());
 		server->BroadcastData(operation.dump());
 	}
 	return 0.1f;

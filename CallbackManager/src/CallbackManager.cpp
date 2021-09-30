@@ -5,6 +5,11 @@ CallbackManager::CallbackManager() : m_logger(Logger("XPLMServer.log", "Callback
 	m_callbacks = new std::map<std::string, callback>();
 	m_namedDatarefs = new std::map<std::string, Dataref*>();
 	m_subscribedDatarefs = new std::map<std::string, Dataref*>();
+	m_subscribedEvent = new std::map<unsigned int, std::string>{
+		{101, "Crashed"},
+		{102, "Plane Loaded"},
+		{103, "Airport Loaded"},
+	};
 }
 
 CallbackManager::CallbackManager(const CallbackManager& rhs)
@@ -48,6 +53,11 @@ std::map<std::string, Dataref*>* CallbackManager::GetNamedDataref() const
 std::map<std::string, Dataref*>* CallbackManager::GetSubscribedDataref() const
 {
 	return m_subscribedDatarefs;
+}
+
+std::map<unsigned int, std::string>* CallbackManager::GetSubscribedEventMap() const
+{
+	return m_subscribedEvent;
 }
 
 int CallbackManager::LoadCallbackDLL(std::string inDllPath)
