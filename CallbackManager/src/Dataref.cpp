@@ -99,9 +99,33 @@ std::string Dataref::GetValue()
 		value = std::to_string(XPLMGetDatad(m_dataref));
 		break;
 	case Dataref::Type::FloatArray:
+	{
+		int arraySize = XPLMGetDatavf(m_dataref, nullptr, 0, 0);
+		XPLMSpeakString(("Array is " + std::to_string(arraySize) + " lenght").c_str());
+		float* floatArray = (float*)malloc(sizeof(float) * arraySize);
+		XPLMGetDatavf(m_dataref, floatArray, 0, arraySize);
+		json j = json::array();
+		for (int i = 0; i < arraySize; i++)
+		{
+			j.push_back(*(floatArray + i));
+		}
+		value = j.dump();
 		break;
+	}
 	case Dataref::Type::IntArray:
+	{
+		int arraySize = XPLMGetDatavi(m_dataref, nullptr, 0, 0);
+		XPLMSpeakString(("Array is " + std::to_string(arraySize) + " lenght").c_str());
+		int* intArray = (int*)malloc(sizeof(int) * arraySize);
+		XPLMGetDatavi(m_dataref, intArray, 0, arraySize);
+		json j = json::array();
+		for (int i = 0; i < arraySize; i++)
+		{
+			j.push_back(*(intArray + i));
+		}
+		value = j.dump();
 		break;
+	}
 	case Dataref::Type::Data:
 		break;
 	default:

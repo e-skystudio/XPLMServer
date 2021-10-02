@@ -2,8 +2,13 @@
 #include <string>
 #include <map>
 #include "Logger.h"
+
+#include <nlohmann/json.hpp>
+
 #include <XPLMDataAccess.h>
 
+
+using json = nlohmann::json;
 
 ///<summary>
 /// This class represent an X-Plane dataref in OOP format.
