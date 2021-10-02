@@ -155,12 +155,18 @@ int GetRegisterDatarefValue(json* jdata, CallbackManager* callback)
 
 int SetRegisterDatarefValue(json* jdata, CallbackManager* callback)
 {
+	callback->Log("Executing SetRegisterDataref", Logger::Severity::TRACE);
 	if (!jdata->contains("Name") || !jdata->contains("Value"))
 	{
 		callback->Log("Name and/or Value properties missing from JSON", Logger::Severity::CRITICAL);
 		return 0x01;
 	}
 	std::string name = jdata->at("Name").get<std::string>();
+	if (jdata->at("Value").type() != json::value_t::string)
+	{
+		callback->Log("Value property must be a string", Logger::Severity::CRITICAL);
+		return 0x03;
+	}
 	std::string value = jdata->at("Value").get<std::string>();
 	callback->Log("Looking for dataref '" + name + "' to set value to : '" + value + "'");
 
@@ -184,16 +190,16 @@ int SetRegisterDatarefValue(json* jdata, CallbackManager* callback)
 
 int GetDatarefValue(json* jdata, CallbackManager* callback)
 {
-	if (!jdata->contains("Link"))
+	if (!jdata->contains("Link") || jdata->at("Link").type() != json::value_t::string)
 	{
-		callback->Log("Link propertie missing from JSON", Logger::Severity::CRITICAL);
+		callback->Log("Link propertie missing from JSON or the type is not string", Logger::Severity::CRITICAL);
 		return 0x01;
 	}
 	std::string link = jdata->at("Link").get<std::string>();
 	callback->Log("Will be reading dataref at location :'" + link + "'");
 	auto p_dataref = new Dataref();
 	p_dataref->Load(link);
-	if (!jdata->contains("Type"))
+	if (!jdata->contains("Type") || jdata->at("Type").type() != json::value_t::string)
 	{
 		Dataref::Type type = p_dataref->LoadType();
 		callback->Log("Dataref is of type '" + std::to_string((int)type) + "'");
@@ -203,7 +209,6 @@ int GetDatarefValue(json* jdata, CallbackManager* callback)
 	}
 	std::string val = p_dataref->GetValue();
 	callback->Log("Value is '" + val + "'");
-	//jdata->push_back(std::pair<std::string, std::string>("Value", val));
 	jdata->operator[]("Value") = val;
 	callback->Log("Value added to json");
 	return 0;
@@ -215,6 +220,11 @@ int SetDatarefValue(json* jdata, CallbackManager* callback)
 	{
 		callback->Log("Value and/or Link propertie(s) missing from JSON", Logger::Severity::CRITICAL);
 		return 0x01;
+	}
+	if (jdata->at("Value").type() != json::value_t::string)
+	{
+		callback->Log("Value property must be a string", Logger::Severity::CRITICAL);
+		return 0x02;
 	}
 	std::string value = jdata->at("Value").get<std::string>();
 	std::string link = jdata->at("Link").get<std::string>();
@@ -239,4 +249,5 @@ int Speak(json* jdata, CallbackManager* callback)
 	if(!jdata->contains("Text"))
 		return 0x01;
 	XPLMDebugString(jdata->at("Text").get<std::string>().c_str());
+	return 0;
 }
