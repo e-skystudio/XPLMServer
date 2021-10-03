@@ -264,11 +264,6 @@ int SetDatarefValue(json* jdata, CallbackManager* callback)
 		callback->Log("Value and/or Link propertie(s) missing from JSON", Logger::Severity::CRITICAL);
 		return 0x01;
 	}
-	if (jdata->at("Value").type() != json::value_t::string)
-	{
-		callback->Log("Value property must be a string", Logger::Severity::CRITICAL);
-		return 0x02;
-	}
 	std::string value = ExtractJsonValue(jdata, "Value", callback);
 	if (value.length() <= 0)
 	{
