@@ -193,7 +193,6 @@ int Dataref::setFloatArrayFromJson(int offset, std::string value)
 	if (j.type() == json::value_t::discarded)
 	{
 		m_logger.Log("FloatArray : json parsing of value failed!", Logger::Severity::CRITICAL);
-		XPLMDebugString("FloatArray6b\n");
 		return -1;
 	}
 	else if (j.type() == json::value_t::array)
@@ -202,14 +201,10 @@ int Dataref::setFloatArrayFromJson(int offset, std::string value)
 		if ((int)j.size() < maxSize)
 			maxSize = (int)j.size();
 		m_logger.Log("FloatArray : max size is " + std::to_string(maxSize), Logger::Severity::CRITICAL);
-		data = j.get<std::vector<float>>();
-	}
-	else if (j.type() == json::value_t::number_float)
-	{
-		m_logger.Log("FloatArray : value is an float!", Logger::Severity::DEBUG);
-		for (int i(0); i < maxSize; i++)
+		std::vector<std::string> valArray = j.get<std::vector<std::string>>();
+		for (std::string strValue : valArray)
 		{
-			data.push_back(j.get<float>());
+			data.push_back(std::stof(strValue));
 		}
 	}
 	else if (j.type() == json::value_t::string)
@@ -219,10 +214,10 @@ int Dataref::setFloatArrayFromJson(int offset, std::string value)
 		{
 			data.push_back(std::stof(j.get<std::string>()));
 		}
-		XPLMDebugString("FloatArray9c\n");
 	}
 	else if (j.type() == json::value_t::object)
 	{
+		m_logger.Log("FloatArray : value is an json object!", Logger::Severity::DEBUG);
 		if (!j.contains("Value"))
 		{
 			m_logger.Log("FloatArray : json is not an array and doesn't contain a Value field", Logger::Severity::CRITICAL);
@@ -232,7 +227,7 @@ int Dataref::setFloatArrayFromJson(int offset, std::string value)
 		{
 			if (j["Offset"].type() == json::value_t::string)
 			{
-				f_offset = std::stoi(j["Offset"].get<std:: string>());
+				f_offset = std::stoi(j["Offset"].get<std::string>());
 			}
 			else
 			{
@@ -252,38 +247,56 @@ int Dataref::setIntArrayFromJson(int offset, std::string value)
 {
 	std::vector<int> data;
 	int maxSize = XPLMGetDatavi(m_dataref, nullptr, 0, 0);
+	m_logger.Log("Max Size is '" + std::to_string(maxSize) + " '", Logger::Severity::TRACE);
 	int f_offset(offset);
 	json j = json::parse(value, nullptr, false, false);
 	if (j.type() == json::value_t::discarded)
 	{
-		m_logger.Log("IntArray : json parsing of value failed!",  Logger::Severity::CRITICAL);
+		m_logger.Log("IntArray : json parsing of value failed!", Logger::Severity::CRITICAL);
 		return -1;
 	}
 	else if (j.type() == json::value_t::array)
 	{
+		m_logger.Log("IntArray : value is an array!", Logger::Severity::DEBUG);
 		if ((int)j.size() < maxSize)
 			maxSize = (int)j.size();
-		data = j.get<std::vector<int>>();
+		m_logger.Log("IntArray : max size is " + std::to_string(maxSize), Logger::Severity::CRITICAL);
+		std::vector<std::string> dataStr = j.get<std::vector<std::string>>();
+		for (std::string data: dataStr)
+		{
+			data.push_back(std::stoi(data));
+		}
 	}
-	else if (j.type() == json::value_t::number_integer || j.type() == json::value_t::number_unsigned)
+	else if (j.type() == json::value_t::string)
 	{
+		m_logger.Log("IntArray : value is an string!", Logger::Severity::DEBUG);
 		for (int i(0); i < maxSize; i++)
 		{
-			data.push_back(j.get<int>());
+			data.push_back(std::stoi(j.get<std::string>()));
 		}
 	}
 	else if (j.type() == json::value_t::object)
 	{
 		if (!j.contains("Value"))
 		{
-			std::cout << "IntArray : json is not an array and doesn't contain a Value field\tCRITICAL\n";
+			m_logger.Log("IntArray : json is not an array and doesn't contain a Value field", Logger::Severity::CRITICAL);
 			return -2;
 		}
 		if (j.contains("Offset"))
-			f_offset = j["Offset"].get<int>();
-
-		return setFloatArrayFromJson(f_offset, j["Value"].dump());
+		{
+			if (j["Offset"].type() == json::value_t::string)
+			{
+				f_offset = std::stoi(j["Offset"].get<std::string>());
+			}
+			else
+			{
+				m_logger.Log("IntArray : Offset field exist but is not string... skipping", Logger::Severity::WARNING);
+				f_offset = 0;
+			}
+		}
+		return setIntArrayFromJson(f_offset, j["Value"].dump());
 	}
+	m_logger.Log("IntArray: Size : " + std::to_string(maxSize) + "Offset : " + std::to_string(offset), Logger::Severity::TRACE);
 	data.resize(maxSize);
 	XPLMSetDatavi(m_dataref, data.data(), offset, maxSize);
 	return EXIT_SUCCESS;
