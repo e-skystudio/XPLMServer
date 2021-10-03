@@ -262,6 +262,7 @@ int Dataref::setIntArrayFromJson(int offset, std::string value)
 	m_logger.Log("Max Size is '" + std::to_string(maxSize) + " '", Logger::Severity::TRACE);
 	int f_offset(offset);
 	json j = json::parse(value, nullptr, false, false);
+	m_logger.Log("DataType is : '" + std::to_string((int)j.type()) + "'", Logger::Severity::DEBUG);
 	if (j.type() == json::value_t::discarded)
 	{
 		m_logger.Log("IntArray : json parsing of value failed!", Logger::Severity::CRITICAL);
@@ -273,22 +274,43 @@ int Dataref::setIntArrayFromJson(int offset, std::string value)
 		if ((int)j.size() < maxSize)
 			maxSize = (int)j.size();
 		m_logger.Log("IntArray : max size is " + std::to_string(maxSize), Logger::Severity::CRITICAL);
-		std::vector<std::string> dataStr = j.get<std::vector<std::string>>();
-		for (std::string data: dataStr)
+		std::vector<std::string> valArray = j.get<std::vector<std::string>>();
+		for (std::string strValue : valArray)
 		{
-			data.push_back(std::stoi(data));
+			data.push_back(std::stoi(strValue));
 		}
 	}
-	else if (j.type() == json::value_t::string)
+	else if (j.type() == json::value_t::string || j.type() == json::value_t::number_integer || j.type() == json::value_t::number_unsigned)
 	{
 		m_logger.Log("IntArray : value is an string!", Logger::Severity::DEBUG);
-		for (int i(0); i < maxSize; i++)
+		if (j.type() == json::value_t::number_integer)
 		{
-			data.push_back(std::stoi(j.get<std::string>()));
+			m_logger.Log("Value is '" + std::to_string(j.get<int>()) + "'[INT]", Logger::Severity::DEBUG);
+			for (int i(0); i < maxSize; i++)
+			{
+				data.push_back(j.get<int>());
+			}
+		}
+		else if (j.type() == json::value_t::number_unsigned)
+		{
+			m_logger.Log("Value is '" + std::to_string(j.get<unsigned int>()) + "'[UINT]", Logger::Severity::DEBUG);
+			for (int i(0); i < maxSize; i++)
+			{
+				data.push_back(j.get<unsigned int>());
+			}
+		}
+		else {
+			std::string valueStr = j.get<std::string>();
+			m_logger.Log("Value is '" + valueStr + "'[STR]", Logger::Severity::DEBUG);
+			for (int i(0); i < maxSize; i++)
+			{
+				data.push_back(std::stoi(valueStr));
+			}
 		}
 	}
 	else if (j.type() == json::value_t::object)
 	{
+		m_logger.Log("IntArray : value is an json object!", Logger::Severity::DEBUG);
 		if (!j.contains("Value"))
 		{
 			m_logger.Log("IntArray : json is not an array and doesn't contain a Value field", Logger::Severity::CRITICAL);
@@ -307,6 +329,10 @@ int Dataref::setIntArrayFromJson(int offset, std::string value)
 			}
 		}
 		return setIntArrayFromJson(f_offset, j["Value"].dump());
+	}
+	else {
+		m_logger.Log("IntArray: JSON type is unknown", Logger::Severity::CRITICAL);
+		return 0x02;
 	}
 	m_logger.Log("IntArray: Size : " + std::to_string(maxSize) + "Offset : " + std::to_string(offset), Logger::Severity::TRACE);
 	data.resize(maxSize);
