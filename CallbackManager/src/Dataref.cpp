@@ -183,13 +183,13 @@ void Dataref::SetValue(std::string value)
 }
 
 int Dataref::setFloatArrayFromJson(int offset, std::string value)
-{
-	
+{	
 	std::vector<float> data;
 	int maxSize = XPLMGetDatavf(m_dataref, nullptr, 0, 0);
 	m_logger.Log("Max Size is '" + std::to_string(maxSize) + " '", Logger::Severity::TRACE);
 	int f_offset(offset);
 	json j = json::parse(value, nullptr, false, false);
+	m_logger.Log("DataType is : '" + std::to_string((int)j.type()) + "'", Logger::Severity::DEBUG);
 	if (j.type() == json::value_t::discarded)
 	{
 		m_logger.Log("FloatArray : json parsing of value failed!", Logger::Severity::CRITICAL);
@@ -207,12 +207,20 @@ int Dataref::setFloatArrayFromJson(int offset, std::string value)
 			data.push_back(std::stof(strValue));
 		}
 	}
-	else if (j.type() == json::value_t::string)
+	else if (j.type() == json::value_t::string || j.type() == json::value_t::number_float)
 	{
 		m_logger.Log("FloatArray : value is an string!", Logger::Severity::DEBUG);
-		for (int i(0); i < maxSize; i++)
+		if (j.type() == json::value_t::number_float)
 		{
-			data.push_back(std::stof(j.get<std::string>()));
+			m_logger.Log("Value is '" + std::to_string(j.get<float>()) + "'[FLOAT]", Logger::Severity::DEBUG);
+			for (int i(0); i < maxSize; i++)
+			{
+				data.push_back(j.get<float>());
+			}
+		}
+		else {
+			m_logger.Log("Value is '" + j.get<std::string>() + "'[STR]", Logger::Severity::DEBUG);
+
 		}
 	}
 	else if (j.type() == json::value_t::object)
@@ -236,6 +244,10 @@ int Dataref::setFloatArrayFromJson(int offset, std::string value)
 			}
 		}
 		return setFloatArrayFromJson(f_offset, j["Value"].dump());
+	}
+	else {
+		m_logger.Log("FloatArray: JSON type is unknown", Logger::Severity::CRITICAL);
+		return 0x02;
 	}
 	m_logger.Log("FloatArray: Size : " + std::to_string(maxSize) + "Offset : " + std::to_string(offset), Logger::Severity::TRACE);
 	data.resize(maxSize);
