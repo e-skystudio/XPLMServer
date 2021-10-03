@@ -1,5 +1,47 @@
 #include "Callbacks.h"
 
+std::string ExtractJsonValue(json* jdata, std::string fieldname, CallbackManager* callback)
+{
+	callback->Log("ExtractJsonValue Started !");
+	std::string value;
+	switch (jdata->at("Value").type())
+	{
+	case json::value_t::string:
+		value = jdata->at("Value").get<std::string>();
+		callback->Log("Type is string");
+		break;
+	case json::value_t::number_float:
+		value = std::to_string(jdata->at("Value").get<float>());
+		callback->Log("Type is float");
+		break;
+	case json::value_t::number_integer:
+		value = std::to_string(jdata->at("Value").get<int>());
+		callback->Log("Type is integer");
+		break;
+	case json::value_t::number_unsigned:
+		value = std::to_string(jdata->at("Value").get<unsigned int>());
+		callback->Log("Type is unsigned integer");
+		break;
+	case json::value_t::object:
+		value = jdata->at("Value").dump();
+		callback->Log("Type is json object");
+		break;
+	case json::value_t::array:
+		value = jdata->at("Value").dump();
+		callback->Log("Type is array");
+		break;
+	default:
+		callback->Log("Type is NOT supported ('" + std::to_string((int)jdata->at("Value").type()) + "')", Logger::Severity::CRITICAL);
+		break;
+	}
+	if (value.length() > 0)
+	{
+		callback->Log("Value : '" + value + "'");
+	}
+	callback->Log("ExtractJsonValue END !");
+	return value;
+}
+
 void GetCallbacks(std::vector<CallbackFunction*>* callbacks, int* size)
 {
 	*size = CallbackNumber;
@@ -162,12 +204,13 @@ int SetRegisterDatarefValue(json* jdata, CallbackManager* callback)
 		return 0x01;
 	}
 	std::string name = jdata->at("Name").get<std::string>();
-	if (jdata->at("Value").type() != json::value_t::string)
+	std::string value = ExtractJsonValue(jdata, "Value", callback);
+	if (value.length() <= 0)
 	{
-		callback->Log("Value property must be a string", Logger::Severity::CRITICAL);
+		callback->Log("ExtractJsonValue, returned an error !");
 		return 0x03;
 	}
-	std::string value = jdata->at("Value").get<std::string>();
+
 	callback->Log("Looking for dataref '" + name + "' to set value to : '" + value + "'");
 
 	auto p_datarefMap = callback->GetNamedDataref();
@@ -226,7 +269,12 @@ int SetDatarefValue(json* jdata, CallbackManager* callback)
 		callback->Log("Value property must be a string", Logger::Severity::CRITICAL);
 		return 0x02;
 	}
-	std::string value = jdata->at("Value").get<std::string>();
+	std::string value = ExtractJsonValue(jdata, "Value", callback);
+	if (value.length() <= 0)
+	{
+		callback->Log("ExtractJsonValue, returned an error !");
+		return 0x03;
+	}
 	std::string link = jdata->at("Link").get<std::string>();
 	callback->Log("Will be setting dataref at location :'" + link + "' to value + :'" + value + "'");
 	auto p_dataref = new Dataref();

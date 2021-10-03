@@ -13,6 +13,8 @@ using json = nlohmann::json;
 
 constexpr int CallbackNumber = 10;
 
+std::string ExtractJsonValue(json* jdata, std::string fieldname, CallbackManager* callback);
+
 ///<summary>
 /// Manadatory function to implement.
 /// Caution when callbacks is NULL, the function should only return the number of callback
