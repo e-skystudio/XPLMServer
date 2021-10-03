@@ -2,8 +2,13 @@
 #include <string>
 #include <map>
 #include "Logger.h"
+
+#include <nlohmann/json.hpp>
+
 #include <XPLMDataAccess.h>
 
+
+using json = nlohmann::json;
 
 ///<summary>
 /// This class represent an X-Plane dataref in OOP format.
@@ -87,6 +92,9 @@ protected:
 	XPLMDataRef m_dataref;	/* Represent a void pointer locating the dataref as X - Plane SDK */
 	Dataref::Type m_type;	/* Represent the underlying data type of the dataref */
 	Logger m_logger;		/* The logger */
+
+	int setFloatArrayFromJson(int offset, std::string value);
+	int setIntArrayFromJson(int offset, std::string value);
 };
 
 

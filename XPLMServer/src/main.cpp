@@ -32,7 +32,7 @@ PLUGIN_API int XPluginStart(char* outName, char* outSig, char* outDesc)
 	auto data = loadFile(".\\Resources\\plugins\\XPLMServer\\pluginConfig.json");
 	if (data.str().length() < 1)
 	{
-		XPLMDebugString("[XPLMServer]Unable to load configuration file");
+		XPLMDebugString("[XPLMServer]Unable to load configuration file\n");
 		return 0;
 	}
 
@@ -68,7 +68,7 @@ PLUGIN_API void XPluginDisable(void)
 
 PLUGIN_API int  XPluginEnable(void)
 { 
-	XPLMDebugString("[XPLMServer]Enabled");
+	XPLMDebugString("[XPLMServer]Enabled\n");
 	std::string configuration;
 	#ifndef _DEBUG
 		configuration = "Release";
@@ -82,9 +82,7 @@ PLUGIN_API int  XPluginEnable(void)
 	platform = "Win64";
 	#endif
 	std::string dllPath = PluginConfiguration["DLLFiles"][platform][configuration].get<std::string>();
-	
-	std::string dllLog = "[XPLMServer]Trying to load dll from path : '" + dllPath + "'\n";
-	XPLMDebugString(dllLog.c_str());
+	XPLMDebugString(("[XPLMServer]Trying to load dll from path : '" + dllPath + "'\n").c_str());
 	XPLMDebugString("[XPLMServer]Creating a callback manager...\n");
 	callbackManager = new CallbackManager();
 	XPLMDebugString("[XPLMServer]Creating a callback manager...[DONE]\n");

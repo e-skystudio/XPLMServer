@@ -1,5 +1,47 @@
 #include "Callbacks.h"
 
+std::string ExtractJsonValue(json* jdata, std::string fieldname, CallbackManager* callback)
+{
+	callback->Log("ExtractJsonValue Started !");
+	std::string value;
+	switch (jdata->at("Value").type())
+	{
+	case json::value_t::string:
+		value = jdata->at("Value").get<std::string>();
+		callback->Log("Type is string");
+		break;
+	case json::value_t::number_float:
+		value = std::to_string(jdata->at("Value").get<float>());
+		callback->Log("Type is float");
+		break;
+	case json::value_t::number_integer:
+		value = std::to_string(jdata->at("Value").get<int>());
+		callback->Log("Type is integer");
+		break;
+	case json::value_t::number_unsigned:
+		value = std::to_string(jdata->at("Value").get<unsigned int>());
+		callback->Log("Type is unsigned integer");
+		break;
+	case json::value_t::object:
+		value = jdata->at("Value").dump();
+		callback->Log("Type is json object");
+		break;
+	case json::value_t::array:
+		value = jdata->at("Value").dump();
+		callback->Log("Type is array");
+		break;
+	default:
+		callback->Log("Type is NOT supported ('" + std::to_string((int)jdata->at("Value").type()) + "')", Logger::Severity::CRITICAL);
+		break;
+	}
+	if (value.length() > 0)
+	{
+		callback->Log("Value : '" + value + "'");
+	}
+	callback->Log("ExtractJsonValue END !");
+	return value;
+}
+
 void GetCallbacks(std::vector<CallbackFunction*>* callbacks, int* size)
 {
 	*size = CallbackNumber;
@@ -155,13 +197,20 @@ int GetRegisterDatarefValue(json* jdata, CallbackManager* callback)
 
 int SetRegisterDatarefValue(json* jdata, CallbackManager* callback)
 {
+	callback->Log("Executing SetRegisterDataref", Logger::Severity::TRACE);
 	if (!jdata->contains("Name") || !jdata->contains("Value"))
 	{
 		callback->Log("Name and/or Value properties missing from JSON", Logger::Severity::CRITICAL);
 		return 0x01;
 	}
 	std::string name = jdata->at("Name").get<std::string>();
-	std::string value = jdata->at("Value").get<std::string>();
+	std::string value = ExtractJsonValue(jdata, "Value", callback);
+	if (value.length() <= 0)
+	{
+		callback->Log("ExtractJsonValue, returned an error !");
+		return 0x03;
+	}
+
 	callback->Log("Looking for dataref '" + name + "' to set value to : '" + value + "'");
 
 	auto p_datarefMap = callback->GetNamedDataref();
@@ -184,16 +233,16 @@ int SetRegisterDatarefValue(json* jdata, CallbackManager* callback)
 
 int GetDatarefValue(json* jdata, CallbackManager* callback)
 {
-	if (!jdata->contains("Link"))
+	if (!jdata->contains("Link") || jdata->at("Link").type() != json::value_t::string)
 	{
-		callback->Log("Link propertie missing from JSON", Logger::Severity::CRITICAL);
+		callback->Log("Link propertie missing from JSON or the type is not string", Logger::Severity::CRITICAL);
 		return 0x01;
 	}
 	std::string link = jdata->at("Link").get<std::string>();
 	callback->Log("Will be reading dataref at location :'" + link + "'");
 	auto p_dataref = new Dataref();
 	p_dataref->Load(link);
-	if (!jdata->contains("Type"))
+	if (!jdata->contains("Type") || jdata->at("Type").type() != json::value_t::string)
 	{
 		Dataref::Type type = p_dataref->LoadType();
 		callback->Log("Dataref is of type '" + std::to_string((int)type) + "'");
@@ -203,7 +252,6 @@ int GetDatarefValue(json* jdata, CallbackManager* callback)
 	}
 	std::string val = p_dataref->GetValue();
 	callback->Log("Value is '" + val + "'");
-	//jdata->push_back(std::pair<std::string, std::string>("Value", val));
 	jdata->operator[]("Value") = val;
 	callback->Log("Value added to json");
 	return 0;
@@ -216,7 +264,12 @@ int SetDatarefValue(json* jdata, CallbackManager* callback)
 		callback->Log("Value and/or Link propertie(s) missing from JSON", Logger::Severity::CRITICAL);
 		return 0x01;
 	}
-	std::string value = jdata->at("Value").get<std::string>();
+	std::string value = ExtractJsonValue(jdata, "Value", callback);
+	if (value.length() <= 0)
+	{
+		callback->Log("ExtractJsonValue, returned an error !");
+		return 0x03;
+	}
 	std::string link = jdata->at("Link").get<std::string>();
 	callback->Log("Will be setting dataref at location :'" + link + "' to value + :'" + value + "'");
 	auto p_dataref = new Dataref();
@@ -238,5 +291,6 @@ int Speak(json* jdata, CallbackManager* callback)
 {
 	if(!jdata->contains("Text"))
 		return 0x01;
-	XPLMDebugString(jdata->at("Text").get<std::string>().c_str());
+	XPLMSpeakString(jdata->at("Text").get<std::string>().c_str());
+	return 0;
 }
