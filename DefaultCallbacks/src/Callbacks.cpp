@@ -248,6 +248,6 @@ int Speak(json* jdata, CallbackManager* callback)
 {
 	if(!jdata->contains("Text"))
 		return 0x01;
-	XPLMDebugString(jdata->at("Text").get<std::string>().c_str());
+	XPLMSpeakString(jdata->at("Text").get<std::string>().c_str());
 	return 0;
 }
