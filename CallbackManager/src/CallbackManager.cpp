@@ -143,8 +143,8 @@ int CallbackManager::ExecuteCallback(json* jsonData)
 		return 0x02;
 	}
 
-	XPLMDebugString(("Operation '" + operation + "' founded in callback").c_str());
-	m_logger.Log("Operation '" + operation + "' founded in callback\n");
+	XPLMDebugString(("Operation '" + operation + "' founded in callback\n").c_str());
+	m_logger.Log("Operation '" + operation + "' founded in callback");
 
 	int res = m_callbacks->at(operation)(jsonData, this);
 	
