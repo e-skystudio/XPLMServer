@@ -1,6 +1,8 @@
 #include "../include/CallbackManager.h"
 
-CallbackManager::CallbackManager() : m_logger(Logger("XPLMServer.log", "CallbackManager", false))
+CallbackManager::CallbackManager() :
+	m_logger(Logger("XPLMServer.log", "CallbackManager", false)),
+	m_subscirbeDatarefCount(0)
 {
 	m_callbacks = new std::map<std::string, callback>();
 	m_namedDatarefs = new std::map<std::string, Dataref*>();
@@ -125,6 +127,37 @@ int CallbackManager::LoadCallbackDLL(std::string inDllPath)
 void CallbackManager::Log(std::string data, Logger::Severity severity)
 {
 	m_logger.Log(data, severity);
+}
+
+int CallbackManager::GetSubscribedDatarefCount()
+{
+	return m_subscirbeDatarefCount;
+}
+
+void CallbackManager::AddSubscribedDataref(std::string name)
+{
+	if (m_namedDatarefs == nullptr || !m_namedDatarefs->contains(name))
+	{
+		m_logger.Log("namedDataref is unitialised or don't contains : '" + name + "'", Logger::Severity::WARNING);
+		return;
+	}
+	m_subscribedDatarefs->emplace(name, m_namedDatarefs->at(name));
+	m_logger.Log("namedDataref : '" + name + "' founded an added to the map!");
+	m_subscirbeDatarefCount++;
+	m_logger.Log("There is/are " + std::to_string(m_subscirbeDatarefCount) +  " dataref subscribed");
+}
+
+void CallbackManager::RemoveSubscribedDataref(std::string name)
+{
+	if (m_namedDatarefs == nullptr || !m_subscribedDatarefs->contains(name))
+	{
+		m_logger.Log("m_subscribedDatarefs is unitialised or don't contains : '" + name + "'", Logger::Severity::WARNING);
+		return;
+	}
+	m_subscribedDatarefs->erase(name);
+	m_logger.Log("m_subscribedDatarefs : '" + name + "' founded an removed from the map!");
+	m_subscirbeDatarefCount--;
+	m_logger.Log("There is/are " + std::to_string(m_subscirbeDatarefCount) + " dataref subscribed");
 }
 
 int CallbackManager::ExecuteCallback(json* jsonData)

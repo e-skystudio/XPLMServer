@@ -108,13 +108,19 @@ public:
 	/// <param name="data">The data to log</param>
 	/// <param name="severity">The severity of the log DEFAULT: Debug</param>
 	void Log(std::string data, Logger::Severity severity = Logger::Severity::DEBUG);
-
+	/// <summary>
+	/// Return the number of subcibded Datarefs
+	/// </summary>
+	int GetSubscribedDatarefCount();
+	void AddSubscribedDataref(std::string name);
+	void RemoveSubscribedDataref(std::string name);
 protected:
 	std::map<std::string, callback>* m_callbacks;
 	std::map<std::string, Dataref*>* m_namedDatarefs; //The datarefs stored while plugin is in used
 	std::map<std::string, Dataref*>* m_subscribedDatarefs; //The datarefs that value is returned per timed basis
 	std::map<unsigned int, std::string>* m_subscribedEvent;
 	Logger m_logger; /* The logger */
+	unsigned int m_subscirbeDatarefCount;
 };
 
 ///<summary>
