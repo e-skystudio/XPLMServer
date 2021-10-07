@@ -1,9 +1,10 @@
 #include "../include/Dataref.h"
 
 /* \brief Default Constructor */
-Dataref::Dataref() : 
+Dataref::Dataref() :
 	m_dataref(nullptr), m_type(Dataref::Type::Unknown),
-	m_logger(Logger("XPLMServer.log", "Dataref", false))
+	m_logger(Logger("XPLMServer.log", "Dataref", false)),
+	m_link("")
 {
 }
 
@@ -25,6 +26,7 @@ Dataref::~Dataref()
 */
 bool Dataref::Load(std::string path)
 {
+	m_link = path;
 	m_dataref = XPLMFindDataRef(path.c_str());
 	if (m_dataref == nullptr)
 	{
@@ -131,6 +133,7 @@ std::string Dataref::GetValue()
 	default:
 		break;
 	}
+	m_logger.Log("Link : " + m_link + " = '" + value + "'!");
 	return value;
 }
 

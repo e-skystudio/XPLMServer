@@ -93,6 +93,7 @@ protected:
 	Dataref::Type m_type;	/* Represent the underlying data type of the dataref */
 	Logger m_logger;		/* The logger */
 
+	std::string m_link;
 	int setFloatArrayFromJson(int offset, std::string value);
 	int setIntArrayFromJson(int offset, std::string value);
 };
