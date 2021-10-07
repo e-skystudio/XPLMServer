@@ -78,10 +78,12 @@ int LoadDll(json* jdata, CallbackManager* callbackManager)
 
 int RegisterDataref(json* jdata, CallbackManager* callback)
 {
+	callback->Log("RegisterDataref [START]");
 	if (!jdata->contains("Name") || !jdata->contains("Link"))
 	{
 		callback->Log("Name and or Link missing in JSON, abording",
 			Logger::Severity::CRITICAL);
+		callback->Log("RegisterDataref [DONE]");
 		return 0x01;
 	}
 	std::string link = jdata->at("Link").get<std::string>();
@@ -118,6 +120,7 @@ int RegisterDataref(json* jdata, CallbackManager* callback)
 	p_datarefMap->emplace(name, dataref);
 	auto sizeAfter = p_datarefMap->size();
 	callback->Log("Size after operation : " + std::to_string(sizeAfter), Logger::Severity::DEBUG);
+	callback->Log("RegisterDataref [DONE]");
 	return 0;
 }
 
@@ -145,6 +148,7 @@ int UnregisterDataref(json* jdata, CallbackManager* callback)
 	if (p_subscribeDatarefMap->contains(name))
 	{
 		callback->Log("'" + name + "' was also found in subscribe dataref : DELETING");
+		callback->RemoveSubscribedDataref(name);
 	}
 	auto beforeSize = p_datarefMap->size();
 	auto afterSize = p_datarefMap->erase(name);
@@ -152,13 +156,31 @@ int UnregisterDataref(json* jdata, CallbackManager* callback)
 	return 0;
 }
 
-int SubscribeDataref(json* jdata, CallbackManager* callbackManager)
+int SubscribeDataref(json* jdata, CallbackManager* callback)
 {
+	callback->Log("SubscribeDataref [START]");
+	if (!jdata->contains("Name"))
+	{
+		callback->Log("Missing mandatory JSON parameter 'Name'", Logger::Severity::CRITICAL);
+		callback->Log("SubscribeDataref [DONE]");
+		return 0x01;
+	}
+	callback->AddSubscribedDataref(jdata->at("Name").get<std::string>());
+	callback->Log("SubscribeDataref [DONE]");
 	return 0;
 }
 
-int UnsubscribeDataref(json* jdata, CallbackManager* callbackManager)
+int UnsubscribeDataref(json* jdata, CallbackManager* callback)
 {
+	callback->Log("UnsubscribeDataref [START]");
+	if (!jdata->contains("Name"))
+	{
+		callback->Log("Missing mandatory JSON parameter 'Name'", Logger::Severity::CRITICAL);
+		callback->Log("UnsubscribeDataref [DONE]");
+		return 0x01;
+	}
+	callback->RemoveSubscribedDataref(jdata->at("Name").get<std::string>());
+	callback->Log("UnsubscribeDataref [DONE]");
 	return 0;
 }
 
