@@ -22,13 +22,17 @@ static Dataref visibility;
 static int counter = 0;
 float InitializerCallback(float elapsedSinceCall, float elapsedSinceLastTime, int inCounter, void* inRef);
 float NetworkCallback(float elapsedSinceCall, float elapsedSinceLastTime, int inCounter, void* inRef);
+float ExportSubscribedDataref(float elapsedSinceCall, float elapsedSinceLastTime, int inCounter, void* inRef);
 static int g_menu_container_idx; // The index of our menu item in the Plugins menu
 static XPLMMenuID g_menu_id; // The menu container we'll append all our menu items to
 void menu_handler_callback(void*, void*);
 static TCPServer* server;
+static Logger logger;
 
 PLUGIN_API int XPluginStart(char* outName, char* outSig, char* outDesc)
 {
+	logger = Logger("XPLMServer.log", "[XPLMServer]", true);
+
 	auto data = loadFile(".\\Resources\\plugins\\XPLMServer\\pluginConfig.json");
 	if (data.str().length() < 1)
 	{
@@ -68,7 +72,7 @@ PLUGIN_API void XPluginDisable(void)
 
 PLUGIN_API int  XPluginEnable(void)
 { 
-	XPLMDebugString("[XPLMServer]Enabled\n");
+	logger.Log("[XPLMServer]Enabled");
 	std::string configuration;
 	#ifndef _DEBUG
 		configuration = "Release";
@@ -77,40 +81,39 @@ PLUGIN_API int  XPluginEnable(void)
 	#endif
 	std::string platform;
 	#ifndef WIN64
-	platform = "Win32";
+		platform = "Win32";
 	#else
-	platform = "Win64";
+		platform = "Win64";
 	#endif
 	std::string dllPath = PluginConfiguration["DLLFiles"][platform][configuration].get<std::string>();
-	XPLMDebugString(("[XPLMServer]Trying to load dll from path : '" + dllPath + "'\n").c_str());
-	XPLMDebugString("[XPLMServer]Creating a callback manager...\n");
+	logger.Log("Trying to load dll from path : '" + dllPath + "'");
+	logger.Log("Creating a callback manager...");
 	callbackManager = new CallbackManager();
-	XPLMDebugString("[XPLMServer]Creating a callback manager...[DONE]\n");
-	XPLMDebugString("[XPLMServer]Loading the dlls");
+	logger.Log("Creating a callback manager...[DONE]\n");
+	logger.Log("Loading the dlls");
 	int res = callbackManager->LoadCallbackDLL(dllPath);
-	XPLMDebugString("[XPLMServer]Loading the dlls [DONE]\n");
+	logger.Log("Loading the dlls");
 	std::stringstream debug;
 	debug << "[XPLMServer]Loading callback from DLL returned " << res << "\n Dll Path was: " << dllPath << "\n";
-	XPLMDebugString("\n---Server Init----\n");
+	logger.Log("---Server Init----");
 	if (PluginConfiguration.contains("Server") &&
 		PluginConfiguration["Server"].contains("InIp") &&
-		PluginConfiguration["Server"].contains("InIp"))
+		PluginConfiguration["Server"].contains("InPort"))
 	{
-		XPLMDebugString("[XPLMDebugString] Creating server\n");
+		logger.Log("Creating server");
 		server = new TCPServer();
-		XPLMDebugString(("[XPLMDebugString] initlaizating server : " + PluginConfiguration["Server"]["InIp"].get<std::string>() + 
-		" : " + std::to_string(PluginConfiguration["Server"]["InPort"].get<int>()) + "\n").c_str());
+		logger.Log("initlaizating server : " + PluginConfiguration["Server"]["InIp"].get<std::string>() +
+		" : " + std::to_string(PluginConfiguration["Server"]["InPort"].get<int>()));
 		res = server->Initialize(PluginConfiguration["Server"]["InIp"].get<std::string>(),
 			PluginConfiguration["Server"]["InPort"].get<int>());
-		XPLMDebugString(("Server::Initalize returned " + std::to_string(res) + "\n").c_str());
+		logger.Log("Server::Initalize returned " + std::to_string(res) + "\n");
 		if (res == EXIT_SUCCESS)
 		{
-			XPLMDebugString("[XPLMDebugString] Initalization sucess\n");
+			logger.Log("Initalization sucess");
 			XPLMRegisterFlightLoopCallback(InitializerCallback, -1.0f, nullptr);
 		}
 		else {
-			XPLMDebugString("[XPLMDebugString] Initalization failed\n");
-			XPLMDebugString(("[XPLMServer] res was " + std::to_string(res) + "\n").c_str());
+			logger.Log("Initalization failed, Res was " + std::to_string(res));
 		}
 	}
 
@@ -138,6 +141,7 @@ float InitializerCallback(float elapsedSinceCall, float elapsedSinceLastTime, in
 	int res = callbackManager->ExecuteCallback(&data);
 	XPLMDebugString(("[XPLMServer] CallbackManager::ExecuteCallback returned :'" + std::to_string(res) + "'\n").c_str());
 	XPLMRegisterFlightLoopCallback(NetworkCallback, -1.0f, nullptr);
+	XPLMRegisterFlightLoopCallback(ExportSubscribedDataref, -1.0f, nullptr);
  	return 0.0f;
 }
 
@@ -146,11 +150,44 @@ float NetworkCallback(float elapsedSinceCall, float elapsedSinceLastTime, int in
 	std::vector<std::string> datas = server->RunOnce();
 	for (auto const& data : datas)
 	{
+		logger.Log("Data Received : '" + data + "' started!");
 		json operation = json::parse(data);
 		callbackManager->ExecuteCallback(&operation);
+		logger.Log("Data Received : '" + data + "' done!");
 		server->BroadcastData(operation.dump());
 	}
-	return 0.1f;
+	return -1.0f;
+}
+
+float ExportSubscribedDataref(float elapsedSinceCall, float elapsedSinceLastTime, int inCounter, void* inRef)
+{
+	logger.Log("ExportSubscribedDataref [STARTED], There are " + std::to_string(callbackManager->GetSubscribedDatarefCount()));
+	if (callbackManager->GetSubscribedDatarefCount() < 1)
+	{
+		logger.Log("ExportSubscribedDataref [DONE], waiting 1sec for next call");
+		return 1.0f;
+	}
+	auto* p_subscribedDatarefMap = callbackManager->GetSubscribedDataref();
+	json jdataOut = {
+		{"Operation", "ExportDataref"},
+		{"Datarefs", json::array()}
+	};
+	std::map<std::string, Dataref*> subDatarefMap = *(callbackManager->GetSubscribedDataref());
+	logger.Log("Exporting Datarefs : \n\n");
+	for (auto &kv : *p_subscribedDatarefMap)
+	{
+		json jdataref = {
+			{"Name", kv.first},
+			{"Value", kv.second->GetValue()}
+		};
+		logger.Log(jdataref["Name"].get<std::string>() + " = " + jdataref["Value"].get<std::string>());
+		jdataOut["Datarefs"].push_back(jdataref);
+		//logger.Log(kv.first + " = " + kv.second->GetValue());
+	}
+
+	server->BroadcastData(jdataOut.dump());
+	logger.Log("ExportSubscribedDataref [DONE]");
+	return 0.25f;
 }
 
 void menu_handler_callback(void* in_menu_ref, void* in_item_ref)
