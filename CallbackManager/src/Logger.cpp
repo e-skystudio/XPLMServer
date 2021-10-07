@@ -74,7 +74,7 @@ std::string Logger::getSeverityStr(Logger::Severity severity)
 	case Logger::Severity::DEBUG:
 		return "DEBUG";
 	case Logger::Severity::WARNING:
-		return "WARINING";
+		return "WARNING";
 	case Logger::Severity::CRITICAL:
 		return "CRITICAL";
 	case Logger::Severity::FATAL:
