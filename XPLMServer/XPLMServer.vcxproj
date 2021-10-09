@@ -116,7 +116,7 @@
       <SubSystem>Console</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <AdditionalLibraryDirectories>$(xplanelib)lib\Win\;$(SolutionDir)CallbackManager\Lib\;$(SolutionDir)TCPServer\lib\</AdditionalLibraryDirectories>
-      <AdditionalDependencies>TCPServer-d.lib;CallbackManager-d.lib;XPLM.lib;XPWidgets.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>Networking-d.lib;CallbackManager-d.lib;XPLM.lib;XPWidgets.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
     <Lib>
       <AdditionalLibraryDirectories>$(xplanelib)lib\Win\</AdditionalLibraryDirectories>
@@ -145,7 +145,7 @@
       <OptimizeReferences>true</OptimizeReferences>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <AdditionalLibraryDirectories>$(xplanelib)lib\Win\;$(SolutionDir)CallbackManager\Lib\;$(SolutionDir)TCPServer\lib\</AdditionalLibraryDirectories>
-      <AdditionalDependencies>TCPServer.lib;CallbackManager.lib;XPLM.lib;XPWidgets.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>Networking.lib;CallbackManager.lib;XPLM.lib;XPWidgets.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
     <Lib>
       <AdditionalLibraryDirectories>$(xplanelib)lib\Win\</AdditionalLibraryDirectories>
@@ -160,7 +160,7 @@
       <ConformanceMode>true</ConformanceMode>
       <LanguageStandard>stdcpp20</LanguageStandard>
       <LanguageStandard_C>stdc17</LanguageStandard_C>
-      <AdditionalIncludeDirectories>$(SolutionDir)TCPServer\include\;$(SolutionDir)CallbackManager\include\;$(xplanelib)include\win64\Widgets;$(xplanelib)include\win64\Wrappers;$(xplanelib)include\win64\XPLM;$(SolutionDir)Logger\include;$(SolutionDir)Datarefs\include;$(SolutionDir)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir)Networking\include\;$(SolutionDir)CallbackManager\include\;$(xplanelib)include\win64\Widgets;$(xplanelib)include\win64\Wrappers;$(xplanelib)include\win64\XPLM;$(SolutionDir)Logger\include;$(SolutionDir)Datarefs\include;$(SolutionDir)</AdditionalIncludeDirectories>
       <UndefinePreprocessorDefinitions>
       </UndefinePreprocessorDefinitions>
       <GenerateXMLDocumentationFiles>true</GenerateXMLDocumentationFiles>
@@ -169,8 +169,8 @@
     <Link>
       <SubSystem>Console</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalLibraryDirectories>$(xplanelib)lib\Win\;$(SolutionDir)CallbackManager\Lib\;$(SolutionDir)TCPServer\lib\</AdditionalLibraryDirectories>
-      <AdditionalDependencies>TCPServer_64-d.lib;CallbackManager_64-d.lib;XPLM_64.lib;XPWidgets_64.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalLibraryDirectories>$(xplanelib)lib\Win\;$(SolutionDir)CallbackManager\Lib\;$(SolutionDir)Networking\lib\</AdditionalLibraryDirectories>
+      <AdditionalDependencies>Networking_64-d.lib;CallbackManager_64-d.lib;XPLM_64.lib;XPWidgets_64.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
     <Lib>
       <AdditionalLibraryDirectories>$(xplanelib)lib\Win\</AdditionalLibraryDirectories>
@@ -199,7 +199,7 @@
       <OptimizeReferences>true</OptimizeReferences>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <AdditionalLibraryDirectories>$(xplanelib)lib\Win\;$(SolutionDir)CallbackManager\Lib\;$(SolutionDir)TCPServer\lib\</AdditionalLibraryDirectories>
-      <AdditionalDependencies>TCPServer_64.lib;CallbackManager_64.lib;XPLM_64.lib;XPWidgets_64.lib;Datarefs_64.lib%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>Networking_64.lib;CallbackManager_64.lib;XPLM_64.lib;XPWidgets_64.lib;Datarefs_64.lib%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
     <Lib>
       <AdditionalLibraryDirectories>$(xplanelib)lib\Win\</AdditionalLibraryDirectories>
@@ -213,8 +213,8 @@
     <ProjectReference Include="..\CallbackManager\CallbackManager.vcxproj">
       <Project>{9d32d8cc-f61d-4547-83c2-67466f43a0a9}</Project>
     </ProjectReference>
-    <ProjectReference Include="..\TCPServer\TCPServer.vcxproj">
-      <Project>{4b32f1a7-9085-4b9d-b2cc-45f7faa8556c}</Project>
+    <ProjectReference Include="..\Networking\Networking.vcxproj">
+      <Project>{c6a4b221-4acf-4130-9f77-d22a4f6f1edc}</Project>
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
