@@ -50,7 +50,6 @@ protected:
 	unsigned short m_port;
 	struct addrinfo m_hints;
 	struct addrinfo* m_bind_address;
-	;
 	SOCKET m_socket_listen;
 	SOCKET m_socket_emit;
 	FILE* m_fout;
