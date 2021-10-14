@@ -97,7 +97,7 @@ int CallbackManager::LoadCallbackDLL(std::string inDllPath)
 	
 	for (std::size_t i(0); i < vec_callbacks.size(); i++)
 	{
-		m_logger.Log(("Loading callback " + std::to_string(i) + " / " + std::to_string(size - 1) + "\n").c_str());
+		m_logger.Log(("\nLoading callback " + std::to_string(i) + " / " + std::to_string(size - 1)).c_str());
 		CallbackFunction* callback1 = vec_callbacks[i];
 		m_logger.Log(("Trying to load '" + callback1->function + "' as '" + callback1->operation + "'...").c_str());
 		callback p_callback = (callback)GetProcAddress(hDLL, callback1->function.c_str());
@@ -198,13 +198,10 @@ void CallbackManager::RemoveConstantDataref(std::string name)
 
 void CallbackManager::ExecuteConstantDataref()
 {
-	m_logger.Log("ExecuteConstDataref [START]");
 	for (auto it = m_constDataref->begin(); it != m_constDataref->end(); it++)
 	{
-		m_logger.Log(it->name + "SETTING to value : '" + it->value + "!");
 		it->dataref->SetValue(it->value);
 	}
-	m_logger.Log("ExecuteConstDataref [DONE]");
 }
 
 int CallbackManager::ExecuteCallback(json* jsonData)
