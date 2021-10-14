@@ -196,6 +196,17 @@ void CallbackManager::RemoveConstantDataref(std::string name)
 	}
 }
 
+void CallbackManager::ExecuteConstantDataref()
+{
+	m_logger.Log("ExecuteConstDataref [START]");
+	for (auto it = m_constDataref->begin(); it != m_constDataref->end(); it++)
+	{
+		m_logger.Log(it->name + "SETTING to value : '" + it->value + "!");
+		it->dataref->SetValue(it->value);
+	}
+	m_logger.Log("ExecuteConstDataref [DONE]");
+}
+
 int CallbackManager::ExecuteCallback(json* jsonData)
 {
 	if (!jsonData->contains("Operation"))

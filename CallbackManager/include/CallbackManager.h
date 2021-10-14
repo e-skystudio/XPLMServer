@@ -123,6 +123,7 @@ public:
 	int GetConstantDatarefCount();
 	void AddConstantDataref(std::string name, std::string value);
 	void RemoveConstantDataref(std::string name);
+	void ExecuteConstantDataref();
 protected:
 	std::map<std::string, callback>* m_callbacks;
 	std::map<std::string, Dataref*>* m_namedDatarefs; //The datarefs stored while plugin is in used
