@@ -12,7 +12,7 @@
 
 
 #include <nlohmann/json.hpp>
-//#include <CallbackManager/src/utils.cpp>
+#include <UDPServer.h>
 
 using json = nlohmann::json;
 
@@ -26,8 +26,18 @@ float ExportSubscribedDataref(float elapsedSinceCall, float elapsedSinceLastTime
 static int g_menu_container_idx; // The index of our menu item in the Plugins menu
 static XPLMMenuID g_menu_id; // The menu container we'll append all our menu items to
 void menu_handler_callback(void*, void*);
-static TCPServer* server;
+static UDPServer* server;
 static Logger logger;
+static std::vector<Client> clients;
+
+void BroadCastData(std::string data)
+{
+	for (const Client c : clients)
+	{
+		server->SendData(data, c);
+	}
+
+}
 
 PLUGIN_API int XPluginStart(char* outName, char* outSig, char* outDesc)
 {
@@ -101,11 +111,9 @@ PLUGIN_API int  XPluginEnable(void)
 		PluginConfiguration["Server"].contains("InPort"))
 	{
 		logger.Log("Creating server");
-		server = new TCPServer();
-		logger.Log("initlaizating server : " + PluginConfiguration["Server"]["InIp"].get<std::string>() +
-		" : " + std::to_string(PluginConfiguration["Server"]["InPort"].get<int>()));
-		res = server->Initialize(PluginConfiguration["Server"]["InIp"].get<std::string>(),
-			PluginConfiguration["Server"]["InPort"].get<int>());
+		server = new UDPServer();
+		logger.Log("initlaizating server : " + std::to_string(PluginConfiguration["Server"]["InPort"].get<int>()));
+		res = server->Bind(PluginConfiguration["Server"]["InPort"].get<unsigned short>());
 		logger.Log("Server::Initalize returned " + std::to_string(res) + "\n");
 		if (res == EXIT_SUCCESS)
 		{
@@ -128,7 +136,7 @@ PLUGIN_API void XPluginReceiveMessage(XPLMPluginID inFrom, int inMsg, void* inPa
 		json ops;
 		ops["Operation"] = "Event Triggered";
 		ops["Value"] = callbackManager->GetSubscribedEventMap()->at((unsigned int)inMsg);
-		server->BroadcastData(ops.dump());
+		BroadCastData(ops.dump());
 	}
 }
 
@@ -147,14 +155,29 @@ float InitializerCallback(float elapsedSinceCall, float elapsedSinceLastTime, in
 
 float NetworkCallback(float elapsedSinceCall, float elapsedSinceLastTime, int inCounter, void* inRef)
 {
-	std::vector<std::string> datas = server->RunOnce();
-	for (auto const& data : datas)
+	Client cli;
+	std::string data = server->ReceiveData(4096, &cli);
+	if (data.length() < 1)
+		return -1.0f;
+	logger.Log("Data Received : '" + data + "' started!");
+	json operation = json::parse(data);
+	callbackManager->ExecuteCallback(&operation);
+	logger.Log("Data Received : '" + data + "' done!");
+	server->SendData(operation.dump(), cli);
+	
+	bool foundClient = false;
+	for (const Client c : clients)
 	{
-		logger.Log("Data Received : '" + data + "' started!");
-		json operation = json::parse(data);
-		callbackManager->ExecuteCallback(&operation);
-		logger.Log("Data Received : '" + data + "' done!");
-		server->BroadcastData(operation.dump());
+		if (c.ip == cli.ip && c.port == cli.port)
+		{
+			foundClient = true;
+			break;
+		}
+	}
+
+	if (!foundClient)
+	{
+		clients.push_back(cli);
 	}
 	return -1.0f;
 }
@@ -182,10 +205,8 @@ float ExportSubscribedDataref(float elapsedSinceCall, float elapsedSinceLastTime
 		};
 		logger.Log(jdataref["Name"].get<std::string>() + " = " + jdataref["Value"].get<std::string>());
 		jdataOut["Datarefs"].push_back(jdataref);
-		//logger.Log(kv.first + " = " + kv.second->GetValue());
 	}
-
-	server->BroadcastData(jdataOut.dump());
+	BroadCastData(jdataOut.dump());
 	logger.Log("ExportSubscribedDataref [DONE]");
 	return 0.25f;
 }
