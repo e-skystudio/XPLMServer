@@ -44,7 +44,7 @@ std::string ExtractJsonValue(json* jdata, std::string fieldname, CallbackManager
 
 void GetCallbacks(std::vector<CallbackFunction*>* callbacks, int* size)
 {
-	*size = CallbackNumber;
+	*size = 0;
 	if (callbacks != nullptr)
 	{
 		callbacks->push_back(new CallbackFunction("VISIBILITY", "SetVisibility"));
@@ -58,6 +58,8 @@ void GetCallbacks(std::vector<CallbackFunction*>* callbacks, int* size)
 		callbacks->push_back(new CallbackFunction("GET_DATA", "GetDatarefValue"));
 		callbacks->push_back(new CallbackFunction("SET_DATA", "SetDatarefValue"));
 		callbacks->push_back(new CallbackFunction("SPEAK", "Speak"));
+		callbacks->push_back(new CallbackFunction("ADD_CONST", "AddConstantDataref"));
+		*size = (int)callbacks->size();
 	}
 	return;
 }
@@ -314,5 +316,15 @@ int Speak(json* jdata, CallbackManager* callback)
 	if(!jdata->contains("Text"))
 		return 0x01;
 	XPLMSpeakString(jdata->at("Text").get<std::string>().c_str());
+	return 0;
+}
+
+int AddConstantDataref(json* jdata, CallbackManager* callback)
+{
+	if (!jdata->contains("Name") || !jdata->contains("Value"))
+	{
+		return 0x01;
+	}
+	callback->AddConstantDataref(jdata->at("Name").get<std::string>(), jdata->at("Value").get<std::string>());
 	return 0;
 }

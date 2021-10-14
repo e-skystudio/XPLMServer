@@ -11,10 +11,11 @@ using json = nlohmann::json;
 #define CALLBACK_FUNC extern "C" __declspec(dllimport) 
 #endif
 
-constexpr int CallbackNumber = 10;
+constexpr int CallbackNumber = 12;
 
 std::string ExtractJsonValue(json* jdata, std::string fieldname, CallbackManager* callback);
 
+// 1
 ///<summary>
 /// Manadatory function to implement.
 /// Caution when callbacks is NULL, the function should only return the number of callback
@@ -27,17 +28,20 @@ std::string ExtractJsonValue(json* jdata, std::string fieldname, CallbackManager
 ///</params>
 CALLBACK_FUNC void GetCallbacks(std::vector<CallbackFunction*>* callbacks, int* size);
 
+// 2
 ///<summary>
 /// Debug callback to set visibility to the value passed.
 ///</summary>
 CALLBACK_FUNC int SetVisibility(json* jdata, CallbackManager* callbackManager);
 
+// 3
 ///<summary>
 /// Default callback to load a DLL.
 /// This callback should be used carefully as DLLs shall not be thursted.
 ///</summary>
 CALLBACK_FUNC int LoadDll(json* jdata, CallbackManager* callbackManager);
 
+// 4
 ///<summary>
 /// Add a dataref to the list of registered dataref.
 /// JSON Should contains:
@@ -48,6 +52,7 @@ CALLBACK_FUNC int LoadDll(json* jdata, CallbackManager* callbackManager);
 ///</summary>
 CALLBACK_FUNC int RegisterDataref(json* jdata, CallbackManager* callbackManager);
 
+// 5
 ///<summary>
 /// Remove a dataref to the list of registered dataref.
 /// JSON Should contains:
@@ -55,6 +60,7 @@ CALLBACK_FUNC int RegisterDataref(json* jdata, CallbackManager* callbackManager)
 ///</summary>
 CALLBACK_FUNC int UnregisterDataref(json* jdata, CallbackManager* callbackManager);
 
+// 6
 ///<summary>
 /// Subscribe to the dataref: auto send his value every 0.5s
 /// If dataref is already register JSON Should contains:
@@ -67,6 +73,7 @@ CALLBACK_FUNC int UnregisterDataref(json* jdata, CallbackManager* callbackManage
 ///</summary>
 CALLBACK_FUNC int SubscribeDataref(json* jdata, CallbackManager* callbackManager);
 
+// 7
 ///<summary>
 /// Remove a dataref from the subscribe dataref.
 /// !This will not remove the dataref from the registered datarefs.!
@@ -75,6 +82,7 @@ CALLBACK_FUNC int SubscribeDataref(json* jdata, CallbackManager* callbackManager
 ///</summary>
 CALLBACK_FUNC int UnsubscribeDataref(json* jdata, CallbackManager* callbackManager);
 
+// 8
 ///<summary>
 /// Return the value of the registered dataref.
 /// JSON Should contains:
@@ -82,6 +90,7 @@ CALLBACK_FUNC int UnsubscribeDataref(json* jdata, CallbackManager* callbackManag
 ///</summary>
 CALLBACK_FUNC int GetRegisterDatarefValue(json* jdata, CallbackManager* callbackManager);
 
+// 9
 ///<summary>
 /// Set the value of the register dataref.
 /// JSON Should contains:
@@ -90,6 +99,7 @@ CALLBACK_FUNC int GetRegisterDatarefValue(json* jdata, CallbackManager* callback
 ///</summary>
 CALLBACK_FUNC int SetRegisterDatarefValue(json* jdata, CallbackManager* callbackManager);
 
+// 10
 ///<summary>
 /// Return the value of a dataref. This callback will take longer to execute than
 /// if the dataref is registered, if a dataref shall be accessed a lot, consider registering it.
@@ -98,6 +108,7 @@ CALLBACK_FUNC int SetRegisterDatarefValue(json* jdata, CallbackManager* callback
 ///</summary>
 CALLBACK_FUNC int GetDatarefValue(json* jdata, CallbackManager* callbackManager);
 
+// 11
 ///<summary>
 /// Set the valueof a dataref. This callback will take longer to execute than
 /// if the dataref is registered, if a dataref shall be accessed a lot, consider registering it.
@@ -106,4 +117,9 @@ CALLBACK_FUNC int GetDatarefValue(json* jdata, CallbackManager* callbackManager)
 ///    - Value: the value of the dataref
 ///</summary>
 CALLBACK_FUNC int SetDatarefValue(json* jdata, CallbackManager* callbackManager);
+
+// 12
 CALLBACK_FUNC int Speak(json* jdata, CallbackManager* callback);
+
+// 13
+CALLBACK_FUNC int AddConstantDataref(json* jdata, CallbackManager* callback);

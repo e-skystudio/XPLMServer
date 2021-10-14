@@ -57,15 +57,15 @@ std::string UDPServer::ReceiveData(int maxSize, Client* outCli)
 {
 	if (maxSize < 0)
 		return std::string();
-	struct sockaddr_storage client_address;
+	struct sockaddr_storage client_address = {0};
 	socklen_t client_len = sizeof(client_address);
 	char* read = (char *)malloc((size_t)maxSize);
 	if (read == nullptr)
 		return std::string();
 	memset(read, 0x00, (size_t)maxSize);
-	struct timeval timeout;
-	timeout.tv_sec = 0;
-	timeout.tv_usec = 5000;
+	struct timeval timeout{0, 5000};
+	//timeout.tv_sec = 0;
+	//timeout.tv_usec = 5000;
 
 	fd_set clients;
 	FD_ZERO(&clients);
