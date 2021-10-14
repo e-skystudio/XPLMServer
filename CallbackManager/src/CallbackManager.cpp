@@ -7,6 +7,7 @@ CallbackManager::CallbackManager() :
 	m_callbacks = new std::map<std::string, callback>();
 	m_namedDatarefs = new std::map<std::string, Dataref*>();
 	m_subscribedDatarefs = new std::map<std::string, Dataref*>();
+	m_constDataref = new std::vector<ConstantDataref>();
 	m_subscribedEvent = new std::map<unsigned int, std::string>{
 		{101, "Crashed"},
 		{102, "Plane Loaded"},
@@ -47,6 +48,7 @@ int CallbackManager::AppendCallback(std::string name, callback newCallback)
 	return EXIT_SUCCESS;
 }
 
+
 std::map<std::string, Dataref*>* CallbackManager::GetNamedDataref() const
 {
 	return m_namedDatarefs;
@@ -84,7 +86,6 @@ int CallbackManager::LoadCallbackDLL(std::string inDllPath)
 
 	ss = std::stringstream();
 	ss << "There is/are " << size << " callback(s) loadable";
-	//m_logger.Log(ss.str(), Logger::Severity::DEBUG);
 	m_logger.Log(ss.str().c_str());
 
 	m_logger.Log("Creating an array of CallbackFunction...");
@@ -158,6 +159,41 @@ void CallbackManager::RemoveSubscribedDataref(std::string name)
 	m_logger.Log("m_subscribedDatarefs : '" + name + "' founded an removed from the map!");
 	m_subscirbeDatarefCount--;
 	m_logger.Log("There is/are " + std::to_string(m_subscirbeDatarefCount) + " dataref subscribed");
+}
+
+int CallbackManager::GetConstantDatarefCount()
+{
+	return (int)m_constDataref->size();
+}
+
+void CallbackManager::AddConstantDataref(std::string name, std::string value)
+{
+	if (m_namedDatarefs == nullptr || !m_namedDatarefs->contains(name))
+	{
+		m_logger.Log("namedDataref is unitialised or don't contains : '" + name + "'", Logger::Severity::WARNING);
+		return;
+	}
+	ConstantDataref dr;
+	dr.name = name;
+	dr.value = value;
+	dr.dataref = m_namedDatarefs->at(name);
+
+	m_constDataref->push_back(dr);
+	m_logger.Log("namedDataref : '" + name + "' founded an added to the map!");
+	m_subscirbeDatarefCount++;
+	m_logger.Log("There is/are " + std::to_string(m_subscirbeDatarefCount) + " dataref(s) set as contant");
+}
+
+void CallbackManager::RemoveConstantDataref(std::string name)
+{
+	for (auto it = m_constDataref->begin(); it != m_constDataref->end(); ) {
+		if ((*it).name == name) {
+			it = m_constDataref->erase(it);
+		}
+		else {
+			++it;
+		}
+	}
 }
 
 int CallbackManager::ExecuteCallback(json* jsonData)

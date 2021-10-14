@@ -33,6 +33,12 @@ struct CallbackFunction {
 
 typedef void(*callbackLoader)(std::vector<CallbackFunction*>*, int*);
 typedef int(*callback)(json* json, void* CallbackManager); ///The callback reference
+
+struct ConstantDataref {
+	std::string name;
+	std::string value;
+	Dataref* dataref;
+};
 #pragma endregion
 
 ///<summary>
@@ -114,10 +120,14 @@ public:
 	int GetSubscribedDatarefCount();
 	void AddSubscribedDataref(std::string name);
 	void RemoveSubscribedDataref(std::string name);
+	int GetConstantDatarefCount();
+	void AddConstantDataref(std::string name, std::string value);
+	void RemoveConstantDataref(std::string name);
 protected:
 	std::map<std::string, callback>* m_callbacks;
 	std::map<std::string, Dataref*>* m_namedDatarefs; //The datarefs stored while plugin is in used
 	std::map<std::string, Dataref*>* m_subscribedDatarefs; //The datarefs that value is returned per timed basis
+	std::vector<ConstantDataref>* m_constDataref; //Datarefs set as constant (value are copied from the key)
 	std::map<unsigned int, std::string>* m_subscribedEvent;
 	Logger m_logger; /* The logger */
 	unsigned int m_subscirbeDatarefCount;
