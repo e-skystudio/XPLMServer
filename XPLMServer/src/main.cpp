@@ -10,7 +10,6 @@
 #include <CallbackManager.h>
 #include <utils.h>
 
-
 #include <nlohmann/json.hpp>
 #include <UDPServer.h>
 
