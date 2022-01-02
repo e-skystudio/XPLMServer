@@ -59,9 +59,46 @@ void GetCallbacks(std::vector<CallbackFunction*>* callbacks, int* size)
 		callbacks->push_back(new CallbackFunction("SET_DATA", "SetDatarefValue"));
 		callbacks->push_back(new CallbackFunction("SPEAK", "Speak"));
 		callbacks->push_back(new CallbackFunction("ADD_CONST", "AddConstantDataref"));
+		callbacks->push_back(new CallbackFunction("LOAD_REG_DATA", "LoadRegisterDataref"));
 		*size = (int)callbacks->size();
 	}
 	return;
+}
+
+int LoadRegisterDataref(json* jdata, CallbackManager* callback)
+{
+	std::ifstream csv_in;
+	csv_in.open(jdata->at("FileIn").get<std::string>());
+	if (!csv_in.is_open())
+	{;
+		callback->Log("Error while opening file!\n", Logger::Severity::WARNING);
+		return 0x01;
+	}
+	std::string line;
+	std::vector<std::vector<std::string>> tokens;
+	while (std::getline(csv_in, line))
+	{
+		if (line[0] == '#')
+		{
+			continue;
+		}
+		std::vector<std::string> vecOut;
+		std::size_t pos;
+		while ((pos = line.find(';')) != std::string::npos)
+		{
+			std::string sub = line.substr(0, pos);
+			vecOut.push_back(sub);
+			line = line.substr(pos + 1);
+		}
+		Dataref* dataref = new Dataref();
+		dataref->Load(vecOut[1]);
+		dataref->SetType(vecOut[2]);
+		dataref->SetConversionFactor(vecOut[3]);
+		auto p_datarefMap = callback->GetNamedDataref();
+		p_datarefMap->emplace(vecOut[0], dataref);
+		callback->AddSubscribedDataref(vecOut[0]);
+	}
+	return 0x00;
 }
 
 int SetVisibility(json* jdata, CallbackManager* callbackManager)
@@ -110,7 +147,6 @@ int RegisterDataref(json* jdata, CallbackManager* callback)
 	if (jdata->contains("ConversionFactor"))
 	{
 		std::string conversionFactor = jdata->at("ConversionFactor").get<std::string>();
-		callback->Log("ConversionFactor not yet implemented in Dataref, assuming 1.0f", Logger::Severity::WARNING);
 	}
 	else {
 		callback->Log("ConversionFactor was not provided assuming 1.0f", Logger::Severity::WARNING);

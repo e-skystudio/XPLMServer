@@ -92,13 +92,13 @@ std::string Dataref::GetValue()
 	case Dataref::Type::Unknown:
 		break;
 	case Dataref::Type::Int:
-		value = std::to_string(XPLMGetDatai(m_dataref));
+		value = std::to_string(XPLMGetDatai(m_dataref) * (int)std::stod(m_conversionFactor));
 		break;
 	case Dataref::Type::Float:
-		value = std::to_string(XPLMGetDataf(m_dataref));
+		value = std::to_string(XPLMGetDataf(m_dataref) * (float)std::stod(m_conversionFactor));
 		break;
 	case Dataref::Type::Double:
-		value = std::to_string(XPLMGetDatad(m_dataref));
+		value = std::to_string(XPLMGetDatad(m_dataref) * std::stod(m_conversionFactor));
 		break;
 	case Dataref::Type::FloatArray:
 	{
@@ -109,7 +109,7 @@ std::string Dataref::GetValue()
 		json j = json::array();
 		for (int i = 0; i < arraySize; i++)
 		{
-			j.push_back(*(floatArray + i));
+			j.push_back((*(floatArray + i)) * (float)std::stod(m_conversionFactor));
 		}
 		value = j.dump();
 		break;
@@ -123,7 +123,8 @@ std::string Dataref::GetValue()
 		json j = json::array();
 		for (int i = 0; i < arraySize; i++)
 		{
-			j.push_back(*(intArray + i));
+			//j.push_back(*(intArray + i));
+			j.push_back((*(intArray + i)) * (int)std::stod(m_conversionFactor));
 		}
 		value = j.dump();
 		break;
@@ -149,19 +150,19 @@ void Dataref::SetValue(std::string value)
 		break;
 	case Dataref::Type::Int:
 	{
-		int val = std::stoi(value);
+		int val = std::stoi(value) / (int)std::stod(m_conversionFactor);
 		XPLMSetDatai(m_dataref, val);
 		break;
 	}
 	case Dataref::Type::Float:
 	{
-		float val = std::stof(value);
+		float val = std::stof(value) / (float)std::stod(m_conversionFactor);
 		XPLMSetDataf(m_dataref, val);
 		break;
 	}
 	case Dataref::Type::Double:
 	{
-		double val = std::stod(value);
+		double val = std::stod(value) / std::stod(m_conversionFactor);
 		XPLMSetDatad(m_dataref, val);
 		break;
 	}
@@ -183,6 +184,11 @@ void Dataref::SetValue(std::string value)
 	default:
 		break;
 	}
+}
+
+void Dataref::SetConversionFactor(std::string conversionFactor)
+{
+	m_conversionFactor = conversionFactor;
 }
 
 int Dataref::setFloatArrayFromJson(int offset, std::string value)
@@ -218,7 +224,7 @@ int Dataref::setFloatArrayFromJson(int offset, std::string value)
 			m_logger.Log("Value is '" + std::to_string(j.get<float>()) + "'[FLOAT]", Logger::Severity::DEBUG);
 			for (int i(0); i < maxSize; i++)
 			{
-				data.push_back(j.get<float>());
+				data.push_back(j.get<float>() / (float)std::stod(m_conversionFactor));
 			}
 		}
 		else {
@@ -238,7 +244,7 @@ int Dataref::setFloatArrayFromJson(int offset, std::string value)
 		{
 			if (j["Offset"].type() == json::value_t::string)
 			{
-				f_offset = std::stoi(j["Offset"].get<std::string>());
+				f_offset = std::stoi(j["Offset"].get<std::string>()) / (int)std::stod(m_conversionFactor);
 			}
 			else
 			{
