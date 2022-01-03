@@ -47,7 +47,6 @@ void GetCallbacks(std::vector<CallbackFunction*>* callbacks, int* size)
 	*size = 0;
 	if (callbacks != nullptr)
 	{
-		callbacks->push_back(new CallbackFunction("VISIBILITY", "SetVisibility"));
 		callbacks->push_back(new CallbackFunction("LOAD_DLL", "LoadDll"));
 		callbacks->push_back(new CallbackFunction("REG_DATA", "RegisterDataref"));
 		callbacks->push_back(new CallbackFunction("UNREG_DATA", "UnregisterDataref"));
@@ -63,50 +62,6 @@ void GetCallbacks(std::vector<CallbackFunction*>* callbacks, int* size)
 		*size = (int)callbacks->size();
 	}
 	return;
-}
-
-int LoadRegisterDataref(json* jdata, CallbackManager* callback)
-{
-	std::ifstream csv_in;
-	csv_in.open(jdata->at("FileIn").get<std::string>());
-	if (!csv_in.is_open())
-	{;
-		callback->Log("Error while opening file!\n", Logger::Severity::WARNING);
-		return 0x01;
-	}
-	std::string line;
-	std::vector<std::vector<std::string>> tokens;
-	while (std::getline(csv_in, line))
-	{
-		if (line[0] == '#')
-		{
-			continue;
-		}
-		std::vector<std::string> vecOut;
-		std::size_t pos;
-		while ((pos = line.find(';')) != std::string::npos)
-		{
-			std::string sub = line.substr(0, pos);
-			vecOut.push_back(sub);
-			line = line.substr(pos + 1);
-		}
-		Dataref* dataref = new Dataref();
-		dataref->Load(vecOut[1]);
-		dataref->SetType(vecOut[2]);
-		dataref->SetConversionFactor(vecOut[3]);
-		auto p_datarefMap = callback->GetNamedDataref();
-		p_datarefMap->emplace(vecOut[0], dataref);
-		callback->AddSubscribedDataref(vecOut[0]);
-	}
-	return 0x00;
-}
-
-int SetVisibility(json* jdata, CallbackManager* callbackManager)
-{
-	Dataref vis;
-	vis.Load("sim/weather/visibility_reported_m");
-	vis.SetValue(jdata->at("Value").get<std::string>());
-	return 0;
 }
 
 int LoadDll(json* jdata, CallbackManager* callbackManager)
@@ -363,4 +318,41 @@ int AddConstantDataref(json* jdata, CallbackManager* callback)
 	}
 	callback->AddConstantDataref(jdata->at("Name").get<std::string>(), jdata->at("Value").get<std::string>());
 	return 0;
+}
+
+int LoadRegisterDataref(json* jdata, CallbackManager* callback)
+{
+	std::ifstream csv_in;
+	csv_in.open(jdata->at("FileIn").get<std::string>());
+	if (!csv_in.is_open())
+	{
+		;
+		callback->Log("Error while opening file!\n", Logger::Severity::WARNING);
+		return 0x01;
+	}
+	std::string line;
+	std::vector<std::vector<std::string>> tokens;
+	while (std::getline(csv_in, line))
+	{
+		if (line[0] == '#')
+		{
+			continue;
+		}
+		std::vector<std::string> vecOut;
+		std::size_t pos;
+		while ((pos = line.find(';')) != std::string::npos)
+		{
+			std::string sub = line.substr(0, pos);
+			vecOut.push_back(sub);
+			line = line.substr(pos + 1);
+		}
+		Dataref* dataref = new Dataref();
+		dataref->Load(vecOut[1]);
+		dataref->SetType(vecOut[2]);
+		dataref->SetConversionFactor(vecOut[3]);
+		auto p_datarefMap = callback->GetNamedDataref();
+		p_datarefMap->emplace(vecOut[0], dataref);
+		callback->AddSubscribedDataref(vecOut[0]);
+	}
+	return 0x00;
 }
