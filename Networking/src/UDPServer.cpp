@@ -64,8 +64,6 @@ std::string UDPServer::ReceiveData(int maxSize, Client* outCli)
 		return std::string();
 	memset(read, 0x00, (size_t)maxSize);
 	struct timeval timeout{0, 5000};
-	//timeout.tv_sec = 0;
-	//timeout.tv_usec = 5000;
 
 	fd_set clients;
 	FD_ZERO(&clients);
@@ -116,7 +114,6 @@ int UDPServer::SendData(std::string data, Client cli)
 	}
 	send_address.sin_family = AF_INET;
 	send_address.sin_port = htons(cli.port);
-	//send_address.sin_addr.s_addr = inet_addr(cli.ip.c_str());
 	int bytes = sendto(m_socket_emit, data.c_str(), (int)data.length(), 0, 
 		(struct sockaddr*)&send_address, (int)sizeof(struct sockaddr_in));
 	fprintf(m_fout, "[%s:%d]<<<%s (%d byte(s))\n", cli.ip.c_str(), cli.port, data.c_str(), bytes);

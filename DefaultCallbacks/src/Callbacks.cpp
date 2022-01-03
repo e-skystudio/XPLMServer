@@ -202,11 +202,8 @@ int GetRegisterDatarefValue(json* jdata, CallbackManager* callback)
 #endif
 	std::string val = p_dataref->GetValue();
 	callback->Log("Value is '" + val + "'");
-	//BUG
 	jdata->operator[]("Value") = val;
-	//jdata->push_back(std::pair<std::string, std::string>("Value", val));
 	callback->Log("Value added to json");
-	//!BUG
 	return 0;
 }
 
