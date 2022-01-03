@@ -22,9 +22,6 @@ static int counter = 0;
 float InitializerCallback(float elapsedSinceCall, float elapsedSinceLastTime, int inCounter, void* inRef);
 float NetworkCallback(float elapsedSinceCall, float elapsedSinceLastTime, int inCounter, void* inRef);
 float ExportSubscribedDataref(float elapsedSinceCall, float elapsedSinceLastTime, int inCounter, void* inRef);
-static int g_menu_container_idx; // The index of our menu item in the Plugins menu
-static XPLMMenuID g_menu_id; // The menu container we'll append all our menu items to
-void menu_handler_callback(void*, void*);
 static UDPServer* server;
 static Logger logger;
 static std::vector<Client> clients;
@@ -58,16 +55,6 @@ PLUGIN_API int XPluginStart(char* outName, char* outSig, char* outDesc)
 	strcpy(outName, sig.c_str());
 	strcpy(outSig, "eskystudio.tools.XPLMServer");
 	strcpy(outDesc, description.c_str());
-
-	g_menu_container_idx = XPLMAppendMenuItem(XPLMFindPluginsMenu(), "XPLM Server Debug", 0, 0);
-	g_menu_id = XPLMCreateMenu("XPLM Server Debug", XPLMFindPluginsMenu(), 
-		g_menu_container_idx, menu_handler_callback, NULL);
-	XPLMAppendMenuItem(g_menu_id, "Set CAVOK", (void*)"1", 1);
-	XPLMAppendMenuItem(g_menu_id, "Set LVO", (void*)"2", 1);
-	XPLMAppendMenuItem(g_menu_id, "Set 0% Rain", (void*)"3", 1);
-	XPLMAppendMenuItem(g_menu_id, "Set 100% Rain", (void*)"4", 1);
-	XPLMAppendMenuItem(g_menu_id, "Get Visibility", (void*)"5", 1);
-	XPLMAppendMenuItem(g_menu_id, "Get Rain", (void*)"6", 1);
 	return 1;
 }
 
@@ -209,53 +196,4 @@ float ExportSubscribedDataref(float elapsedSinceCall, float elapsedSinceLastTime
 	BroadCastData(jdataOut.dump());
 	logger.Log("ExportSubscribedDataref [DONE]");
 	return 0.25f;
-}
-
-void menu_handler_callback(void* in_menu_ref, void* in_item_ref)
-{
-	json operation;
-	if (!strcmp((const char*)in_item_ref, "1"))
-	{
-		operation["Operation"] = "SET_REG_DATA";
-		operation["Name"] = "VISIBILITY";
-		operation["Value"] = "10000.0";
-	}
-	else if (!strcmp((const char*)in_item_ref, "2"))
-	{
-		operation["Operation"] = "SET_REG_DATA";
-		operation["Name"] = "VISIBILITY";
-		operation["Value"] = "500.0";
-	}
-	else if (!strcmp((const char*)in_item_ref, "3"))
-	{
-		operation["Operation"] = "SET_DATA";
-		operation["Link"] = "sim/weather/rain_percent";
-		operation["Value"] = "0.0";
-	}
-	else if (!strcmp((const char*)in_item_ref, "4"))
-	{
-		operation["Operation"] = "SET_DATA";
-		operation["Link"] = "sim/weather/rain_percent";
-		operation["Value"] = "1.0";
-	}
-	else if (!strcmp((const char*)in_item_ref, "5"))
-	{
-		operation["Operation"] = "GET_REG_DATA";
-		operation["Name"] = "VISIBILITY";
-		int res = callbackManager->ExecuteCallback(&operation);
-		callbackManager->Log("Execution returned " + std::to_string(res));
-		XPLMSpeakString(("Visibility : " + operation["Value"].get<std::string>() + " meters").c_str());
-		return;
-	}
-	else if (!strcmp((const char*)in_item_ref, "6"))
-	{
-		operation["Operation"] = "GET_DATA";
-		operation["Link"] = "sim/weather/rain_percent";
-		int res = callbackManager->ExecuteCallback(&operation);
-		callbackManager->Log("Execution returned " + std::to_string(res));
-		XPLMSpeakString(("Rain : " + operation["Value"].get<std::string>() + " percent").c_str());
-		return;
-	}
-	int res = callbackManager->ExecuteCallback(&operation);
-	callbackManager->Log("Execution returned " + std::to_string(res));
 }
