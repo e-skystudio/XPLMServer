@@ -88,6 +88,10 @@ public:
 	///</summary>
 	///<param name="value">The value to be sent to the dataref (as JSON)</param>
 	void SetValue(std::string value);
+	///<summary>
+	/// Set a conversion factor to a dataref.
+	///</summary>
+	///<param name="conversionFactor">The multiplication factor to be applied to the dataref on get and set (as a division)</param>
 	void SetConversionFactor(std::string conversionFactor);
 protected:
 	XPLMDataRef m_dataref;	/* Represent a void pointer locating the dataref as X - Plane SDK */
