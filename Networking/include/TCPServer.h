@@ -1,4 +1,5 @@
 #pragma once
+#ifdef WIN
 #include <iostream>
 #include <string>
 #include <vector>
@@ -29,3 +30,4 @@ protected:
     int accept_connection();
 };
 
+#endif

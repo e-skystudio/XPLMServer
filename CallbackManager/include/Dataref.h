@@ -6,9 +6,12 @@
 #include <nlohmann/json.hpp>
 
 #include <XPLMDataAccess.h>
+#include <XPLMUtilities.h>
 
 
 using json = nlohmann::json;
+
+extern "C" {
 
 ///<summary>
 /// This class represent an X-Plane dataref in OOP format.
@@ -114,3 +117,5 @@ static std::map<std::string, Dataref::Type> const StringToType{
 	{"INT_ARRAY", Dataref::Type::IntArray},
 	{"DATA", Dataref::Type::Data},
 };
+
+}

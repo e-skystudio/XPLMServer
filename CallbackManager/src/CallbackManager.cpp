@@ -36,6 +36,10 @@ CallbackManager::~CallbackManager()
 		delete kv->second;
 		kv++;
 	}
+	#ifdef WIN
+	#else
+		dlclose(m_hDLL);
+	#endif
 }
 
 int CallbackManager::AppendCallback(std::string name, callback newCallback)
@@ -66,8 +70,12 @@ std::map<unsigned int, std::string>* CallbackManager::GetSubscribedEventMap() co
 
 int CallbackManager::LoadCallbackDLL(std::string inDllPath)
 {
-	HINSTANCE hDLL = LoadLibrary(s2ws(inDllPath).c_str());
-	if (hDLL == nullptr)
+	#ifdef WIN
+		m_hDLL = LoadLibrary(s2ws(inDllPath).c_str());
+	#else
+		m_hDLL = dlopen(inDllPath.c_str(), RTLD_LAZY);
+	#endif
+	if (m_hDLL == nullptr)
 	{
 		std::stringstream ss;
 		ss << "DLL : '" << inDllPath << "' WAS NOT FOUND !";
@@ -79,8 +87,12 @@ int CallbackManager::LoadCallbackDLL(std::string inDllPath)
 	ss << "DLL : '" << inDllPath << "' LOADED SUCESSFULLY !";
 	m_logger.Log(ss.str(), Logger::Severity::TRACE);
 	m_logger.Log(ss.str().c_str());
-
-	callbackLoader loader = (callbackLoader)GetProcAddress(hDLL, "GetCallbacks");
+	callbackLoader loader;
+	#ifdef WIN
+		loader = (callbackLoader)GetProcAddress(hDLL, "GetCallbacks");
+	#else
+		loader = (callbackLoader)dlsym(m_hDLL, "GetCallbacks");
+	#endif
 	int size = 0;
 	loader(nullptr, &size);
 
@@ -100,7 +112,12 @@ int CallbackManager::LoadCallbackDLL(std::string inDllPath)
 		m_logger.Log(("\nLoading callback " + std::to_string(i) + " / " + std::to_string(size - 1)).c_str());
 		CallbackFunction* callback1 = vec_callbacks[i];
 		m_logger.Log(("Trying to load '" + callback1->function + "' as '" + callback1->operation + "'...").c_str());
-		callback p_callback = (callback)GetProcAddress(hDLL, callback1->function.c_str());
+		callback* p_callback;
+		#ifdef WIN
+		 	p_callback = (callback)GetProcAddress(m_hDLL, callback1->function.c_str());
+		#else
+			p_callback = (callback*)dlsym(m_hDLL, callback1->function.c_str());
+		#endif
 		if (p_callback == nullptr)
 		{
 			m_logger.Log("pointer callback is pointing to nullptr\n", Logger::Severity::WARNING);
@@ -110,7 +127,11 @@ int CallbackManager::LoadCallbackDLL(std::string inDllPath)
 		{
 			m_logger.Log("pointer callback is valid\n");
 		}
-		int res = this->AppendCallback(std::string(callback1->operation), p_callback);
+		#ifdef WIN
+			int res = this->AppendCallback(std::string(callback1->operation), p_callback);
+		#else
+			int res = this->AppendCallback(std::string(callback1->operation), *p_callback);
+		#endif
 		if (res != EXIT_SUCCESS)
 		{
 			m_logger.Log("Appending Callback to list : [FAILED]\n", Logger::Severity::WARNING);
@@ -123,6 +144,7 @@ int CallbackManager::LoadCallbackDLL(std::string inDllPath)
 	}
 	m_logger.Log("LoadCallbackDLL...[FINISHED]\n");
 	return size;
+
 }
 
 void CallbackManager::Log(std::string data, Logger::Severity severity)

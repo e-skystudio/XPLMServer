@@ -48,14 +48,22 @@ void Logger::Log(std::string message, Logger::Severity severity)
 
 const char* Logger::CurrentDateTime()
 {
+	struct tm* ltm;
 	time_t now = time(0);
-	struct tm* ltm = new tm();
-	//struct tm buf;
-	localtime_s(ltm, &now);
+	#ifdef WIN
+		struct tm* ltm = new tm();
+		localtime_s(ltm, &now);
+	#else
+		ltm = localtime(&now);
+	#endif
 	char* time = new char[20];
-	sprintf_s(time, 20,"%02d/%02d/%04d %02d:%02d:%02d", ltm->tm_mday, ltm->tm_mon, ltm->tm_year,
-		ltm->tm_hour, ltm->tm_min, ltm->tm_sec);
-	std::cout << "Date : '" << time <<"'\n";
+	#ifdef WIN
+		sprintf_s(time, 20,"%02d/%02d/%04d %02d:%02d:%02d", ltm->tm_mday, ltm->tm_mon, ltm->tm_year,
+				  ltm->tm_hour, ltm->tm_min, ltm->tm_sec);
+	#else
+		sprintf(time,"%02d/%02d/%04d %02d:%02d:%02d", ltm->tm_mday, ltm->tm_mon, ltm->tm_year,
+			    ltm->tm_hour, ltm->tm_min, ltm->tm_sec);
+	#endif
 	delete ltm;
 	return (const char*)time;
 }

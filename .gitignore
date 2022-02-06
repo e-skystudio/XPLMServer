@@ -367,3 +367,5 @@ FodyWeavers.xsd
 .idb
 temp/
 lib/
+build/
+.vscode/

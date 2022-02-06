@@ -1,3 +1,7 @@
+#define LIN 1
+#define APL 0
+#define IBM 0
+
 #include "TCPServer.h"
 #include <sstream>
 #include <string>
@@ -9,9 +13,9 @@
 #include <Dataref.h>
 #include <CallbackManager.h>
 #include <utils.h>
-
 #include <nlohmann/json.hpp>
-#include <UDPServer.h>
+
+#include "UDPServer.h"
 
 using json = nlohmann::json;
 
@@ -76,11 +80,18 @@ PLUGIN_API int  XPluginEnable(void)
 		configuration = "Debug";
 	#endif
 	std::string platform;
-	#ifndef WIN64
-		platform = "Win32";
-	#else
-		platform = "Win64";
+	#ifdef WIN
+		#ifndef WIN64
+			platform = "Win32";
+		#else
+			platform = "Win64";
+		#endif
+	#elif LIN
+		platform = "Linux64";
+	#elif MAC
+		platform = "Mac64";
 	#endif
+
 	std::string dllPath = PluginConfiguration["DLLFiles"][platform][configuration].get<std::string>();
 	logger.Log("Trying to load dll from path : '" + dllPath + "'");
 	logger.Log("Creating a callback manager...");

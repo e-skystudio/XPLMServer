@@ -2,13 +2,17 @@
 #include "CallbackManager.h"
 #include "Dataref.h"
 #include <nlohmann/json.hpp>
+#include <XPLMUtilities.h>
 
 using json = nlohmann::json;
-
-#ifdef MAKE_DLL
-#define CALLBACK_FUNC extern "C" __declspec(dllexport) 
-#else
-#define CALLBACK_FUNC extern "C" __declspec(dllimport) 
+#ifdef WIN
+    #ifdef MAKE_DLL
+    #define CALLBACK_FUNC extern "C" __declspec(dllexport) 
+    #else
+    #define CALLBACK_FUNC extern "C" __declspec(dllimport) 
+    #endif
+#else 
+    #define CALLBACK_FUNC extern "C"
 #endif
 
 constexpr int CallbackNumber = 12;

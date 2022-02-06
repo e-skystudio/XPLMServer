@@ -1,45 +1,22 @@
 #include "../include/UDPServer.h"
 
-UDPServer::UDPServer() :
-	m_hints{ 0 },
-	m_wsa{ 0 },
-	m_bind_address(nullptr),
-	m_socket_listen(INVALID_SOCKET),
-	m_socket_emit(INVALID_SOCKET),
-	m_port{ 0 }
+UDPServer::UDPServer() : 
+    m_port(0),
+    m_hints({0}),
+    m_bind_address{0},
+    m_socket_listen(0),
+    m_socket_emit(0),
+    m_fout(NULL)
 {
-	fopen_s(&m_fout, "ServerLog.txt", "w+");
-	if (m_fout == 0)
-		return;
-#ifdef _WIN32
-	m_wsa;
-	if (WSAStartup(MAKEWORD(2, 2), &m_wsa))
-	{
-		fprintf(m_fout, "Failed to initialize WSA.\n");
-		fflush(m_fout);
-		return;
-	}
-#endif
-}
-
-UDPServer::~UDPServer()
-{
-	closesocket(m_socket_listen);
-	freeaddrinfo(m_bind_address);
-	#ifdef _WIN32
-		WSACleanup();
-	#endif
 }
 
 int UDPServer::Bind(unsigned short port)
 {
-	m_port = port;
+    m_port = port;
 	memset(&m_hints, 0, sizeof(m_hints));
 	m_hints.ai_family = AF_INET;
 	m_hints.ai_socktype = SOCK_DGRAM;
 	m_hints.ai_flags = AI_PASSIVE;
-	
-
 	int option = 0;
 	getaddrinfo(0, std::to_string(port).c_str(), &m_hints, &m_bind_address);
 	m_socket_listen = socket(m_bind_address->ai_family, m_bind_address->ai_socktype, m_bind_address->ai_protocol);
@@ -53,9 +30,9 @@ int UDPServer::Bind(unsigned short port)
 	return 0x00;
 }
 
-std::string UDPServer::ReceiveData(int maxSize, Client* outCli)
+std::string UDPServer::ReceiveData(int maxSize,Client* outCli)
 {
-	if (maxSize < 0)
+    if (maxSize < 0)
 		return std::string();
 	struct sockaddr_storage client_address = {0};
 	socklen_t client_len = sizeof(client_address);

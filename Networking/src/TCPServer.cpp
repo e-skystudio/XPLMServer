@@ -1,4 +1,5 @@
-#include "../include/TCPServer.h"
+#ifdef WIN
+#include "TCPServer.h"
 
 TCPServer::TCPServer() :
     m_listenSocket(INVALID_SOCKET),
@@ -127,3 +128,4 @@ void TCPServer::DeleteConnection(SOCKET socket)
     auto it = std::find(m_clients.begin(), m_clients.end(), socket);
     m_clients.erase(it);
 }
+#endif
