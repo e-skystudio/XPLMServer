@@ -21,7 +21,6 @@ using json = nlohmann::json;
 
 static json PluginConfiguration;
 static CallbackManager* callbackManager;
-static Dataref visibility;
 static int counter = 0;
 float InitializerCallback(float elapsedSinceCall, float elapsedSinceLastTime, int inCounter, void* inRef);
 float NetworkCallback(float elapsedSinceCall, float elapsedSinceLastTime, int inCounter, void* inRef);
@@ -42,23 +41,29 @@ void BroadCastData(std::string data)
 PLUGIN_API int XPluginStart(char* outName, char* outSig, char* outDesc)
 {
 	logger = Logger("XPLMServer.log", "[XPLMServer]", true);
-
+	#ifdef WIN
 	auto data = loadFile(".\\Resources\\plugins\\XPLMServer\\pluginConfig.json");
+	#elif LIN
+	auto data = loadFile("./Resources/plugins/XPLMServer/pluginConfig.json");
+	#endif
 	if (data.str().length() < 1)
 	{
 		XPLMDebugString("[XPLMServer]Unable to load configuration file\n");
 		return 0;
 	}
-
+	XPLMDebugString("[XPLMServer]Configuration file loaded sucessfully\n");
 	PluginConfiguration = json::parse(data.str());
-
+	XPLMDebugString("[XPLMServer] 1\n");
 	std::string sig = PluginConfiguration["Plugin"]["Name"].get<std::string>();
 	std::string description = PluginConfiguration["Plugin"]["Description"].get<std::string>() ;
+	XPLMDebugString("[XPLMServer] 2\n");
 
 
+	XPLMDebugString("[XPLMServer] 3\n");
 	strcpy(outName, sig.c_str());
 	strcpy(outSig, "eskystudio.tools.XPLMServer");
 	strcpy(outDesc, description.c_str());
+	XPLMDebugString("[XPLMServer] 4\n");
 	return 1;
 }
 
@@ -72,7 +77,9 @@ PLUGIN_API void XPluginDisable(void)
 
 PLUGIN_API int  XPluginEnable(void)
 { 
+	XPLMDebugString("[XPLMServer] Plugin Enabled\n");
 	logger.Log("[XPLMServer]Enabled");
+	XPLMDebugString("[XPLMServer] Plugin Enabled (1)\n");
 	std::string configuration;
 	#ifndef _DEBUG
 		configuration = "Release";
@@ -91,18 +98,24 @@ PLUGIN_API int  XPluginEnable(void)
 	#elif MAC
 		platform = "Mac64";
 	#endif
-
+	XPLMDebugString("[XPLMServer] Plugin Enabled (2)\n");
+	logger.Log("Loading configuration :'" + configuration + "' & platform : '" + platform + "'");
 	std::string dllPath = PluginConfiguration["DLLFiles"][platform][configuration].get<std::string>();
 	logger.Log("Trying to load dll from path : '" + dllPath + "'");
 	logger.Log("Creating a callback manager...");
+	XPLMDebugString("[XPLMServer] Plugin Enabled (3)\n");
 	callbackManager = new CallbackManager();
 	logger.Log("Creating a callback manager...[DONE]\n");
 	logger.Log("Loading the dlls");
+	XPLMDebugString("[XPLMServer] Plugin Enabled (4)\n");
 	int res = callbackManager->LoadCallbackDLL(dllPath);
+	XPLMDebugString("[XPLMServer] Plugin Enabled (4.1)\n");
 	logger.Log("Loading the dlls");
 	std::stringstream debug;
+	XPLMDebugString("[XPLMServer] Plugin Enabled (5)\n");
 	debug << "[XPLMServer]Loading callback from DLL returned " << res << "\n Dll Path was: " << dllPath << "\n";
 	logger.Log("---Server Init----");
+	XPLMDebugString("[XPLMServer] Plugin Enabled (6)\n");
 	if (PluginConfiguration.contains("Server") &&
 		PluginConfiguration["Server"].contains("InIp") &&
 		PluginConfiguration["Server"].contains("InPort"))
@@ -112,6 +125,7 @@ PLUGIN_API int  XPluginEnable(void)
 		logger.Log("initlaizating server : " + std::to_string(PluginConfiguration["Server"]["InPort"].get<int>()));
 		res = server->Bind(PluginConfiguration["Server"]["InPort"].get<unsigned short>());
 		logger.Log("Server::Initalize returned " + std::to_string(res) + "\n");
+		XPLMDebugString("[XPLMServer] Plugin Enabled (7)\n");
 		if (res == EXIT_SUCCESS)
 		{
 			logger.Log("Initalization sucess");
@@ -120,6 +134,7 @@ PLUGIN_API int  XPluginEnable(void)
 		else {
 			logger.Log("Initalization failed, Res was " + std::to_string(res));
 		}
+		XPLMDebugString("[XPLMServer] Plugin Enabled (8)\n");
 	}
 
 	return 1;

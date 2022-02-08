@@ -33,16 +33,16 @@ CFLAGS := $(DEFINES) $(INCLUDES) -std=c++20 -fPIC -fvisibility=hidden
 
 ###XPLMServer
 
-$(BUILDDIR)/lin.xpl : $(BUILDDIR)/libNetworking.a $(BUILDDIR)/libCallbackManager.a $(BUILDDIR)/XPLMServer.o
+$(BUILDDIR)/lin.xpl : $(BUILDDIR)/UDPServer.o $(BUILDDIR)/Dataref.o $(BUILDDIR)/Logger.o $(BUILDDIR)/utils.o $(BUILDDIR)/CallbackManager.o $(BUILDDIR)/XPLMServer.o
 	echo $(BUILDDIR)/Networking.a
-	gcc -m64 -static-libgcc -shared -Wl,--version-script=exports.txt -L$(BUILDDIR) -lNetworking -lCallbackManager $(BUILDDIR)/XPLMServer.o  -o $(BUILDDIR)/lin.xpl
+	gcc -m64 -static-libgcc -shared -Wl,--version-script=exports.txt $(BUILDDIR)/UDPServer.o $(BUILDDIR)/Dataref.o $(BUILDDIR)/Logger.o $(BUILDDIR)/utils.o $(BUILDDIR)/CallbackManager.o $(BUILDDIR)/XPLMServer.o  -o $(BUILDDIR)/lin.xpl
 
 $(BUILDDIR)/XPLMServer.o : $(XPLMServer)/src/main.cpp
 	g++ $(CFLAGS) $(XPLMServer)/src/main.cpp -c -o $(BUILDDIR)/XPLMServer.o
 
 ### Networking
 
-$(BUILDDIR)/libNetworking.a: $(BUILDDIR)/UDPServer.o $(BUILDDIR)/DefaultCallbacks.so
+$(BUILDDIR)/libNetworking.a: $(BUILDDIR)/UDPServer.o 
 	ar rcs $(BUILDDIR)/libNetworking.a $(BUILDDIR)/UDPServer.o
 
 $(BUILDDIR)/UDPServer.o : $(NETWORKING)/src/UDPServer.cpp
