@@ -13,8 +13,12 @@ Logger::Logger(std::string filename, std::string module, bool erease)
 		m_logfile = new std::ofstream(filename, std::ios::app);
 	if (m_logfile->fail())
 	{
-		std::cout << "Unable to open file : '" << filename << "' (as erease = '" << erease << "')\n";
+		std::stringstream debug;
+		debug << "[XPLMServer][Logger]Unable to open file : '" << filename << "' (as erease = '" << erease << "')\n";
+		XPLMDebugString(debug.str().c_str());
+
 	}
+
 }
 
 Logger::~Logger()
@@ -64,7 +68,6 @@ const char* Logger::CurrentDateTime()
 		sprintf(time,"%02d/%02d/%04d %02d:%02d:%02d", ltm->tm_mday, ltm->tm_mon, ltm->tm_year,
 			    ltm->tm_hour, ltm->tm_min, ltm->tm_sec);
 	#endif
-	delete ltm;
 	return (const char*)time;
 }
 
