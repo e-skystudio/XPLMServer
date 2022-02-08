@@ -1,7 +1,7 @@
 {
   "Plugin": {
     "Name": "XPLM Server v1.0.1 alpha",
-    "Description": "Two-Way Server implemting DLLs callbacks",
+    "Description": "Two-Way Server implemting shared libraries callbacks",
     "Author": "Dessart Romain"
   },
   "DLLFiles": {
@@ -16,6 +16,10 @@
     "Linux64" : {
       "Release" : "./Resources/plugins/XPLMServer/DefaultCallbacksL64.so",
       "Debug" : "./Resources/plugins/XPLMServer/DefaultCallbacksL64.so"
+    },
+    "Mac64" : {
+      "Release" : "./Resources/plugins/XPLMServer/DefaultCallbacks64.dylib",
+      "Debug" : "./Resources/plugins/XPLMServer/DefaultCallbacks64.dylib"
     }
   },
   "Server":{
