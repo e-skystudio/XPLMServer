@@ -5,7 +5,6 @@
 #include <fstream>
 #include <sstream>
 #include <ctime>
-
 #include <XPLMUtilities.h>
 
 class Logger
@@ -35,4 +34,3 @@ protected:
 	std::string m_module;
 	std::ofstream* m_logfile;
 };
-

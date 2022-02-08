@@ -96,7 +96,7 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>IBM=1;WIN32;_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
-      <AdditionalIncludeDirectories>$(xplanelib)include\win32\Widgets;$(xplanelib)include\win32\Wrappers;$(xplanelib)include\win32\XPLM</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(libxplane)include\win32\Widgets;$(libxplane)include\win32\Wrappers;$(libxplane)include\win32\XPLM</AdditionalIncludeDirectories>
       <LanguageStandard>stdcpp20</LanguageStandard>
       <LanguageStandard_C>stdc17</LanguageStandard_C>
     </ClCompile>
@@ -108,7 +108,7 @@
       <AdditionalDependencies>XPLM.lib;XPWidgets.lib</AdditionalDependencies>
     </Lib>
     <Lib>
-      <AdditionalLibraryDirectories>$(xplanelib)lib\Win\;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalLibraryDirectories>$(libxplane)lib\Win\;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
     </Lib>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
@@ -119,7 +119,7 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>IBM=1;WIN32;NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
-      <AdditionalIncludeDirectories>$(xplanelib)include\win32\Widgets;$(xplanelib)include\win32\Wrappers;$(xplanelib)include\win32\XPLM</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(libxplane)include\win32\Widgets;$(libxplane)include\win32\Wrappers;$(libxplane)include\win32\XPLM</AdditionalIncludeDirectories>
       <LanguageStandard>stdcpp20</LanguageStandard>
       <LanguageStandard_C>stdc17</LanguageStandard_C>
     </ClCompile>
@@ -133,7 +133,7 @@
       <AdditionalDependencies>XPLM.lib;XPWidgets.lib</AdditionalDependencies>
     </Lib>
     <Lib>
-      <AdditionalLibraryDirectories>$(xplanelib)lib\Win\;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalLibraryDirectories>$(libxplane)lib\Win\;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
     </Lib>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
@@ -142,7 +142,7 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>IBM=1;_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
-      <AdditionalIncludeDirectories>$(xplanelib)include\win32\Widgets;$(xplanelib)include\win32\Wrappers;$(xplanelib)include\win32\XPLM</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(libxplane)include\win32\Widgets;$(libxplane)include\win32\Wrappers;$(libxplane)include\win32\XPLM</AdditionalIncludeDirectories>
       <LanguageStandard>stdcpp20</LanguageStandard>
       <LanguageStandard_C>stdc17</LanguageStandard_C>
     </ClCompile>
@@ -154,7 +154,7 @@
       <AdditionalDependencies>XPLM_64.lib;XPWidgets_64.lib</AdditionalDependencies>
     </Lib>
     <Lib>
-      <AdditionalLibraryDirectories>$(xplanelib)lib\Win\;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalLibraryDirectories>$(libxplane)lib\Win\;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
     </Lib>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
@@ -165,7 +165,7 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>IBM=1;NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
-      <AdditionalIncludeDirectories>$(xplanelib)include\win32\Widgets;$(xplanelib)include\win32\Wrappers;$(xplanelib)include\win32\XPLM</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(libxplane)include\win32\Widgets;$(libxplane)include\win32\Wrappers;$(libxplane)include\win32\XPLM</AdditionalIncludeDirectories>
       <LanguageStandard>stdcpp20</LanguageStandard>
       <LanguageStandard_C>stdc17</LanguageStandard_C>
     </ClCompile>
@@ -179,7 +179,7 @@
       <AdditionalDependencies>XPLM_64.lib;XPWidgets_64.lib</AdditionalDependencies>
     </Lib>
     <Lib>
-      <AdditionalLibraryDirectories>$(xplanelib)lib\Win\;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalLibraryDirectories>$(libxplane)lib\Win\;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
     </Lib>
   </ItemDefinitionGroup>
   <ItemGroup>

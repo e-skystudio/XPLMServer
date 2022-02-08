@@ -6,6 +6,7 @@
 #include <nlohmann/json.hpp>
 
 #include <XPLMDataAccess.h>
+#include <XPLMUtilities.h>
 
 
 using json = nlohmann::json;
@@ -88,12 +89,18 @@ public:
 	///</summary>
 	///<param name="value">The value to be sent to the dataref (as JSON)</param>
 	void SetValue(std::string value);
+	///<summary>
+	/// Set a conversion factor to a dataref.
+	///</summary>
+	///<param name="conversionFactor">The multiplication factor to be applied to the dataref on get and set (as a division)</param>
+	void SetConversionFactor(std::string conversionFactor);
 protected:
 	XPLMDataRef m_dataref;	/* Represent a void pointer locating the dataref as X - Plane SDK */
 	Dataref::Type m_type;	/* Represent the underlying data type of the dataref */
 	Logger m_logger;		/* The logger */
 
 	std::string m_link;
+	std::string m_conversionFactor;
 	int setFloatArrayFromJson(int offset, std::string value);
 	int setIntArrayFromJson(int offset, std::string value);
 };

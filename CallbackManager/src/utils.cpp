@@ -1,6 +1,6 @@
 #include "../include/utils.h"
 
-
+#ifdef WIN
 std::wstring s2ws(const std::string& s)
 {
 	int len;
@@ -12,7 +12,7 @@ std::wstring s2ws(const std::string& s)
 	delete[] buf;
 	return r;
 }
-
+#endif
 std::stringstream loadFile(std::string filepath)
 {
     std::stringstream data;

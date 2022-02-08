@@ -1,10 +1,14 @@
 #pragma once
+#ifdef WIN
+    #include <Windows.h>
+#endif
 #include <string>
-#include <Windows.h>
 #include <iostream>
 #include <fstream>
 #include <string>
 #include <sstream>
 
-std::wstring s2ws(const std::string& s);
+#ifdef WIN
+    std::wstring s2ws(const std::string& s);
+#endif
 std::stringstream loadFile(std::string filepath);

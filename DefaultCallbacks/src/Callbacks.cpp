@@ -42,34 +42,26 @@ std::string ExtractJsonValue(json* jdata, std::string fieldname, CallbackManager
 	return value;
 }
 
-void GetCallbacks(std::vector<CallbackFunction*>* callbacks, int* size)
+void GetCallbacks(std::vector<CallbackFunctionStruct*>* callbacks, int* size)
 {
 	*size = 0;
 	if (callbacks != nullptr)
 	{
-		callbacks->push_back(new CallbackFunction("VISIBILITY", "SetVisibility"));
-		callbacks->push_back(new CallbackFunction("LOAD_DLL", "LoadDll"));
-		callbacks->push_back(new CallbackFunction("REG_DATA", "RegisterDataref"));
-		callbacks->push_back(new CallbackFunction("UNREG_DATA", "UnregisterDataref"));
-		callbacks->push_back(new CallbackFunction("SUB_DATA", "SubscribeDataref"));
-		callbacks->push_back(new CallbackFunction("UNSUB_DATA", "UnsubscribeDataref"));
-		callbacks->push_back(new CallbackFunction("GET_REG_DATA", "GetRegisterDatarefValue"));
-		callbacks->push_back(new CallbackFunction("SET_REG_DATA", "SetRegisterDatarefValue"));
-		callbacks->push_back(new CallbackFunction("GET_DATA", "GetDatarefValue"));
-		callbacks->push_back(new CallbackFunction("SET_DATA", "SetDatarefValue"));
-		callbacks->push_back(new CallbackFunction("SPEAK", "Speak"));
-		callbacks->push_back(new CallbackFunction("ADD_CONST", "AddConstantDataref"));
+		callbacks->push_back(new CallbackFunctionStruct("LOAD_DLL", "LoadDll"));
+		callbacks->push_back(new CallbackFunctionStruct("REG_DATA", "RegisterDataref"));
+		callbacks->push_back(new CallbackFunctionStruct("UNREG_DATA", "UnregisterDataref"));
+		callbacks->push_back(new CallbackFunctionStruct("SUB_DATA", "SubscribeDataref"));
+		callbacks->push_back(new CallbackFunctionStruct("UNSUB_DATA", "UnsubscribeDataref"));
+		callbacks->push_back(new CallbackFunctionStruct("GET_REG_DATA", "GetRegisterDatarefValue"));
+		callbacks->push_back(new CallbackFunctionStruct("SET_REG_DATA", "SetRegisterDatarefValue"));
+		callbacks->push_back(new CallbackFunctionStruct("GET_DATA", "GetDatarefValue"));
+		callbacks->push_back(new CallbackFunctionStruct("SET_DATA", "SetDatarefValue"));
+		callbacks->push_back(new CallbackFunctionStruct("SPEAK", "Speak"));
+		callbacks->push_back(new CallbackFunctionStruct("ADD_CONST", "AddConstantDataref"));
+		callbacks->push_back(new CallbackFunctionStruct("LOAD_REG_DATA", "LoadRegisterDataref"));
 		*size = (int)callbacks->size();
 	}
 	return;
-}
-
-int SetVisibility(json* jdata, CallbackManager* callbackManager)
-{
-	Dataref vis;
-	vis.Load("sim/weather/visibility_reported_m");
-	vis.SetValue(jdata->at("Value").get<std::string>());
-	return 0;
 }
 
 int LoadDll(json* jdata, CallbackManager* callbackManager)
@@ -110,7 +102,6 @@ int RegisterDataref(json* jdata, CallbackManager* callback)
 	if (jdata->contains("ConversionFactor"))
 	{
 		std::string conversionFactor = jdata->at("ConversionFactor").get<std::string>();
-		callback->Log("ConversionFactor not yet implemented in Dataref, assuming 1.0f", Logger::Severity::WARNING);
 	}
 	else {
 		callback->Log("ConversionFactor was not provided assuming 1.0f", Logger::Severity::WARNING);
@@ -211,11 +202,8 @@ int GetRegisterDatarefValue(json* jdata, CallbackManager* callback)
 #endif
 	std::string val = p_dataref->GetValue();
 	callback->Log("Value is '" + val + "'");
-	//BUG
 	jdata->operator[]("Value") = val;
-	//jdata->push_back(std::pair<std::string, std::string>("Value", val));
 	callback->Log("Value added to json");
-	//!BUG
 	return 0;
 }
 
@@ -327,4 +315,41 @@ int AddConstantDataref(json* jdata, CallbackManager* callback)
 	}
 	callback->AddConstantDataref(jdata->at("Name").get<std::string>(), jdata->at("Value").get<std::string>());
 	return 0;
+}
+
+int LoadRegisterDataref(json* jdata, CallbackManager* callback)
+{
+	std::ifstream csv_in;
+	csv_in.open(jdata->at("FileIn").get<std::string>());
+	if (!csv_in.is_open())
+	{
+		;
+		callback->Log("Error while opening file!\n", Logger::Severity::WARNING);
+		return 0x01;
+	}
+	std::string line;
+	std::vector<std::vector<std::string>> tokens;
+	while (std::getline(csv_in, line))
+	{
+		if (line[0] == '#')
+		{
+			continue;
+		}
+		std::vector<std::string> vecOut;
+		std::size_t pos;
+		while ((pos = line.find(';')) != std::string::npos)
+		{
+			std::string sub = line.substr(0, pos);
+			vecOut.push_back(sub);
+			line = line.substr(pos + 1);
+		}
+		Dataref* dataref = new Dataref();
+		dataref->Load(vecOut[1]);
+		dataref->SetType(vecOut[2]);
+		dataref->SetConversionFactor(vecOut[3]);
+		auto p_datarefMap = callback->GetNamedDataref();
+		p_datarefMap->emplace(vecOut[0], dataref);
+		callback->AddSubscribedDataref(vecOut[0]);
+	}
+	return 0x00;
 }

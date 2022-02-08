@@ -1,14 +1,16 @@
 #pragma once
+#ifdef WIN
+	#include <Windows.h>
+#else
+	#include <dlfcn.h>
+#endif
 
-#include <Windows.h>
 #include <functional>
 #include <string>
 #include <map>
 #include <sstream>
 
 #include <XPLMUtilities.h>
-
-
 #include <nlohmann/json.hpp>
 
 #include "Dataref.h"
@@ -17,22 +19,22 @@
 using json = nlohmann::json;
 
 #pragma region DLLManagement
-struct CallbackFunction {
+struct CallbackFunctionStruct {
 	std::string operation; ///The json Operation value to execute the callback
 	std::string function; /// The name of the function in the DLL.
 	
-	CallbackFunction() : operation(""), function("")
+	CallbackFunctionStruct() : operation(""), function("")
 	{
 	}
 
-	CallbackFunction(std::string operation, std::string functionName) :
+	CallbackFunctionStruct(std::string operation, std::string functionName) :
 		operation(operation), function(functionName)
 	{
 	}
 };
 
-typedef void(*callbackLoader)(std::vector<CallbackFunction*>*, int*);
-typedef int(*callback)(json* json, void* CallbackManager); ///The callback reference
+typedef void(*CallbackLoader)(std::vector<CallbackFunctionStruct*>*, int*);
+typedef int(*Callback)(json* json, void* CallbackManager); ///The callback reference
 
 struct ConstantDataref {
 	std::string name;
@@ -65,7 +67,7 @@ public:
 	/// <param name="name">The name of the callback</param>
 	/// <param name="newCallback">Function pointer to the callback</param>
 	/// <returns>EXIT_SUCESS if the name was not already in use and callback addition was sucessfull</returns>
-	int AppendCallback(std::string name, callback newCallback);
+	int AppendCallback(std::string name, Callback newCallback);
 	/// <summary>
 	///  Append callback to the stored callback
 	/// </summary>
@@ -125,16 +127,16 @@ public:
 	void RemoveConstantDataref(std::string name);
 	void ExecuteConstantDataref();
 protected:
-	std::map<std::string, callback>* m_callbacks;
+	std::map<std::string, Callback>* m_callbacks;
 	std::map<std::string, Dataref*>* m_namedDatarefs; //The datarefs stored while plugin is in used
 	std::map<std::string, Dataref*>* m_subscribedDatarefs; //The datarefs that value is returned per timed basis
 	std::vector<ConstantDataref>* m_constDataref; //Datarefs set as constant (value are copied from the key)
 	std::map<unsigned int, std::string>* m_subscribedEvent;
 	Logger m_logger; /* The logger */
 	unsigned int m_subscirbeDatarefCount;
+	#ifdef WIN
+		HINSTANCE m_hDLL;
+	#else
+		void* m_hDLL;
+	#endif
 };
-
-///<summary>
-/// Define a standard callback function
-///</summary>
-typedef std::function<int(json, CallbackManager*)> Callback;

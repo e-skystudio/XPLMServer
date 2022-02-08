@@ -1,45 +1,25 @@
 #include "../include/UDPServer.h"
 
-UDPServer::UDPServer() :
-	m_hints{ 0 },
-	m_wsa{ 0 },
-	m_bind_address(nullptr),
-	m_socket_listen(INVALID_SOCKET),
-	m_socket_emit(INVALID_SOCKET),
-	m_port{ 0 }
+UDPServer::UDPServer() : 
+    m_port(0),
+    m_hints({0}),
+    m_bind_address{0},
+    m_socket_listen(0),
+    m_socket_emit(0)
 {
-	fopen_s(&m_fout, "ServerLog.txt", "w+");
-	if (m_fout == 0)
-		return;
-#ifdef _WIN32
-	m_wsa;
-	if (WSAStartup(MAKEWORD(2, 2), &m_wsa))
-	{
-		fprintf(m_fout, "Failed to initialize WSA.\n");
-		fflush(m_fout);
-		return;
-	}
-#endif
+	m_fout = fopen("XPLMServerNetwork.log", "w+");
+	fprintf(m_fout, "Loging started !\n");
+	fflush(m_fout);
 }
 
-UDPServer::~UDPServer()
-{
-	closesocket(m_socket_listen);
-	freeaddrinfo(m_bind_address);
-	#ifdef _WIN32
-		WSACleanup();
-	#endif
-}
 
 int UDPServer::Bind(unsigned short port)
 {
-	m_port = port;
+    m_port = port;
 	memset(&m_hints, 0, sizeof(m_hints));
 	m_hints.ai_family = AF_INET;
 	m_hints.ai_socktype = SOCK_DGRAM;
 	m_hints.ai_flags = AI_PASSIVE;
-	
-
 	int option = 0;
 	getaddrinfo(0, std::to_string(port).c_str(), &m_hints, &m_bind_address);
 	m_socket_listen = socket(m_bind_address->ai_family, m_bind_address->ai_socktype, m_bind_address->ai_protocol);
@@ -50,13 +30,20 @@ int UDPServer::Bind(unsigned short port)
 		fflush(m_fout);
 		return 0x02;
 	}
+	fprintf(m_fout, "bind() success on %d!\n", port);
+	fflush(m_fout);
 	return 0x00;
 }
 
-std::string UDPServer::ReceiveData(int maxSize, Client* outCli)
+std::string UDPServer::ReceiveData(int maxSize,Client* outCli)
 {
-	if (maxSize < 0)
+	//this function is called (checked) 
+    if (maxSize < 0)
+	{
+		fprintf(m_fout, "MaxSize < 0 ! Error\n");
+		fflush(m_fout);
 		return std::string();
+	}
 	struct sockaddr_storage client_address = {0};
 	socklen_t client_len = sizeof(client_address);
 	char* read = (char *)malloc((size_t)maxSize);
@@ -64,8 +51,6 @@ std::string UDPServer::ReceiveData(int maxSize, Client* outCli)
 		return std::string();
 	memset(read, 0x00, (size_t)maxSize);
 	struct timeval timeout{0, 5000};
-	//timeout.tv_sec = 0;
-	//timeout.tv_usec = 5000;
 
 	fd_set clients;
 	FD_ZERO(&clients);
@@ -75,6 +60,7 @@ std::string UDPServer::ReceiveData(int maxSize, Client* outCli)
 
 	if (FD_ISSET(m_socket_listen, &clients))
 	{
+		fprintf(m_fout, "Data is available to read\n");
 		int bytes_received = recvfrom(m_socket_listen, read, maxSize, 0,
 			(struct sockaddr*)&client_address, &client_len);
 		if (bytes_received <= 0)
@@ -116,7 +102,6 @@ int UDPServer::SendData(std::string data, Client cli)
 	}
 	send_address.sin_family = AF_INET;
 	send_address.sin_port = htons(cli.port);
-	//send_address.sin_addr.s_addr = inet_addr(cli.ip.c_str());
 	int bytes = sendto(m_socket_emit, data.c_str(), (int)data.length(), 0, 
 		(struct sockaddr*)&send_address, (int)sizeof(struct sockaddr_in));
 	fprintf(m_fout, "[%s:%d]<<<%s (%d byte(s))\n", cli.ip.c_str(), cli.port, data.c_str(), bytes);
