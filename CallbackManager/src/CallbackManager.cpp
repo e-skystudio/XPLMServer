@@ -89,10 +89,14 @@ int CallbackManager::LoadCallbackDLL(std::string inDllPath)
 	m_logger.Log(ss.str().c_str());
 	callbackLoader loader;
 	#ifdef WIN
-		loader = (callbackLoader)GetProcAddress(hDLL, "GetCallbacks");
+		loader = reinterpret_cast<callbackLoader>(GetProcAddress(hDLL, "GetCallbacks"));
 	#else
-		loader = (callbackLoader)dlsym(m_hDLL, "GetCallbacks");
+		loader = reinterpret_cast<callbackLoader>(dlsym(m_hDLL, "GetCallbacks"));
 	#endif
+	if(loader == nullptr)
+	{
+		m_logger.Log("Unable to load GetCallbacks!", Logger::Severity::CRITICAL);
+	}
 	int size = 0;
 	loader(nullptr, &size);
 
@@ -112,11 +116,11 @@ int CallbackManager::LoadCallbackDLL(std::string inDllPath)
 		m_logger.Log(("\nLoading callback " + std::to_string(i) + " / " + std::to_string(size - 1)).c_str());
 		CallbackFunction* callback1 = vec_callbacks[i];
 		m_logger.Log(("Trying to load '" + callback1->function + "' as '" + callback1->operation + "'...").c_str());
-		callback* p_callback;
+		callback p_callback;
 		#ifdef WIN
-		 	p_callback = (callback)GetProcAddress(m_hDLL, callback1->function.c_str());
+		 	p_callback = reinterpret_cast<callback>GetProcAddress(m_hDLL, callback1->function.c_str());
 		#else
-			p_callback = (callback*)dlsym(m_hDLL, callback1->function.c_str());
+			p_callback = reinterpret_cast<callback>(dlsym(m_hDLL, callback1->function.c_str()));
 		#endif
 		if (p_callback == nullptr)
 		{
@@ -127,11 +131,7 @@ int CallbackManager::LoadCallbackDLL(std::string inDllPath)
 		{
 			m_logger.Log("pointer callback is valid\n");
 		}
-		#ifdef WIN
 			int res = this->AppendCallback(std::string(callback1->operation), p_callback);
-		#else
-			int res = this->AppendCallback(std::string(callback1->operation), *p_callback);
-		#endif
 		if (res != EXIT_SUCCESS)
 		{
 			m_logger.Log("Appending Callback to list : [FAILED]\n", Logger::Severity::WARNING);
