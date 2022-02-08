@@ -1,7 +1,3 @@
-#define LIN 1
-#define APL 0
-#define IBM 0
-
 #include "TCPServer.h"
 #include <sstream>
 #include <string>
@@ -43,7 +39,7 @@ PLUGIN_API int XPluginStart(char* outName, char* outSig, char* outDesc)
 	logger = Logger("XPLMServer.log", "[XPLMServer]", true);
 	#ifdef WIN
 	auto data = loadFile(".\\Resources\\plugins\\XPLMServer\\pluginConfig.json");
-	#elif LIN
+	#else
 	auto data = loadFile("./Resources/plugins/XPLMServer/pluginConfig.json");
 	#endif
 	if (data.str().length() < 1)
@@ -77,9 +73,7 @@ PLUGIN_API void XPluginDisable(void)
 
 PLUGIN_API int  XPluginEnable(void)
 { 
-	XPLMDebugString("[XPLMServer] Plugin Enabled\n");
 	logger.Log("[XPLMServer]Enabled");
-	XPLMDebugString("[XPLMServer] Plugin Enabled (1)\n");
 	std::string configuration;
 	#ifndef _DEBUG
 		configuration = "Release";
@@ -95,27 +89,21 @@ PLUGIN_API int  XPluginEnable(void)
 		#endif
 	#elif LIN
 		platform = "Linux64";
-	#elif MAC
+	#elif APL
 		platform = "Mac64";
 	#endif
-	XPLMDebugString("[XPLMServer] Plugin Enabled (2)\n");
 	logger.Log("Loading configuration :'" + configuration + "' & platform : '" + platform + "'");
 	std::string dllPath = PluginConfiguration["DLLFiles"][platform][configuration].get<std::string>();
 	logger.Log("Trying to load dll from path : '" + dllPath + "'");
 	logger.Log("Creating a callback manager...");
-	XPLMDebugString("[XPLMServer] Plugin Enabled (3)\n");
 	callbackManager = new CallbackManager();
 	logger.Log("Creating a callback manager...[DONE]\n");
 	logger.Log("Loading the dlls");
-	XPLMDebugString("[XPLMServer] Plugin Enabled (4)\n");
 	int res = callbackManager->LoadCallbackDLL(dllPath);
-	XPLMDebugString("[XPLMServer] Plugin Enabled (4.1)\n");
-	logger.Log("Loading the dlls");
 	std::stringstream debug;
-	XPLMDebugString("[XPLMServer] Plugin Enabled (5)\n");
 	debug << "[XPLMServer]Loading callback from DLL returned " << res << "\n Dll Path was: " << dllPath << "\n";
+	logger.Log(debug.str());
 	logger.Log("---Server Init----");
-	XPLMDebugString("[XPLMServer] Plugin Enabled (6)\n");
 	if (PluginConfiguration.contains("Server") &&
 		PluginConfiguration["Server"].contains("InIp") &&
 		PluginConfiguration["Server"].contains("InPort"))
@@ -124,8 +112,6 @@ PLUGIN_API int  XPluginEnable(void)
 		server = new UDPServer();
 		logger.Log("initlaizating server : " + std::to_string(PluginConfiguration["Server"]["InPort"].get<int>()));
 		res = server->Bind(PluginConfiguration["Server"]["InPort"].get<unsigned short>());
-		logger.Log("Server::Initalize returned " + std::to_string(res) + "\n");
-		XPLMDebugString("[XPLMServer] Plugin Enabled (7)\n");
 		if (res == EXIT_SUCCESS)
 		{
 			logger.Log("Initalization sucess");
@@ -134,7 +120,6 @@ PLUGIN_API int  XPluginEnable(void)
 		else {
 			logger.Log("Initalization failed, Res was " + std::to_string(res));
 		}
-		XPLMDebugString("[XPLMServer] Plugin Enabled (8)\n");
 	}
 
 	return 1;
@@ -197,10 +182,8 @@ float NetworkCallback(float elapsedSinceCall, float elapsedSinceLastTime, int in
 
 float ExportSubscribedDataref(float elapsedSinceCall, float elapsedSinceLastTime, int inCounter, void* inRef)
 {
-	logger.Log("ExportSubscribedDataref [STARTED], There are " + std::to_string(callbackManager->GetSubscribedDatarefCount()));
 	if (callbackManager->GetSubscribedDatarefCount() < 1)
 	{
-		logger.Log("ExportSubscribedDataref [DONE], waiting 1sec for next call");
 		return 1.0f;
 	}
 	auto* p_subscribedDatarefMap = callbackManager->GetSubscribedDataref();
@@ -220,6 +203,5 @@ float ExportSubscribedDataref(float elapsedSinceCall, float elapsedSinceLastTime
 		jdataOut["Datarefs"].push_back(jdataref);
 	}
 	BroadCastData(jdataOut.dump());
-	logger.Log("ExportSubscribedDataref [DONE]");
 	return 0.25f;
 }
