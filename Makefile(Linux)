@@ -34,7 +34,6 @@ CFLAGS := $(DEFINES) $(INCLUDES) -std=c++20 -fPIC -fvisibility=hidden
 ###XPLMServer
 
 $(BUILDDIR)/lin.xpl : $(BUILDDIR)/UDPServer.o $(BUILDDIR)/Dataref.o $(BUILDDIR)/Logger.o $(BUILDDIR)/utils.o $(BUILDDIR)/CallbackManager.o $(BUILDDIR)/XPLMServer.o
-	echo $(BUILDDIR)/Networking.a
 	gcc -m64 -static-libgcc -shared -Wl,--version-script=exports.txt $(BUILDDIR)/UDPServer.o $(BUILDDIR)/Dataref.o $(BUILDDIR)/Logger.o $(BUILDDIR)/utils.o $(BUILDDIR)/CallbackManager.o $(BUILDDIR)/XPLMServer.o  -o $(BUILDDIR)/lin.xpl
 
 $(BUILDDIR)/XPLMServer.o : $(XPLMServer)/src/main.cpp
