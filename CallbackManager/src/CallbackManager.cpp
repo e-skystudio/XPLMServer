@@ -96,6 +96,15 @@ int CallbackManager::LoadCallbackDLL(std::string inDllPath)
 	if(loader == nullptr)
 	{
 		m_logger.Log("Unable to load GetCallbacks!", Logger::Severity::CRITICAL);
+		#ifndef WIn
+			XPLMDebugString("[XPLM]There was an error loading the callback, error provided in XPLM logFile\n");
+			char* error;
+			error = dlerror();
+			m_logger.Log(std::string(error), Logger::Severity::CRITICAL);
+			XPLMDebugString(error);
+			XPLMDebugString("\n\n");
+		#endif
+		return 0x02;
 	}
 	int size = 0;
 	loader(nullptr, &size);
