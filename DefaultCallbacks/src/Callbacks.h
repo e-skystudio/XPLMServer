@@ -12,7 +12,7 @@ using json = nlohmann::json;
     #define CALLBACK_FUNC extern "C" __declspec(dllimport) 
     #endif
 #else 
-    #define CALLBACK_FUNC extern "C"
+    #define CALLBACK_FUNC extern "C" __attribute__((visibility("default")))
 #endif
 
 constexpr int CallbackNumber = 12;
@@ -30,7 +30,7 @@ std::string ExtractJsonValue(json* jdata, std::string fieldname, CallbackManager
 /// Pointer to an int, will be set as the number of callback
 /// return(able) by the function
 ///</params>
-CALLBACK_FUNC void GetCallbacks(std::vector<CallbackFunction*>* callbacks, int* size);
+CALLBACK_FUNC void GetCallbacks(std::vector<CallbackFunctionStruct*>* callbacks, int* size);
 
 // 2
 ///<summary>
