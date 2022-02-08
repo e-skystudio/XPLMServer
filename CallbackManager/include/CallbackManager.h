@@ -35,8 +35,8 @@ extern "C"
 		}
 	};
 
-	typedef void(*callbackLoader)(std::vector<CallbackFunctionStruct*>*, int*);
-	typedef int(*callback)(json* json, void* CallbackManager); ///The callback reference
+	typedef void(*CallbackLoader)(std::vector<CallbackFunctionStruct*>*, int*);
+	typedef int(*Callback)(json* json, void* CallbackManager); ///The callback reference
 
 	struct ConstantDataref {
 		std::string name;
@@ -69,7 +69,7 @@ extern "C"
 		/// <param name="name">The name of the callback</param>
 		/// <param name="newCallback">Function pointer to the callback</param>
 		/// <returns>EXIT_SUCESS if the name was not already in use and callback addition was sucessfull</returns>
-		int AppendCallback(std::string name, callback newCallback);
+		int AppendCallback(std::string name, Callback newCallback);
 		/// <summary>
 		///  Append callback to the stored callback
 		/// </summary>
@@ -129,7 +129,7 @@ extern "C"
 		void RemoveConstantDataref(std::string name);
 		void ExecuteConstantDataref();
 	protected:
-		std::map<std::string, callback>* m_callbacks;
+		std::map<std::string, Callback>* m_callbacks;
 		std::map<std::string, Dataref*>* m_namedDatarefs; //The datarefs stored while plugin is in used
 		std::map<std::string, Dataref*>* m_subscribedDatarefs; //The datarefs that value is returned per timed basis
 		std::vector<ConstantDataref>* m_constDataref; //Datarefs set as constant (value are copied from the key)
@@ -146,5 +146,5 @@ extern "C"
 	///<summary>
 	/// Define a standard callback function
 	///</summary>
-	typedef std::function<int(json, CallbackManager*)> Callback;
+	//typedef std::function<int(json, CallbackManager*)> Callback;
 }

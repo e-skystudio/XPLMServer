@@ -4,7 +4,7 @@ CallbackManager::CallbackManager() :
 	m_logger(Logger("XPLMServer.log", "CallbackManager", false)),
 	m_subscirbeDatarefCount(0)
 {
-	m_callbacks = new std::map<std::string, callback>();
+	m_callbacks = new std::map<std::string, Callback>();
 	m_namedDatarefs = new std::map<std::string, Dataref*>();
 	m_subscribedDatarefs = new std::map<std::string, Dataref*>();
 	m_constDataref = new std::vector<ConstantDataref>();
@@ -42,7 +42,7 @@ CallbackManager::~CallbackManager()
 	#endif
 }
 
-int CallbackManager::AppendCallback(std::string name, callback newCallback)
+int CallbackManager::AppendCallback(std::string name, Callback newCallback)
 {
 	if (m_callbacks->contains(name))
 	{
@@ -87,11 +87,11 @@ int CallbackManager::LoadCallbackDLL(std::string inDllPath)
 	ss << "DLL : '" << inDllPath << "' LOADED SUCESSFULLY !";
 	m_logger.Log(ss.str(), Logger::Severity::TRACE);
 	m_logger.Log(ss.str().c_str());
-	callbackLoader loader;
+	CallbackLoader loader;
 	#ifdef WIN
-		loader = reinterpret_cast<callbackLoader>(GetProcAddress(hDLL, "GetCallbacks"));
+		loader = reinterpret_cast<CallbackLoader>(GetProcAddress(hDLL, "GetCallbacks"));
 	#else
-		loader = reinterpret_cast<callbackLoader>(dlsym(m_hDLL, "GetCallbacks"));
+		loader = reinterpret_cast<CallbackLoader>(dlsym(m_hDLL, "GetCallbacks"));
 	#endif
 	if(loader == nullptr)
 	{
@@ -116,11 +116,11 @@ int CallbackManager::LoadCallbackDLL(std::string inDllPath)
 		m_logger.Log(("\nLoading callback " + std::to_string(i) + " / " + std::to_string(size - 1)).c_str());
 		CallbackFunctionStruct* callback1 = vec_callbacks[i];
 		m_logger.Log(("Trying to load '" + callback1->function + "' as '" + callback1->operation + "'...").c_str());
-		callback p_callback;
+		Callback p_callback;
 		#ifdef WIN
-		 	p_callback = reinterpret_cast<callback>GetProcAddress(m_hDLL, callback1->function.c_str());
+		 	p_callback = reinterpret_cast<Callback>GetProcAddress(m_hDLL, callback1->function.c_str());
 		#else
-			p_callback = reinterpret_cast<callback>(dlsym(m_hDLL, callback1->function.c_str()));
+			p_callback = reinterpret_cast<Callback>(dlsym(m_hDLL, callback1->function.c_str()));
 		#endif
 		if (p_callback == nullptr)
 		{
