@@ -5,10 +5,13 @@ UDPServer::UDPServer() :
     m_hints({0}),
     m_bind_address{0},
     m_socket_listen(0),
-    m_socket_emit(0),
-    m_fout(NULL)
+    m_socket_emit(0)
 {
+	m_fout = fopen("XPLMServerNetwork.log", "w+");
+	fprintf(m_fout, "Loging started !\n");
+	fflush(m_fout);
 }
+
 
 int UDPServer::Bind(unsigned short port)
 {
@@ -27,13 +30,20 @@ int UDPServer::Bind(unsigned short port)
 		fflush(m_fout);
 		return 0x02;
 	}
+	fprintf(m_fout, "bind() success on %d!\n", port);
+	fflush(m_fout);
 	return 0x00;
 }
 
 std::string UDPServer::ReceiveData(int maxSize,Client* outCli)
 {
+	//this function is called (checked) 
     if (maxSize < 0)
+	{
+		fprintf(m_fout, "MaxSize < 0 ! Error\n");
+		fflush(m_fout);
 		return std::string();
+	}
 	struct sockaddr_storage client_address = {0};
 	socklen_t client_len = sizeof(client_address);
 	char* read = (char *)malloc((size_t)maxSize);
@@ -50,6 +60,7 @@ std::string UDPServer::ReceiveData(int maxSize,Client* outCli)
 
 	if (FD_ISSET(m_socket_listen, &clients))
 	{
+		fprintf(m_fout, "Data is available to read\n");
 		int bytes_received = recvfrom(m_socket_listen, read, maxSize, 0,
 			(struct sockaddr*)&client_address, &client_len);
 		if (bytes_received <= 0)
