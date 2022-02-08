@@ -8,10 +8,7 @@
 #include <string>
 #include <sstream>
 
-extern "C"
-{
-    #ifdef WIN
-        std::wstring s2ws(const std::string& s);
-    #endif
-    std::stringstream loadFile(std::string filepath);
-}
+#ifdef WIN
+    std::wstring s2ws(const std::string& s);
+#endif
+std::stringstream loadFile(std::string filepath);
