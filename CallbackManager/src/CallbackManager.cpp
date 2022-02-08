@@ -105,7 +105,7 @@ int CallbackManager::LoadCallbackDLL(std::string inDllPath)
 	m_logger.Log(ss.str().c_str());
 
 	m_logger.Log("Creating an array of CallbackFunction...");
-	std::vector<CallbackFunction*> vec_callbacks;
+	std::vector<CallbackFunctionStruct*> vec_callbacks;
 	m_logger.Log("Creating an array of CallbackFunction...[DONE]\n");
 	m_logger.Log("Loading the callbacks...");
 	loader(&vec_callbacks, &size);
@@ -114,7 +114,7 @@ int CallbackManager::LoadCallbackDLL(std::string inDllPath)
 	for (std::size_t i(0); i < vec_callbacks.size(); i++)
 	{
 		m_logger.Log(("\nLoading callback " + std::to_string(i) + " / " + std::to_string(size - 1)).c_str());
-		CallbackFunction* callback1 = vec_callbacks[i];
+		CallbackFunctionStruct* callback1 = vec_callbacks[i];
 		m_logger.Log(("Trying to load '" + callback1->function + "' as '" + callback1->operation + "'...").c_str());
 		callback p_callback;
 		#ifdef WIN

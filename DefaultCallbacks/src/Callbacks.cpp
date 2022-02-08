@@ -42,23 +42,23 @@ std::string ExtractJsonValue(json* jdata, std::string fieldname, CallbackManager
 	return value;
 }
 
-void GetCallbacks(std::vector<CallbackFunction*>* callbacks, int* size)
+void GetCallbacks(std::vector<CallbackFunctionStruct*>* callbacks, int* size)
 {
 	*size = 0;
 	if (callbacks != nullptr)
 	{
-		callbacks->push_back(new CallbackFunction("LOAD_DLL", "LoadDll"));
-		callbacks->push_back(new CallbackFunction("REG_DATA", "RegisterDataref"));
-		callbacks->push_back(new CallbackFunction("UNREG_DATA", "UnregisterDataref"));
-		callbacks->push_back(new CallbackFunction("SUB_DATA", "SubscribeDataref"));
-		callbacks->push_back(new CallbackFunction("UNSUB_DATA", "UnsubscribeDataref"));
-		callbacks->push_back(new CallbackFunction("GET_REG_DATA", "GetRegisterDatarefValue"));
-		callbacks->push_back(new CallbackFunction("SET_REG_DATA", "SetRegisterDatarefValue"));
-		callbacks->push_back(new CallbackFunction("GET_DATA", "GetDatarefValue"));
-		callbacks->push_back(new CallbackFunction("SET_DATA", "SetDatarefValue"));
-		callbacks->push_back(new CallbackFunction("SPEAK", "Speak"));
-		callbacks->push_back(new CallbackFunction("ADD_CONST", "AddConstantDataref"));
-		callbacks->push_back(new CallbackFunction("LOAD_REG_DATA", "LoadRegisterDataref"));
+		callbacks->push_back(new CallbackFunctionStruct("LOAD_DLL", "LoadDll"));
+		callbacks->push_back(new CallbackFunctionStruct("REG_DATA", "RegisterDataref"));
+		callbacks->push_back(new CallbackFunctionStruct("UNREG_DATA", "UnregisterDataref"));
+		callbacks->push_back(new CallbackFunctionStruct("SUB_DATA", "SubscribeDataref"));
+		callbacks->push_back(new CallbackFunctionStruct("UNSUB_DATA", "UnsubscribeDataref"));
+		callbacks->push_back(new CallbackFunctionStruct("GET_REG_DATA", "GetRegisterDatarefValue"));
+		callbacks->push_back(new CallbackFunctionStruct("SET_REG_DATA", "SetRegisterDatarefValue"));
+		callbacks->push_back(new CallbackFunctionStruct("GET_DATA", "GetDatarefValue"));
+		callbacks->push_back(new CallbackFunctionStruct("SET_DATA", "SetDatarefValue"));
+		callbacks->push_back(new CallbackFunctionStruct("SPEAK", "Speak"));
+		callbacks->push_back(new CallbackFunctionStruct("ADD_CONST", "AddConstantDataref"));
+		callbacks->push_back(new CallbackFunctionStruct("LOAD_REG_DATA", "LoadRegisterDataref"));
 		*size = (int)callbacks->size();
 	}
 	return;

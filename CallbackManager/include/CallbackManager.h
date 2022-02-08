@@ -21,21 +21,21 @@ using json = nlohmann::json;
 #pragma region DLLManagement
 extern "C"
 {
-	struct CallbackFunction {
+	struct CallbackFunctionStruct {
 		std::string operation; ///The json Operation value to execute the callback
 		std::string function; /// The name of the function in the DLL.
 		
-		CallbackFunction() : operation(""), function("")
+		CallbackFunctionStruct() : operation(""), function("")
 		{
 		}
 
-		CallbackFunction(std::string operation, std::string functionName) :
+		CallbackFunctionStruct(std::string operation, std::string functionName) :
 			operation(operation), function(functionName)
 		{
 		}
 	};
 
-	typedef void(*callbackLoader)(std::vector<CallbackFunction*>*, int*);
+	typedef void(*callbackLoader)(std::vector<CallbackFunctionStruct*>*, int*);
 	typedef int(*callback)(json* json, void* CallbackManager); ///The callback reference
 
 	struct ConstantDataref {
