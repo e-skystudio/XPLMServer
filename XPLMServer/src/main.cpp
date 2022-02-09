@@ -127,7 +127,6 @@ PLUGIN_API int  XPluginEnable(void)
 
 PLUGIN_API void XPluginReceiveMessage(XPLMPluginID inFrom, int inMsg, void* inParam) 
 {
-	XPLMSpeakString(("Message received : '" + std::to_string(inMsg) + "'").c_str());
 	if (callbackManager->GetSubscribedEventMap()->contains((unsigned int)inMsg))
 	{
 		json ops;
