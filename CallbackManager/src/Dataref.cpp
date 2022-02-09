@@ -4,7 +4,7 @@
 Dataref::Dataref() :
 	m_dataref(nullptr), m_type(Dataref::Type::Unknown),
 	m_logger(Logger("XPLMServer.log", "Dataref", false)),
-	m_link("")
+	m_link(""), m_conversionFactor("1.0")
 {
 }
 
@@ -140,8 +140,10 @@ std::string Dataref::GetValue()
 
 void Dataref::SetValue(std::string value)
 {
+	m_logger.Log("SetValue called!", Logger::Severity::TRACE);
 	if (m_dataref == NULL || !this->CanWrite())
 	{
+		m_logger.Log("Dataref is null or readonly", Logger::Severity::DEBUG);
 		return;
 	}
 	switch (m_type)
@@ -157,6 +159,7 @@ void Dataref::SetValue(std::string value)
 	case Dataref::Type::Float:
 	{
 		float val = std::stof(value) / (float)std::stod(m_conversionFactor);
+		XPLMSetDatai(m_dataref, val);
 		XPLMSetDataf(m_dataref, val);
 		break;
 	}
