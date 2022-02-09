@@ -1,5 +1,5 @@
 #pragma once
-#ifdef WIN
+#ifdef IBM
 	#include <Windows.h>
 #else
 	#include <dlfcn.h>
@@ -134,7 +134,7 @@ protected:
 	std::map<unsigned int, std::string>* m_subscribedEvent;
 	Logger m_logger; /* The logger */
 	unsigned int m_subscirbeDatarefCount;
-	#ifdef WIN
+	#ifdef IBM
 		HINSTANCE m_hDLL;
 	#else
 		void* m_hDLL;

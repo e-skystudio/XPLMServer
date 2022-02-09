@@ -5,7 +5,7 @@
 #include <XPLMUtilities.h>
 
 using json = nlohmann::json;
-#ifdef WIN
+#ifdef IBM
     #ifdef MAKE_DLL
     #define CALLBACK_FUNC extern "C" __declspec(dllexport) 
     #else
@@ -131,3 +131,6 @@ CALLBACK_FUNC int Speak(json* jdata, CallbackManager* callback);
 ///    - FileIn: the path (relative to xplane.exe) of the dataref to be parsed.
 ///</summary>
 CALLBACK_FUNC int AddConstantDataref(json* jdata, CallbackManager* callback);
+
+//14
+CALLBACK_FUNC int LoadRegisterDataref(json* jdata, CallbackManager* callback);

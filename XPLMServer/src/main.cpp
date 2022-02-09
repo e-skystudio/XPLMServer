@@ -1,4 +1,4 @@
-#include "TCPServer.h"
+#include "UDPServer.h" //avoid error on windows
 #include <sstream>
 #include <string>
 
@@ -11,7 +11,6 @@
 #include <utils.h>
 #include <nlohmann/json.hpp>
 
-#include "UDPServer.h"
 
 using json = nlohmann::json;
 
@@ -37,7 +36,7 @@ void BroadCastData(std::string data)
 PLUGIN_API int XPluginStart(char* outName, char* outSig, char* outDesc)
 {
 	logger = Logger("XPLMServer.log", "[XPLMServer]", true);
-	#ifdef WIN
+	#ifdef IBM
 	auto data = loadFile(".\\Resources\\plugins\\XPLMServer\\pluginConfig.json");
 	#else
 	auto data = loadFile("./Resources/plugins/XPLMServer/pluginConfig.json");
@@ -81,7 +80,7 @@ PLUGIN_API int  XPluginEnable(void)
 		configuration = "Debug";
 	#endif
 	std::string platform;
-	#ifdef WIN
+	#ifdef IBM
 		#ifndef WIN64
 			platform = "Win32";
 		#else

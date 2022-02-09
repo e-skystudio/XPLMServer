@@ -1,6 +1,6 @@
 #include "../include/utils.h"
 
-#ifdef WIN
+#ifdef IBM
 std::wstring s2ws(const std::string& s)
 {
 	int len;

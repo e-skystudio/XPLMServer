@@ -7,9 +7,17 @@ UDPServer::UDPServer() :
     m_socket_listen(0),
     m_socket_emit(0)
 {
+#ifdef _WIN32
+	errno_t error = fopen_s(&m_fout, "XPLMServerNetwork.log", "w+");
+#else
 	m_fout = fopen("XPLMServerNetwork.log", "w+");
+#endif
 	fprintf(m_fout, "Loging started !\n");
 	fflush(m_fout);
+}
+
+UDPServer::~UDPServer()
+{
 }
 
 

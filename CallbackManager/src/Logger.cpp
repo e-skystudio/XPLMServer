@@ -54,14 +54,14 @@ const char* Logger::CurrentDateTime()
 {
 	struct tm* ltm;
 	time_t now = time(0);
-	#ifdef WIN
-		struct tm* ltm = new tm();
+	#ifdef IBM
+		ltm = new struct tm;
 		localtime_s(ltm, &now);
 	#else
 		ltm = localtime(&now);
 	#endif
 	char* time = new char[20];
-	#ifdef WIN
+	#ifdef IBM
 		sprintf_s(time, 20,"%02d/%02d/%04d %02d:%02d:%02d", ltm->tm_mday, ltm->tm_mon, ltm->tm_year,
 				  ltm->tm_hour, ltm->tm_min, ltm->tm_sec);
 	#else

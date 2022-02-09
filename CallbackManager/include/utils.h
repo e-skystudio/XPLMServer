@@ -1,5 +1,5 @@
 #pragma once
-#ifdef WIN
+#ifdef IBM
     #include <Windows.h>
 #endif
 #include <string>
@@ -8,7 +8,7 @@
 #include <string>
 #include <sstream>
 
-#ifdef WIN
+#ifdef IBM
     std::wstring s2ws(const std::string& s);
 #endif
 std::stringstream loadFile(std::string filepath);

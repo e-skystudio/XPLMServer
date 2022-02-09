@@ -36,7 +36,8 @@ CallbackManager::~CallbackManager()
 		delete kv->second;
 		kv++;
 	}
-	#ifdef WIN
+	#ifdef IBM
+		FreeLibrary(m_hDLL);
 	#else
 		dlclose(m_hDLL);
 	#endif
@@ -70,7 +71,7 @@ std::map<unsigned int, std::string>* CallbackManager::GetSubscribedEventMap() co
 
 int CallbackManager::LoadCallbackDLL(std::string inDllPath)
 {
-	#ifdef WIN
+	#ifdef IBM
 		m_hDLL = LoadLibrary(s2ws(inDllPath).c_str());
 	#else
 		m_hDLL = dlopen(inDllPath.c_str(), RTLD_LAZY);
@@ -88,15 +89,15 @@ int CallbackManager::LoadCallbackDLL(std::string inDllPath)
 	m_logger.Log(ss.str(), Logger::Severity::TRACE);
 	m_logger.Log(ss.str().c_str());
 	CallbackLoader loader;
-	#ifdef WIN
-		loader = reinterpret_cast<CallbackLoader>(GetProcAddress(hDLL, "GetCallbacks"));
+	#ifdef IBM
+		loader = reinterpret_cast<CallbackLoader>(GetProcAddress(m_hDLL, "GetCallbacks"));
 	#else
 		loader = reinterpret_cast<CallbackLoader>(dlsym(m_hDLL, "GetCallbacks"));
 	#endif
 	if(loader == nullptr)
 	{
 		m_logger.Log("Unable to load GetCallbacks!", Logger::Severity::CRITICAL);
-		#ifndef WIn
+		#ifndef IBM
 			XPLMDebugString("[XPLM]There was an error loading the callback, error provided in XPLM logFile\n");
 			char* error;
 			error = dlerror();
@@ -126,8 +127,8 @@ int CallbackManager::LoadCallbackDLL(std::string inDllPath)
 		CallbackFunctionStruct* callback1 = vec_callbacks[i];
 		m_logger.Log(("Trying to load '" + callback1->function + "' as '" + callback1->operation + "'...").c_str());
 		Callback p_callback;
-		#ifdef WIN
-		 	p_callback = reinterpret_cast<Callback>GetProcAddress(m_hDLL, callback1->function.c_str());
+		#ifdef IBM
+		 	p_callback = reinterpret_cast<Callback>(GetProcAddress(m_hDLL, callback1->function.c_str()));
 		#else
 			p_callback = reinterpret_cast<Callback>(dlsym(m_hDLL, callback1->function.c_str()));
 		#endif

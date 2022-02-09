@@ -1,18 +1,16 @@
 #pragma once
-#include <stdio.h>
-#include <string>
-#include <memory.h>
 
-#ifdef WIN
+
+#ifdef _WIN32
+	#include <WinSock2.h>
+	#include <WS2tcpip.h>
+	#pragma comment(lib, "ws2_32.lib")
 	#ifndef _WIN32_WINNT
 		#define _WIN32_WINNT 0x0600
 	#endif
 	#ifndef IPV6_V6ONLY
 		#define IPV6_V6ONLY 27
 	#endif
-	#include <WinSock2.h>
-	#include <WS2tcpip.h>
-	#pragma comment(lib, "ws2_32.lib")
 	#define ISVALIDSOCKET(s) ((s) != INVALID_SOCKET)
 	#define CLOSESOCKET(s) closesocket(s)
 	#define GETSOCKETERRNO() (WSAGetLastError())
@@ -33,6 +31,10 @@
 	#define CLOSESOCKET(s) close(s)
 	#define GETSOCKETERRNO() (errno)
 #endif
+
+#include <stdio.h>
+#include <string>
+#include <memory.h>
 
 extern "C"{
 
