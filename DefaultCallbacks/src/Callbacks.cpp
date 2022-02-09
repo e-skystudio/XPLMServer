@@ -235,7 +235,12 @@ int SetRegisterDatarefValue(json* jdata, CallbackManager* callback)
 #ifdef _DEBUG
 	callback->Log("Dataref '"+ name + "' found!");
 #endif
-	auto p_dataref = p_datarefMap->at(name);
+	Dataref* p_dataref = p_datarefMap->at(name);
+	if(p_dataref == nullptr)
+	{
+		callback->Log("Dataref pointer is null");
+		return 0x03;
+	}
 #ifdef _DEBUG
 	callback->Log("Obtaining Dataref '" + name + "'...[DONE]");
 #endif
