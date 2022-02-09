@@ -370,3 +370,4 @@ lib/
 build/
 .vscode/
 .DS_Store
+client.py
