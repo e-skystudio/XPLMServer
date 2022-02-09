@@ -56,33 +56,29 @@ std::string UDPServer::ReceiveData(int maxSize,Client* outCli)
 	FD_ZERO(&clients);
 	FD_SET(m_socket_listen, &clients);
 
-	select((int)m_socket_listen, &clients, 0, 0, &timeout);
-
-	if (FD_ISSET(m_socket_listen, &clients))
+	if(select((int)m_socket_listen + 1, &clients, 0, 0, &timeout) <= 0) return std::string();
+	
+	fprintf(m_fout, "Data is available to read\n");
+	int bytes_received = recvfrom(m_socket_listen, read, maxSize, 0,
+		(struct sockaddr*)&client_address, &client_len);
+	if (bytes_received <= 0)
 	{
-		fprintf(m_fout, "Data is available to read\n");
-		int bytes_received = recvfrom(m_socket_listen, read, maxSize, 0,
-			(struct sockaddr*)&client_address, &client_len);
-		if (bytes_received <= 0)
-		{
-			fprintf(m_fout, ">>> %d bytes received\n", bytes_received);
-			fflush(m_fout);
-		}
-		char address_buffer[100];
-		char service_buffer[100];
-		getnameinfo(((struct sockaddr*)&client_address),
-			client_len, address_buffer, sizeof(address_buffer),
-			service_buffer, sizeof(service_buffer),
-			NI_NUMERICHOST | NI_NUMERICSERV);
-		outCli->ip = std::string(address_buffer);
-		outCli->port = m_port + 1;
-		fprintf(m_fout, "[%s:%s]>>>%s (%d byte(s))\n", address_buffer, service_buffer, read, bytes_received);
+		fprintf(m_fout, ">>> %d bytes received\n", bytes_received);
 		fflush(m_fout);
-		std::string s_out(read);
-		s_out.resize(bytes_received);
-		return s_out;
 	}
-	return std::string();
+	char address_buffer[100];
+	char service_buffer[100];
+	getnameinfo(((struct sockaddr*)&client_address),
+		client_len, address_buffer, sizeof(address_buffer),
+		service_buffer, sizeof(service_buffer),
+		NI_NUMERICHOST | NI_NUMERICSERV);
+	outCli->ip = std::string(address_buffer);
+	outCli->port = m_port + 1;
+	fprintf(m_fout, "[%s:%s]>>>%s (%d byte(s))\n", address_buffer, service_buffer, read, bytes_received);
+	fflush(m_fout);
+	std::string s_out(read);
+	s_out.resize(bytes_received);
+	return s_out;
 }
 
 int UDPServer::SendData(std::string data, Client cli)
