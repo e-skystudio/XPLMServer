@@ -48,17 +48,12 @@ PLUGIN_API int XPluginStart(char* outName, char* outSig, char* outDesc)
 	}
 	XPLMDebugString("[XPLMServer]Configuration file loaded sucessfully\n");
 	PluginConfiguration = json::parse(data.str());
-	XPLMDebugString("[XPLMServer] 1\n");
 	std::string sig = PluginConfiguration["Plugin"]["Name"].get<std::string>();
 	std::string description = PluginConfiguration["Plugin"]["Description"].get<std::string>() ;
-	XPLMDebugString("[XPLMServer] 2\n");
 
-
-	XPLMDebugString("[XPLMServer] 3\n");
 	strcpy(outName, sig.c_str());
 	strcpy(outSig, "eskystudio.tools.XPLMServer");
 	strcpy(outDesc, description.c_str());
-	XPLMDebugString("[XPLMServer] 4\n");
 	return 1;
 }
 
