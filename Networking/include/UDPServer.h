@@ -59,6 +59,8 @@ extern "C"{
 		SOCKET m_socket_listen;
 		SOCKET m_socket_emit;
 		FILE* m_fout;
+	private:
+		void log(std::string data) const;
 	};
 
 }

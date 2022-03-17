@@ -12,8 +12,7 @@ UDPServer::UDPServer() :
 #else
 	m_fout = fopen("XPLMServerNetwork.log", "w+");
 #endif
-	fprintf(m_fout, "Loging started !\n");
-	fflush(m_fout);
+	log("Loging Started\n");
 }
 
 UDPServer::~UDPServer()
@@ -34,22 +33,18 @@ int UDPServer::Bind(unsigned short port)
 	m_socket_emit = socket(m_bind_address->ai_family, m_bind_address->ai_socktype, m_bind_address->ai_protocol);
 	if (bind(m_socket_listen, m_bind_address->ai_addr, (int)m_bind_address->ai_addrlen))
 	{
-		fprintf(m_fout, "bind() failed on %d! Error code: %d\n", port, GETSOCKETERRNO());
-		fflush(m_fout);
+		log("bind() failed on" + std::to_string(port) + "! Error code: " + std::to_string(GETSOCKETERRNO()) + "\n");
 		return 0x02;
 	}
-	fprintf(m_fout, "bind() success on %d!\n", port);
-	fflush(m_fout);
+	log("bind() sucess on " + std::to_string(port) + "!\n");
 	return 0x00;
 }
 
 std::string UDPServer::ReceiveData(int maxSize,Client* outCli)
 {
-	//this function is called (checked) 
     if (maxSize < 0)
 	{
-		fprintf(m_fout, "MaxSize < 0 ! Error\n");
-		fflush(m_fout);
+		log("MaxSize < 0! ERROR\n");
 		return std::string();
 	}
 	struct sockaddr_storage client_address = {0};
@@ -66,13 +61,12 @@ std::string UDPServer::ReceiveData(int maxSize,Client* outCli)
 
 	if(select((int)m_socket_listen + 1, &clients, 0, 0, &timeout) <= 0) return std::string();
 	
-	fprintf(m_fout, "Data is available to read\n");
+	log("Data is available to read\n");
 	int bytes_received = recvfrom(m_socket_listen, read, maxSize, 0,
 		(struct sockaddr*)&client_address, &client_len);
 	if (bytes_received <= 0)
 	{
-		fprintf(m_fout, ">>> %d bytes received\n", bytes_received);
-		fflush(m_fout);
+		log(">>> " + std::to_string(bytes_received) + "bytes received\n");
 	}
 	char address_buffer[100];
 	char service_buffer[100];
@@ -82,10 +76,12 @@ std::string UDPServer::ReceiveData(int maxSize,Client* outCli)
 		NI_NUMERICHOST | NI_NUMERICSERV);
 	outCli->ip = std::string(address_buffer);
 	outCli->port = m_port + 1;
-	fprintf(m_fout, "[%s:%s]>>>%s (%d byte(s))\n", address_buffer, service_buffer, read, bytes_received);
-	fflush(m_fout);
+	/*log("[" + address_buffer + ":" + service_buffer + "]>>>" + read + "")*/
 	std::string s_out(read);
 	s_out.resize(bytes_received);
+	char logBuffer[4150];
+	sprintf_s(logBuffer, 4150, "[%s:%s]>>>'%s'(%d byte(s))\n", address_buffer, service_buffer, s_out.c_str(), bytes_received);
+	log(std::string(logBuffer));
 	return s_out;
 }
 
@@ -96,24 +92,29 @@ int UDPServer::SendData(std::string data, Client cli)
 	int res = inet_pton(AF_INET, cli.ip.c_str(), &send_address.sin_addr.s_addr);
 	if (res < 0)
 	{
-		fprintf(m_fout, "Error message with InetPton() : %d\n", GETSOCKETERRNO());
-		fflush(m_fout);
+		log("Error message with InetPton() : " + std::to_string(GETSOCKETERRNO()) + "\n");
 	}
 	else if (res == 0)
 	{
-		fprintf(m_fout, "Client address is not valid !\n");
-		fflush(m_fout);
+		log("Client address is not valid !\n");
 	}
 	send_address.sin_family = AF_INET;
 	send_address.sin_port = htons(cli.port);
 	int bytes = sendto(m_socket_emit, data.c_str(), (int)data.length(), 0, 
 		(struct sockaddr*)&send_address, (int)sizeof(struct sockaddr_in));
-	fprintf(m_fout, "[%s:%d]<<<%s (%d byte(s))\n", cli.ip.c_str(), cli.port, data.c_str(), bytes);
-	fflush(m_fout);
+	char logBuffer[4150];
+	sprintf_s(logBuffer, 4150, "[%s:%d]<<<'%s'(%d byte(s))\n", cli.ip.c_str(), cli.port, data.c_str(), bytes);
+	log(std::string(logBuffer));
 	if (bytes <= 0)
 	{
-		fprintf(m_fout, "Error message : %d\n", GETSOCKETERRNO());
-		fflush(m_fout);
+		log("Error message : " + std::to_string(GETSOCKETERRNO()) + "\n");
 	}
 	return bytes;
+}
+
+void UDPServer::log(std::string data) const
+{
+	if (m_fout == 0) return;
+	fprintf(m_fout, data.c_str());
+	fflush(m_fout);
 }

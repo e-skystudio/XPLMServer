@@ -10,7 +10,6 @@
 #include <map>
 #include <sstream>
 
-#include <XPLMUtilities.h>
 #include <nlohmann/json.hpp>
 
 #include "Dataref.h"

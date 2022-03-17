@@ -106,7 +106,7 @@
       <ConformanceMode>true</ConformanceMode>
       <LanguageStandard>stdcpp20</LanguageStandard>
       <LanguageStandard_C>stdc17</LanguageStandard_C>
-      <AdditionalIncludeDirectories>$(SolutionDir)\Networking\include;$(SolutionDir)CallbackManager\include\;$(libxplane)include\win32\Widgets;$(libxplane)include\win32\Wrappers;$(libxplane)include\win32\XPLM;$(SolutionDir)Logger\include;$(SolutionDir)Datarefs\include;$(SolutionDir)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir)Networking\include;$(SolutionDir)CallbackManager\include\;$(xplaneSDK)CHeaders\win32\Widgets;$(xplaneSDK)CHeaders\win32\Wrappers;$(xplaneSDK)CHeaders\win32\XPLM;$(SolutionDir)Logger\include;$(SolutionDir)Datarefs\include;$(SolutionDir)</AdditionalIncludeDirectories>
       <UndefinePreprocessorDefinitions>
       </UndefinePreprocessorDefinitions>
       <GenerateXMLDocumentationFiles>true</GenerateXMLDocumentationFiles>
@@ -115,11 +115,11 @@
     <Link>
       <SubSystem>Console</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalLibraryDirectories>$(libxplane)lib\Win\;$(SolutionDir)CallbackManager\Lib\;$(SolutionDir)Networking\lib\</AdditionalLibraryDirectories>
+      <AdditionalLibraryDirectories>$(xplaneSDK)Libraries\Win\;$(SolutionDir)CallbackManager\Lib\;$(SolutionDir)Networking\lib\</AdditionalLibraryDirectories>
       <AdditionalDependencies>Networking-d.lib;CallbackManager-d.lib;XPLM.lib;XPWidgets.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
     <Lib>
-      <AdditionalLibraryDirectories>$(libxplane)lib\Win\</AdditionalLibraryDirectories>
+      <AdditionalLibraryDirectories>$(xplaneSDK)Libraries\Win\</AdditionalLibraryDirectories>
       <AdditionalDependencies>XPLM.lib;XPWidgets.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Lib>
   </ItemDefinitionGroup>
@@ -133,7 +133,7 @@
       <ConformanceMode>true</ConformanceMode>
       <LanguageStandard>stdcpp20</LanguageStandard>
       <LanguageStandard_C>stdc17</LanguageStandard_C>
-      <AdditionalIncludeDirectories>$(SolutionDir)TCPServer\include\;$(SolutionDir)CallbackManager\include\;$(libxplane)include\win32\Widgets;$(libxplane)include\win32\Wrappers;$(libxplane)include\win32\XPLM;$(SolutionDir)Logger\include;$(SolutionDir)Datarefs\include;$(SolutionDir)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir)Networking\include;$(SolutionDir)CallbackManager\include\;$(xplaneSDK)CHeaders\win32\Widgets;$(xplaneSDK)CHeaders\win32\Wrappers;$(xplaneSDK)CHeaders\win32\XPLM;$(SolutionDir)Logger\include;$(SolutionDir)Datarefs\include;$(SolutionDir)</AdditionalIncludeDirectories>
       <UndefinePreprocessorDefinitions>
       </UndefinePreprocessorDefinitions>
       <GenerateXMLDocumentationFiles>true</GenerateXMLDocumentationFiles>
@@ -144,11 +144,11 @@
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalLibraryDirectories>$(libxplane)lib\Win\;$(SolutionDir)CallbackManager\Lib\;$(SolutionDir)TCPServer\lib\</AdditionalLibraryDirectories>
+      <AdditionalLibraryDirectories>$(xplaneSDK)Libraries\Win\;$(SolutionDir)CallbackManager\Lib\;$(SolutionDir)Networking\lib\</AdditionalLibraryDirectories>
       <AdditionalDependencies>Networking.lib;CallbackManager.lib;XPLM.lib;XPWidgets.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
     <Lib>
-      <AdditionalLibraryDirectories>$(libxplane)lib\Win\</AdditionalLibraryDirectories>
+      <AdditionalLibraryDirectories>$(xplaneSDK)Libraries\Win\</AdditionalLibraryDirectories>
       <AdditionalDependencies>XPLM.lib;XPWidgets.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Lib>
   </ItemDefinitionGroup>
@@ -160,7 +160,7 @@
       <ConformanceMode>true</ConformanceMode>
       <LanguageStandard>stdcpp20</LanguageStandard>
       <LanguageStandard_C>stdc17</LanguageStandard_C>
-      <AdditionalIncludeDirectories>$(SolutionDir)Networking\include\;$(SolutionDir)CallbackManager\include\;$(libxplane)include\win64\Widgets;$(libxplane)include\win64\Wrappers;$(libxplane)include\win64\XPLM;$(SolutionDir)Logger\include;$(SolutionDir)Datarefs\include;$(SolutionDir)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir)Networking\include\;$(SolutionDir)CallbackManager\include\;$(xplaneSDK)CHeaders\win64\Widgets;$(xplaneSDK)CHeaders\win64\Wrappers;$(xplaneSDK)CHeaders\win64\XPLM;$(SolutionDir)Logger\include;$(SolutionDir)Datarefs\include;$(SolutionDir)</AdditionalIncludeDirectories>
       <UndefinePreprocessorDefinitions>
       </UndefinePreprocessorDefinitions>
       <GenerateXMLDocumentationFiles>true</GenerateXMLDocumentationFiles>
@@ -169,11 +169,11 @@
     <Link>
       <SubSystem>Console</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalLibraryDirectories>$(libxplane)lib\Win\;$(SolutionDir)CallbackManager\Lib\;$(SolutionDir)Networking\lib\</AdditionalLibraryDirectories>
+      <AdditionalLibraryDirectories>$(xplaneSDK)Libraries\Win\;$(SolutionDir)CallbackManager\Lib\;$(SolutionDir)Networking\lib\</AdditionalLibraryDirectories>
       <AdditionalDependencies>Networking_64-d.lib;CallbackManager_64-d.lib;XPLM_64.lib;XPWidgets_64.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
     <Lib>
-      <AdditionalLibraryDirectories>$(libxplane)lib\Win\</AdditionalLibraryDirectories>
+      <AdditionalLibraryDirectories>$(xplaneSDK)Libraries\Win\</AdditionalLibraryDirectories>
       <AdditionalDependencies>XPLM_64.lib;XPWidgets_64.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Lib>
   </ItemDefinitionGroup>
@@ -187,7 +187,7 @@
       <ConformanceMode>true</ConformanceMode>
       <LanguageStandard>stdcpp20</LanguageStandard>
       <LanguageStandard_C>stdc17</LanguageStandard_C>
-      <AdditionalIncludeDirectories>$(SolutionDir)TCPServer\include\;$(SolutionDir)CallbackManager\include\;$(libxplane)include\win64\Widgets;$(libxplane)include\win64\Wrappers;$(libxplane)include\win64\XPLM;$(SolutionDir)Logger\include;$(SolutionDir)Datarefs\include;$(SolutionDir)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir)Networking\include\;$(SolutionDir)CallbackManager\include\;$(xplaneSDK)CHeaders\win64\Widgets;$(xplaneSDK)CHeaders\win64\Wrappers;$(xplaneSDK)CHeaders\win64\XPLM;$(SolutionDir)Logger\include;$(SolutionDir)Datarefs\include;$(SolutionDir)</AdditionalIncludeDirectories>
       <UndefinePreprocessorDefinitions>
       </UndefinePreprocessorDefinitions>
       <GenerateXMLDocumentationFiles>true</GenerateXMLDocumentationFiles>
@@ -198,11 +198,11 @@
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalLibraryDirectories>$(libxplane)lib\Win\;$(SolutionDir)CallbackManager\Lib\;$(SolutionDir)TCPServer\lib\</AdditionalLibraryDirectories>
+      <AdditionalLibraryDirectories>$(xplaneSDK)Libraries\Win\;$(SolutionDir)CallbackManager\Lib\;$(SolutionDir)Networking\lib\</AdditionalLibraryDirectories>
       <AdditionalDependencies>Networking_64.lib;CallbackManager_64.lib;XPLM_64.lib;XPWidgets_64.lib;Datarefs_64.lib%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
     <Lib>
-      <AdditionalLibraryDirectories>$(libxplane)lib\Win\</AdditionalLibraryDirectories>
+      <AdditionalLibraryDirectories>$(xplaneSDK)Libraries\Win\</AdditionalLibraryDirectories>
       <AdditionalDependencies>XPLM_64.lib;XPWidgets_64.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Lib>
   </ItemDefinitionGroup>

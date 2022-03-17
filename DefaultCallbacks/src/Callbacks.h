@@ -2,7 +2,6 @@
 #include "CallbackManager.h"
 #include "Dataref.h"
 #include <nlohmann/json.hpp>
-#include <XPLMUtilities.h>
 
 using json = nlohmann::json;
 #ifdef IBM
