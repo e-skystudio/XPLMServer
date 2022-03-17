@@ -1,6 +1,6 @@
 SDK			    := /Users/rdessart/Projects/CPP/SDK/XPlane/303
 TARGET		    := XPLMServer
-BASE_DIR        := /Users/rdessart/Projects/CPP/XPLMServer
+BASE_DIR        := $(PWD)
 BUILDDIR	    := $(BASE_DIR)/build
 CALLBACKMANAGER := $(BASE_DIR)/CallbackManager
 DEFAULTCALLBACK := $(BASE_DIR)/DefaultCallbacks
@@ -19,7 +19,7 @@ INCLUDES = \
 	-I$(NETWORKING)/include\
 	-I$(VCPKG_INCLUDES)/
 
-DEFINES = -DXPLM200=1 -DXPLM210=1 -DAPL=1 -DIBM=0 -DLIN=0 -D_DEBUG=1 
+DEFINES = -DXPLM200=1 -DXPLM210=1 -DAPL=1 -D_DEBUG=1 
 
 CFLAGS := $(DEFINES) $(INCLUDES) -std=c++20 -fPIC -fvisibility=hidden -arch x86_64
 
@@ -39,7 +39,6 @@ $(BUILDDIR)/DefaultCallbacks.o : $(DEFAULTCALLBACK)/src/Callbacks.cpp $(DEFAULTC
 	g++ $(CFLAGS) $(DEFAULTCALLBACK)/src/Callbacks.cpp -c -o $(BUILDDIR)/DefaultCallbacks.o
 
 ### Networking
-
 $(BUILDDIR)/libNetworking.a: $(BUILDDIR)/UDPServer.o | $(BUILDDIR)
 	ar rcs $(BUILDDIR)/libNetworking.a $(BUILDDIR)/UDPServer.o
 
@@ -47,7 +46,6 @@ $(BUILDDIR)/UDPServer.o : $(NETWORKING)/src/UDPServer.cpp | $(BUILDDIR)
 	g++ $(CFLAGS) $(NETWORKING)/src/UDPServer.cpp -c -o $(BUILDDIR)/UDPServer.o
 
 ### CALLBACKMANAGER
-
 $(BUILDDIR)/libCallbackManager.a: $(BUILDDIR)/Dataref.o $(BUILDDIR)/Logger.o $(BUILDDIR)/utils.o $(BUILDDIR)/CallbackManager.o | $(BUILDDIR)
 	ar rcs $(BUILDDIR)/libCallbackManager.a $(BUILDDIR)/Dataref.o $(BUILDDIR)/Logger.o $(BUILDDIR)/utils.o $(BUILDDIR)/CallbackManager.o
 
