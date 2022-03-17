@@ -13,7 +13,11 @@
 #include <nlohmann/json.hpp>
 
 #include "Dataref.h"
+#include "FFDataref.h"
 #include "utils.h"
+#include "SharedValue.h"
+
+#include <XPLMPlugin.h>
 
 using json = nlohmann::json;
 
@@ -125,9 +129,20 @@ public:
 	void AddConstantDataref(std::string name, std::string value);
 	void RemoveConstantDataref(std::string name);
 	void ExecuteConstantDataref();
+	/// <summary>
+	///  Return the full map of stored named FFDataref(s)
+	/// </summary>
+	/// <returns>
+	///  A pointer toward the list of stored FFdatarefs
+	/// CAN BE NULL !
+	/// </returns>
+	std::map<std::string, FFDataref*>* GetNamedFFDataref() const;
+	SharedValuesInterface* GetFF320Interface() const;
+	bool InitFF320Interface();
 protected:
 	std::map<std::string, Callback>* m_callbacks;
 	std::map<std::string, Dataref*>* m_namedDatarefs; //The datarefs stored while plugin is in used
+	std::map<std::string, FFDataref*>* m_namedFFDatarefs;
 	std::map<std::string, Dataref*>* m_subscribedDatarefs; //The datarefs that value is returned per timed basis
 	std::vector<ConstantDataref>* m_constDataref; //Datarefs set as constant (value are copied from the key)
 	std::map<unsigned int, std::string>* m_subscribedEvent;
@@ -138,4 +153,5 @@ protected:
 	#else
 		void* m_hDLL;
 	#endif
+	SharedValuesInterface* m_ff320;
 };

@@ -1,6 +1,10 @@
 #include "../include/FFDataref.h"
 
-FFDataref::FFDataref() : m_id(-1), m_type(Type::Deleted), m_link(""), m_conversionFactor("1.0"), m_ffapi(nullptr)
+FFDataref::FFDataref() : m_id(-1),
+	m_type(Type::Deleted), m_link(""),
+	m_conversionFactor("1.0"), 
+	m_ffapi(nullptr),
+	m_logger(Logger("XPLMServer.log", "FFDataref", false))
 {
 }
 
@@ -34,17 +38,23 @@ FFDataref::Type FFDataref::GetType()
 FFDataref::Type FFDataref::LoadType()
 {
 	if (m_id < 0) {
-		XPLMDebugString("Id is less than 1");
+		m_logger.Log(m_link + " : Id is less than 1");
 		return Type::Deleted;
 	}
 	m_type = (Type)m_ffapi->ValueType(m_id);
-	XPLMDebugString(std::string("[" + m_link + "] = " + std::to_string((int)m_type) + "\n").c_str());
+	m_logger.Log(std::string("[" + m_link + "] = " + std::to_string((int)m_type) + "\n").c_str());
 	return m_type;
 }
 
 std::string FFDataref::GetValue()
 {
-	if (m_id < 0 && m_type == Type::Deleted) return "";
+	m_logger.Log("FFDATAREF GetValue");
+	if (m_id < 0 && m_type == Type::Deleted)
+	{
+		if (m_id < 0) m_logger.Log(m_link + ": id is INVALID ID");
+		if (m_type == Type::Deleted) m_logger.Log(m_link + ": type is 'Deleted'");
+		return "";
+	}	
 	double converstionfactor = std::stod(m_conversionFactor);
 	switch (m_type)
 	{
@@ -106,6 +116,7 @@ std::string FFDataref::GetValue()
 		return value;
 	}
 	default:
+		m_logger.Log(m_link + ": has type " + std::to_string((int)m_type));
 		return "N/A";
 	}
 }

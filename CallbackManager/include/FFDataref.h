@@ -1,5 +1,5 @@
 #pragma once
-#include <XPLMUtilities.h>
+#include "Logger.h"
 #include <string>
 #include <nlohmann/json.hpp>
 #include "SharedValue.h"
@@ -37,10 +37,11 @@ protected:
 	Type m_type;
 	std::string m_conversionFactor;
 	SharedValuesInterface* m_ffapi;
+	Logger m_logger;
 
 };
 
-static std::map<std::string, FFDataref::Type> const StringToType{
+static std::map<std::string, FFDataref::Type> const FFStringToType{
 	{"Unknow", FFDataref::Type::Deleted},
 	{"Object", FFDataref::Type::Object},
 	{"Char", FFDataref::Type::Char},

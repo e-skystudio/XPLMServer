@@ -135,10 +135,9 @@ float NetworkCallback(float elapsedSinceCall, float elapsedSinceLastTime, int in
 	std::string data = server->ReceiveData(4096, &cli);
 	if (data.length() < 1)
 		return -1.0f;
-	logger.Log("Data Received : '" + data + "' started!");
 	json operation = json::parse(data);
 	callbackManager->ExecuteCallback(&operation);
-	server->SendData(operation.dump(), cli);
+	BroadCastData(operation.dump());
 	
 	bool foundClient = false;
 	for (const Client c : clients)

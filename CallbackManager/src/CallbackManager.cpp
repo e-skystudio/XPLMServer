@@ -2,10 +2,12 @@
 
 CallbackManager::CallbackManager() :
 	m_logger(Logger("XPLMServer.log", "CallbackManager", false)),
-	m_subscirbeDatarefCount(0)
+	m_subscirbeDatarefCount(0), m_ff320(nullptr)
 {
+	m_ff320 = new SharedValuesInterface();
 	m_callbacks = new std::map<std::string, Callback>();
 	m_namedDatarefs = new std::map<std::string, Dataref*>();
+	m_namedFFDatarefs = new std::map<std::string, FFDataref*>();
 	m_subscribedDatarefs = new std::map<std::string, Dataref*>();
 	m_constDataref = new std::vector<ConstantDataref>();
 	m_subscribedEvent = new std::map<unsigned int, std::string>{
@@ -260,4 +262,37 @@ int CallbackManager::ExecuteCallback(json* jsonData)
 	m_logger.Log("Operation '" + operation + "' executed and returned code : '" + std::to_string(res) + "'");
 	
 	return res;
+}
+
+std::map<std::string, FFDataref*>* CallbackManager::GetNamedFFDataref() const
+{
+	return m_namedFFDatarefs;
+}
+
+SharedValuesInterface* CallbackManager::GetFF320Interface() const
+{
+	return m_ff320;
+}
+
+bool CallbackManager::InitFF320Interface(){
+	m_logger.Log("Initalising FF320 Data Interface...");
+	int ffPluginID = XPLMFindPluginBySignature(XPLM_FF_SIGNATURE);
+	if(ffPluginID == XPLM_NO_PLUGIN_ID)
+	{
+		m_logger.Log("Plugin not found !", Logger::Severity::CRITICAL);
+		return false;
+	}
+	m_logger.Log("FF320 plugin ID : " + std::to_string(ffPluginID));
+	XPLMSendMessageToPlugin(ffPluginID, XPLM_FF_MSG_GET_SHARED_INTERFACE, m_ff320);
+	m_logger.Log("Initalising FF320 Data Interface...3");
+	if (m_ff320->DataVersion == NULL) {
+		m_logger.Log("[FF320API] Unable to load version!");
+		return false;
+	}
+	m_logger.Log("Initalising FF320 Data Interface...4");
+	unsigned int ffAPIdataversion = m_ff320->DataVersion();
+	m_logger.Log("Initalising FF320 Data Interface...5");
+	m_logger.Log("[FF320API] Version : " + std::to_string(ffAPIdataversion));
+	m_logger.Log("Initalising FF320 Data Interface...6");
+	return true;
 }

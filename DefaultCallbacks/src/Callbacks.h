@@ -133,3 +133,15 @@ CALLBACK_FUNC int AddConstantDataref(json* jdata, CallbackManager* callback);
 
 //14
 CALLBACK_FUNC int LoadRegisterDataref(json* jdata, CallbackManager* callback);
+//15
+///<summary>
+/// Add a FFA320 dataref to the list of registered dataref.
+/// JSON Should contains:
+///    - Name: the name of the dataref
+///    - Link: the link to the dataref
+///    - *Type: the type of the dataref (if not set, will be loaded from SDK)
+///    - *ConversionFactor: the conversion factor of the dataref (if not set, will be set to 1.0)
+///</summary>
+CALLBACK_FUNC int RegisterFFDataref(json* jdata, CallbackManager* callbackManager);
+CALLBACK_FUNC int GetRegisterFFDatarefValue(json* jdata, CallbackManager* callbackManager);
+CALLBACK_FUNC int InitFlightFactorA320(json* jdata, CallbackManager* callbackManager);
