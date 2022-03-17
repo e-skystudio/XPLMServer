@@ -2,10 +2,12 @@
 
 CallbackManager::CallbackManager() :
 	m_logger(Logger("XPLMServer.log", "CallbackManager", false)),
-	m_subscirbeDatarefCount(0)
+	m_subscirbeDatarefCount(0), m_ff320(nullptr)
 {
-	m_callbacks = new std::map<std::string, callback>();
+	m_ff320 = new SharedValuesInterface();
+	m_callbacks = new std::map<std::string, Callback>();
 	m_namedDatarefs = new std::map<std::string, Dataref*>();
+	m_namedFFDatarefs = new std::map<std::string, FFDataref*>();
 	m_subscribedDatarefs = new std::map<std::string, Dataref*>();
 	m_constDataref = new std::vector<ConstantDataref>();
 	m_subscribedEvent = new std::map<unsigned int, std::string>{
@@ -36,9 +38,14 @@ CallbackManager::~CallbackManager()
 		delete kv->second;
 		kv++;
 	}
+	#ifdef IBM
+		FreeLibrary(m_hDLL);
+	#else
+		dlclose(m_hDLL);
+	#endif
 }
 
-int CallbackManager::AppendCallback(std::string name, callback newCallback)
+int CallbackManager::AppendCallback(std::string name, Callback newCallback)
 {
 	if (m_callbacks->contains(name))
 	{
@@ -66,8 +73,12 @@ std::map<unsigned int, std::string>* CallbackManager::GetSubscribedEventMap() co
 
 int CallbackManager::LoadCallbackDLL(std::string inDllPath)
 {
-	HINSTANCE hDLL = LoadLibrary(s2ws(inDllPath).c_str());
-	if (hDLL == nullptr)
+	#ifdef IBM
+		m_hDLL = LoadLibrary(s2ws(inDllPath).c_str());
+	#else
+		m_hDLL = dlopen(inDllPath.c_str(), RTLD_LAZY);
+	#endif
+	if (m_hDLL == nullptr)
 	{
 		std::stringstream ss;
 		ss << "DLL : '" << inDllPath << "' WAS NOT FOUND !";
@@ -79,17 +90,33 @@ int CallbackManager::LoadCallbackDLL(std::string inDllPath)
 	ss << "DLL : '" << inDllPath << "' LOADED SUCESSFULLY !";
 	m_logger.Log(ss.str(), Logger::Severity::TRACE);
 	m_logger.Log(ss.str().c_str());
-
-	callbackLoader loader = (callbackLoader)GetProcAddress(hDLL, "GetCallbacks");
+	CallbackLoader loader;
+	#ifdef IBM
+		loader = reinterpret_cast<CallbackLoader>(GetProcAddress(m_hDLL, "GetCallbacks"));
+	#else
+		loader = reinterpret_cast<CallbackLoader>(dlsym(m_hDLL, "GetCallbacks"));
+	#endif
+	if(loader == nullptr)
+	{
+		m_logger.Log("Unable to load GetCallbacks!", Logger::Severity::CRITICAL);
+		#ifndef IBM
+			XPLMDebugString("[XPLM]There was an error loading the callback, error provided in XPLM logFile\n");
+			char* error;
+			error = dlerror();
+			m_logger.Log(std::string(error), Logger::Severity::CRITICAL);
+			XPLMDebugString(error);
+			XPLMDebugString("\n\n");
+		#endif
+		return 0x02;
+	}
 	int size = 0;
 	loader(nullptr, &size);
 
 	ss = std::stringstream();
 	ss << "There is/are " << size << " callback(s) loadable";
 	m_logger.Log(ss.str().c_str());
-
 	m_logger.Log("Creating an array of CallbackFunction...");
-	std::vector<CallbackFunction*> vec_callbacks;
+	std::vector<CallbackFunctionStruct*> vec_callbacks;
 	m_logger.Log("Creating an array of CallbackFunction...[DONE]\n");
 	m_logger.Log("Loading the callbacks...");
 	loader(&vec_callbacks, &size);
@@ -97,10 +124,15 @@ int CallbackManager::LoadCallbackDLL(std::string inDllPath)
 	
 	for (std::size_t i(0); i < vec_callbacks.size(); i++)
 	{
-		m_logger.Log(("Loading callback " + std::to_string(i) + " / " + std::to_string(size - 1) + "\n").c_str());
-		CallbackFunction* callback1 = vec_callbacks[i];
+		m_logger.Log(("\nLoading callback " + std::to_string(i) + " / " + std::to_string(size - 1)).c_str());
+		CallbackFunctionStruct* callback1 = vec_callbacks[i];
 		m_logger.Log(("Trying to load '" + callback1->function + "' as '" + callback1->operation + "'...").c_str());
-		callback p_callback = (callback)GetProcAddress(hDLL, callback1->function.c_str());
+		Callback p_callback;
+		#ifdef IBM
+		 	p_callback = reinterpret_cast<Callback>(GetProcAddress(m_hDLL, callback1->function.c_str()));
+		#else
+			p_callback = reinterpret_cast<Callback>(dlsym(m_hDLL, callback1->function.c_str()));
+		#endif
 		if (p_callback == nullptr)
 		{
 			m_logger.Log("pointer callback is pointing to nullptr\n", Logger::Severity::WARNING);
@@ -110,7 +142,7 @@ int CallbackManager::LoadCallbackDLL(std::string inDllPath)
 		{
 			m_logger.Log("pointer callback is valid\n");
 		}
-		int res = this->AppendCallback(std::string(callback1->operation), p_callback);
+			int res = this->AppendCallback(std::string(callback1->operation), p_callback);
 		if (res != EXIT_SUCCESS)
 		{
 			m_logger.Log("Appending Callback to list : [FAILED]\n", Logger::Severity::WARNING);
@@ -123,6 +155,7 @@ int CallbackManager::LoadCallbackDLL(std::string inDllPath)
 	}
 	m_logger.Log("LoadCallbackDLL...[FINISHED]\n");
 	return size;
+
 }
 
 void CallbackManager::Log(std::string data, Logger::Severity severity)
@@ -198,13 +231,10 @@ void CallbackManager::RemoveConstantDataref(std::string name)
 
 void CallbackManager::ExecuteConstantDataref()
 {
-	m_logger.Log("ExecuteConstDataref [START]");
 	for (auto it = m_constDataref->begin(); it != m_constDataref->end(); it++)
 	{
-		m_logger.Log(it->name + "SETTING to value : '" + it->value + "!");
 		it->dataref->SetValue(it->value);
 	}
-	m_logger.Log("ExecuteConstDataref [DONE]");
 }
 
 int CallbackManager::ExecuteCallback(json* jsonData)
@@ -232,4 +262,37 @@ int CallbackManager::ExecuteCallback(json* jsonData)
 	m_logger.Log("Operation '" + operation + "' executed and returned code : '" + std::to_string(res) + "'");
 	
 	return res;
+}
+
+std::map<std::string, FFDataref*>* CallbackManager::GetNamedFFDataref() const
+{
+	return m_namedFFDatarefs;
+}
+
+SharedValuesInterface* CallbackManager::GetFF320Interface() const
+{
+	return m_ff320;
+}
+
+bool CallbackManager::InitFF320Interface(){
+	m_logger.Log("Initalising FF320 Data Interface...");
+	int ffPluginID = XPLMFindPluginBySignature(XPLM_FF_SIGNATURE);
+	if(ffPluginID == XPLM_NO_PLUGIN_ID)
+	{
+		m_logger.Log("Plugin not found !", Logger::Severity::CRITICAL);
+		return false;
+	}
+	m_logger.Log("FF320 plugin ID : " + std::to_string(ffPluginID));
+	XPLMSendMessageToPlugin(ffPluginID, XPLM_FF_MSG_GET_SHARED_INTERFACE, m_ff320);
+	m_logger.Log("Initalising FF320 Data Interface...3");
+	if (m_ff320->DataVersion == NULL) {
+		m_logger.Log("[FF320API] Unable to load version!");
+		return false;
+	}
+	m_logger.Log("Initalising FF320 Data Interface...4");
+	unsigned int ffAPIdataversion = m_ff320->DataVersion();
+	m_logger.Log("Initalising FF320 Data Interface...5");
+	m_logger.Log("[FF320API] Version : " + std::to_string(ffAPIdataversion));
+	m_logger.Log("Initalising FF320 Data Interface...6");
+	return true;
 }

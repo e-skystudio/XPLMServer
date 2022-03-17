@@ -13,8 +13,12 @@ Logger::Logger(std::string filename, std::string module, bool erease)
 		m_logfile = new std::ofstream(filename, std::ios::app);
 	if (m_logfile->fail())
 	{
-		std::cout << "Unable to open file : '" << filename << "' (as erease = '" << erease << "')\n";
+		std::stringstream debug;
+		debug << "[XPLMServer][Logger]Unable to open file : '" << filename << "' (as erease = '" << erease << "')\n";
+		XPLMDebugString(debug.str().c_str());
+
 	}
+
 }
 
 Logger::~Logger()
@@ -48,15 +52,22 @@ void Logger::Log(std::string message, Logger::Severity severity)
 
 const char* Logger::CurrentDateTime()
 {
+	struct tm* ltm;
 	time_t now = time(0);
-	struct tm* ltm = new tm();
-	//struct tm buf;
-	localtime_s(ltm, &now);
+	#ifdef IBM
+		ltm = new struct tm;
+		localtime_s(ltm, &now);
+	#else
+		ltm = localtime(&now);
+	#endif
 	char* time = new char[20];
-	sprintf_s(time, 20,"%02d/%02d/%04d %02d:%02d:%02d", ltm->tm_mday, ltm->tm_mon, ltm->tm_year,
-		ltm->tm_hour, ltm->tm_min, ltm->tm_sec);
-	std::cout << "Date : '" << time <<"'\n";
-	delete ltm;
+	#ifdef IBM
+		sprintf_s(time, 20,"%02d/%02d/%04d %02d:%02d:%02d", ltm->tm_mday, ltm->tm_mon, ltm->tm_year,
+				  ltm->tm_hour, ltm->tm_min, ltm->tm_sec);
+	#else
+		sprintf(time,"%02d/%02d/%04d %02d:%02d:%02d", ltm->tm_mday, ltm->tm_mon, ltm->tm_year,
+			    ltm->tm_hour, ltm->tm_min, ltm->tm_sec);
+	#endif
 	return (const char*)time;
 }
 

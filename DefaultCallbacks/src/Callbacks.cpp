@@ -42,34 +42,29 @@ std::string ExtractJsonValue(json* jdata, std::string fieldname, CallbackManager
 	return value;
 }
 
-void GetCallbacks(std::vector<CallbackFunction*>* callbacks, int* size)
+void GetCallbacks(std::vector<CallbackFunctionStruct*>* callbacks, int* size)
 {
 	*size = 0;
 	if (callbacks != nullptr)
 	{
-		callbacks->push_back(new CallbackFunction("VISIBILITY", "SetVisibility"));
-		callbacks->push_back(new CallbackFunction("LOAD_DLL", "LoadDll"));
-		callbacks->push_back(new CallbackFunction("REG_DATA", "RegisterDataref"));
-		callbacks->push_back(new CallbackFunction("UNREG_DATA", "UnregisterDataref"));
-		callbacks->push_back(new CallbackFunction("SUB_DATA", "SubscribeDataref"));
-		callbacks->push_back(new CallbackFunction("UNSUB_DATA", "UnsubscribeDataref"));
-		callbacks->push_back(new CallbackFunction("GET_REG_DATA", "GetRegisterDatarefValue"));
-		callbacks->push_back(new CallbackFunction("SET_REG_DATA", "SetRegisterDatarefValue"));
-		callbacks->push_back(new CallbackFunction("GET_DATA", "GetDatarefValue"));
-		callbacks->push_back(new CallbackFunction("SET_DATA", "SetDatarefValue"));
-		callbacks->push_back(new CallbackFunction("SPEAK", "Speak"));
-		callbacks->push_back(new CallbackFunction("ADD_CONST", "AddConstantDataref"));
+		callbacks->push_back(new CallbackFunctionStruct("LOAD_DLL", "LoadDll"));
+		callbacks->push_back(new CallbackFunctionStruct("REG_DATA", "RegisterDataref"));
+		callbacks->push_back(new CallbackFunctionStruct("UNREG_DATA", "UnregisterDataref"));
+		callbacks->push_back(new CallbackFunctionStruct("SUB_DATA", "SubscribeDataref"));
+		callbacks->push_back(new CallbackFunctionStruct("UNSUB_DATA", "UnsubscribeDataref"));
+		callbacks->push_back(new CallbackFunctionStruct("GET_REG_DATA", "GetRegisterDatarefValue"));
+		callbacks->push_back(new CallbackFunctionStruct("SET_REG_DATA", "SetRegisterDatarefValue"));
+		callbacks->push_back(new CallbackFunctionStruct("GET_DATA", "GetDatarefValue"));
+		callbacks->push_back(new CallbackFunctionStruct("SET_DATA", "SetDatarefValue"));
+		callbacks->push_back(new CallbackFunctionStruct("SPEAK", "Speak"));
+		callbacks->push_back(new CallbackFunctionStruct("ADD_CONST", "AddConstantDataref"));
+		callbacks->push_back(new CallbackFunctionStruct("LOAD_REG_DATA", "LoadRegisterDataref"));
+		callbacks->push_back(new CallbackFunctionStruct("FFDATA_INIT", "InitFlightFactorA320"));
+		callbacks->push_back(new CallbackFunctionStruct("REG_FFDATA", "RegisterFFDataref"));
+		callbacks->push_back(new CallbackFunctionStruct("GET_REG_FFDATA", "GetRegisterFFDatarefValue"));
 		*size = (int)callbacks->size();
 	}
 	return;
-}
-
-int SetVisibility(json* jdata, CallbackManager* callbackManager)
-{
-	Dataref vis;
-	vis.Load("sim/weather/visibility_reported_m");
-	vis.SetValue(jdata->at("Value").get<std::string>());
-	return 0;
 }
 
 int LoadDll(json* jdata, CallbackManager* callbackManager)
@@ -107,14 +102,17 @@ int RegisterDataref(json* jdata, CallbackManager* callback)
 		callback->Log("Dataref type is '" + type + "'");
 		dataref->SetType(type);
 	}
+	std::string conversionFactor;
 	if (jdata->contains("ConversionFactor"))
 	{
-		std::string conversionFactor = jdata->at("ConversionFactor").get<std::string>();
-		callback->Log("ConversionFactor not yet implemented in Dataref, assuming 1.0f", Logger::Severity::WARNING);
+		conversionFactor = jdata->at("ConversionFactor").get<std::string>();
+		callback->Log("ConversionFactor = " + conversionFactor + "\n", Logger::Severity::WARNING);
 	}
 	else {
+		conversionFactor = "1.0f";
 		callback->Log("ConversionFactor was not provided assuming 1.0f", Logger::Severity::WARNING);
 	}
+	dataref->SetConversionFactor(conversionFactor);
 	auto p_datarefMap = callback->GetNamedDataref();
 	callback->Log("Adding dataref to map", Logger::Severity::DEBUG);
 	auto sizeBefore = p_datarefMap->size();
@@ -211,11 +209,8 @@ int GetRegisterDatarefValue(json* jdata, CallbackManager* callback)
 #endif
 	std::string val = p_dataref->GetValue();
 	callback->Log("Value is '" + val + "'");
-	//BUG
 	jdata->operator[]("Value") = val;
-	//jdata->push_back(std::pair<std::string, std::string>("Value", val));
 	callback->Log("Value added to json");
-	//!BUG
 	return 0;
 }
 
@@ -247,7 +242,12 @@ int SetRegisterDatarefValue(json* jdata, CallbackManager* callback)
 #ifdef _DEBUG
 	callback->Log("Dataref '"+ name + "' found!");
 #endif
-	auto p_dataref = p_datarefMap->at(name);
+	Dataref* p_dataref = p_datarefMap->at(name);
+	if(p_dataref == nullptr)
+	{
+		callback->Log("Dataref pointer is null");
+		return 0x03;
+	}
 #ifdef _DEBUG
 	callback->Log("Obtaining Dataref '" + name + "'...[DONE]");
 #endif
@@ -326,5 +326,119 @@ int AddConstantDataref(json* jdata, CallbackManager* callback)
 		return 0x01;
 	}
 	callback->AddConstantDataref(jdata->at("Name").get<std::string>(), jdata->at("Value").get<std::string>());
+	return 0;
+}
+
+int LoadRegisterDataref(json* jdata, CallbackManager* callback)
+{
+	std::ifstream csv_in;
+	csv_in.open(jdata->at("FileIn").get<std::string>());
+	if (!csv_in.is_open())
+	{
+		;
+		callback->Log("Error while opening file!\n", Logger::Severity::WARNING);
+		return 0x01;
+	}
+	std::string line;
+	std::vector<std::vector<std::string>> tokens;
+	while (std::getline(csv_in, line))
+	{
+		if (line[0] == '#')
+		{
+			continue;
+		}
+		std::vector<std::string> vecOut;
+		std::size_t pos;
+		while ((pos = line.find(';')) != std::string::npos)
+		{
+			std::string sub = line.substr(0, pos);
+			vecOut.push_back(sub);
+			line = line.substr(pos + 1);
+		}
+		Dataref* dataref = new Dataref();
+		dataref->Load(vecOut[1]);
+		dataref->SetType(vecOut[2]);
+		dataref->SetConversionFactor(vecOut[3]);
+		auto p_datarefMap = callback->GetNamedDataref();
+		p_datarefMap->emplace(vecOut[0], dataref);
+		callback->AddSubscribedDataref(vecOut[0]);
+	}
+	return 0x00;
+}
+int InitFlightFactorA320(json* jdata, CallbackManager* callback)
+{
+	bool res = callback->InitFF320Interface();
+	return res ? 0 : 1;
+}
+
+int RegisterFFDataref(json* jdata, CallbackManager* callback)
+{
+	SharedValuesInterface* ff320 = callback->GetFF320Interface();
+	callback->Log("RegisterFFDataref [START]");
+	if (!jdata->contains("Name") || !jdata->contains("Link"))
+	{
+		callback->Log("Name and or Link missing in JSON, abording",
+			Logger::Severity::CRITICAL);
+		callback->Log("RegisterFFDataref [DONE]");
+		return 0x01;
+	}
+	std::string link = jdata->at("Link").get<std::string>();
+	std::string name = jdata->at("Name").get<std::string>();
+	callback->Log("Loading FFDataref '" + link + "' as '" + name + "'");
+
+	FFDataref* ffdataref = new FFDataref(ff320);
+	ffdataref->Load(link);
+	callback->Log("Loading type");
+	FFDataref::Type dType = ffdataref->LoadType();
+	callback->Log("FFDataref Type is " + std::to_string((int)dType));
+	std::string conversionFactor;
+	if (jdata->contains("ConversionFactor"))
+	{
+		conversionFactor = jdata->at("ConversionFactor").get<std::string>();
+		callback->Log("ConversionFactor = " + conversionFactor + "\n", Logger::Severity::WARNING);
+	}
+	else {
+		conversionFactor = "1.0f";
+		callback->Log("ConversionFactor was not provided assuming 1.0f", Logger::Severity::WARNING);
+	}
+	ffdataref->SetConversionFactor(conversionFactor);
+	auto p_datarefMap = callback->GetNamedFFDataref();
+	callback->Log("Adding FFDataref to map", Logger::Severity::DEBUG);
+	auto sizeBefore = p_datarefMap->size();
+	callback->Log("Size before operation : " + std::to_string(sizeBefore), Logger::Severity::DEBUG);
+	p_datarefMap->emplace(name, ffdataref);
+	auto sizeAfter = p_datarefMap->size();
+	callback->Log("Size after operation : " + std::to_string(sizeAfter), Logger::Severity::DEBUG);
+	callback->Log("RegisterFFDataref [DONE]");
+	return 0;
+}
+
+int GetRegisterFFDatarefValue(json* jdata, CallbackManager* callback)
+{
+	if (!jdata->contains("Name"))
+	{
+		callback->Log("Name properties missing from JSON", Logger::Severity::CRITICAL);
+		return 0x01;
+	}
+	std::string name = jdata->at("Name").get<std::string>();
+	callback->Log("Looking for ffdataref '" + name + "' to get value");
+	auto p_datarefMap = callback->GetNamedFFDataref();
+	callback->Log("Obtaining the registered ffdatarefs...[DONE]");
+	if (!p_datarefMap->contains(name))
+	{
+		callback->Log("Registered FFDataref don't contain '" + name + "'", Logger::Severity::DEBUG);
+		return 0x02;
+	}
+#ifdef _DEBUG
+	callback->Log("FFDataref '" + name + "' found!");
+#endif
+	auto p_dataref = p_datarefMap->at(name);
+#ifdef _DEBUG
+	callback->Log("Obtaining FFDataref '" + name + "'...[DONE]");
+#endif
+	std::string val = p_dataref->GetValue();
+	callback->Log("Value is '" + val + "'");
+	jdata->operator[]("Value") = val;
+	callback->Log("Value added to json");
 	return 0;
 }
