@@ -80,7 +80,11 @@ std::string UDPServer::ReceiveData(int maxSize,Client* outCli)
 	std::string s_out(read);
 	s_out.resize(bytes_received);
 	char logBuffer[4150];
+	#ifdef IBM
 	sprintf_s(logBuffer, 4150, "[%s:%s]>>>'%s'(%d byte(s))\n", address_buffer, service_buffer, s_out.c_str(), bytes_received);
+	#else
+	sprintf(logBuffer, "[%s:%s]>>>'%s'(%d byte(s))\n", address_buffer, service_buffer, s_out.c_str(), bytes_received);
+	#endif
 	log(std::string(logBuffer));
 	return s_out;
 }
@@ -103,7 +107,11 @@ int UDPServer::SendData(std::string data, Client cli)
 	int bytes = sendto(m_socket_emit, data.c_str(), (int)data.length(), 0, 
 		(struct sockaddr*)&send_address, (int)sizeof(struct sockaddr_in));
 	char logBuffer[4150];
+	#ifdef IBM
 	sprintf_s(logBuffer, 4150, "[%s:%d]<<<'%s'(%d byte(s))\n", cli.ip.c_str(), cli.port, data.c_str(), bytes);
+	#else
+	sprintf(logBuffer, "[%s:%d]<<<'%s'(%d byte(s))\n", cli.ip.c_str(), cli.port, data.c_str(), bytes);
+	#endif
 	log(std::string(logBuffer));
 	if (bytes <= 0)
 	{
@@ -115,6 +123,6 @@ int UDPServer::SendData(std::string data, Client cli)
 void UDPServer::log(std::string data) const
 {
 	if (m_fout == 0) return;
-	fprintf(m_fout, data.c_str());
+	fprintf(m_fout, "%s", data.c_str());
 	fflush(m_fout);
 }

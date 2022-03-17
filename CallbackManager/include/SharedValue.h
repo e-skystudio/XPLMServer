@@ -56,7 +56,7 @@
 #define Value_Unit_TimeStart		(1<<30)	// 1/10000000 of second
 #define Value_Unit_Label			(1<<31)	// ARINC 429 label
 //--------------------------------------------------------------------------
-
+#ifdef IBM
 typedef unsigned int (__stdcall *SharedDataVersionProc)();
 typedef void (__stdcall *SharedDataUpdateProc)(double step, void *tag);
 typedef void (__stdcall *SharedDataAddUpdateProc)(SharedDataUpdateProc proc, void *tag);
@@ -78,6 +78,29 @@ typedef void (__stdcall *SharedValueWriterProc)(const void *src, unsigned int si
 typedef bool (__stdcall *SharedValueObjectLoadStateProc)(int id, SharedValueReaderProc src, void *tag);
 typedef void (__stdcall *SharedValueObjectSaveStateProc)(int id, SharedValueWriterProc dst, void *tag);
 typedef int (__stdcall *SharedValueObjectNewValueProc)(int id, const char *name, const char *desc, void *ptr, unsigned int type, unsigned int flags, unsigned int units);
+#else
+typedef unsigned int ( *SharedDataVersionProc)();
+typedef void ( *SharedDataUpdateProc)(double step, void *tag);
+typedef void ( *SharedDataAddUpdateProc)(SharedDataUpdateProc proc, void *tag);
+typedef void ( *SharedDataDelUpdateProc)(SharedDataUpdateProc proc, void *tag);
+typedef unsigned int ( *SharedValuesCountProc)();
+typedef int ( *SharedValueIdByIndexProc)(unsigned int index);
+typedef int ( *SharedValueIdByNameProc)(const char *name);
+typedef const char *( *SharedValueNameProc)(int id);
+typedef const char *( *SharedValueDescProc)(int id);
+typedef unsigned int ( *SharedValueTypeProc)(int id);
+typedef unsigned int ( *SharedValueFlagsProc)(int id);
+typedef unsigned int ( *SharedValueUnitsProc)(int id);
+typedef int ( *SharedValueParentProc)(int id);
+typedef void ( *SharedValueSetProc)(int id, const void *src);
+typedef void ( *SharedValueGetProc)(int id, void *dst);
+typedef unsigned int ( *SharedValueGetSizeProc)(int id);
+typedef void ( *SharedValueReaderProc)(void *dst, unsigned int size, void *tag);
+typedef void ( *SharedValueWriterProc)(const void *src, unsigned int size, void *tag);
+typedef bool ( *SharedValueObjectLoadStateProc)(int id, SharedValueReaderProc src, void *tag);
+typedef void ( *SharedValueObjectSaveStateProc)(int id, SharedValueWriterProc dst, void *tag);
+typedef int ( *SharedValueObjectNewValueProc)(int id, const char *name, const char *desc, void *ptr, unsigned int type, unsigned int flags, unsigned int units);
+#endif
 //--------------------------------------------------------------------------
 
 #define XPLM_FF_SIGNATURE					"FlightFactor.A320.ultimate" // for XPLMFindPluginBySignature

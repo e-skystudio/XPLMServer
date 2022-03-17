@@ -1,4 +1,4 @@
-#include "../include/FFDatarefs.h"
+#include "../include/FFDataref.h"
 
 FFDataref::FFDataref() : m_id(-1), m_type(Type::Deleted), m_link(""), m_conversionFactor("1.0"), m_ffapi(nullptr)
 {
@@ -22,7 +22,8 @@ bool FFDataref::Load(std::string path)
 	m_link = path;
 	m_id = m_ffapi->ValueIdByName(path.c_str());
 	if(m_id < 0) return false;
-	LoadType();
+	Type t = LoadType();
+	return t != Type::Deleted;
 }
 
 FFDataref::Type FFDataref::GetType()
@@ -159,7 +160,11 @@ void FFDataref::SetValue(std::string value)
 	{
 		int lenght = m_ffapi->ValueGetSize(m_id);
 		char* buffer = new char[lenght];
+		#ifdef IBM
 		strcpy_s(buffer, lenght, value.c_str());
+		#else
+		strcpy(buffer, value.c_str());
+		#endif
 		m_ffapi->ValueSet(m_id, buffer);
 		delete[] buffer;
 	}

@@ -46,11 +46,14 @@ $(BUILDDIR)/UDPServer.o : $(NETWORKING)/src/UDPServer.cpp | $(BUILDDIR)
 	g++ $(CFLAGS) $(NETWORKING)/src/UDPServer.cpp -c -o $(BUILDDIR)/UDPServer.o
 
 ### CALLBACKMANAGER
-$(BUILDDIR)/libCallbackManager.a: $(BUILDDIR)/Dataref.o $(BUILDDIR)/Logger.o $(BUILDDIR)/utils.o $(BUILDDIR)/CallbackManager.o | $(BUILDDIR)
-	ar rcs $(BUILDDIR)/libCallbackManager.a $(BUILDDIR)/Dataref.o $(BUILDDIR)/Logger.o $(BUILDDIR)/utils.o $(BUILDDIR)/CallbackManager.o
+$(BUILDDIR)/libCallbackManager.a: $(BUILDDIR)/Dataref.o $(BUILDDIR)/Logger.o $(BUILDDIR)/utils.o $(BUILDDIR)/CallbackManager.o $(BUILDDIR)/FFDataref.o | $(BUILDDIR)
+	ar rcs $(BUILDDIR)/libCallbackManager.a $(BUILDDIR)/Dataref.o $(BUILDDIR)/Logger.o $(BUILDDIR)/utils.o $(BUILDDIR)/CallbackManager.o $(BUILDDIR)/FFDataref.o
 
 $(BUILDDIR)/Dataref.o : $(CALLBACKMANAGER)/src/Dataref.cpp $(CALLBACKMANAGER)/include/Dataref.h | $(BUILDDIR)
 	g++ $(CFLAGS) $(CALLBACKMANAGER)/src/Dataref.cpp -c -o $(BUILDDIR)/Dataref.o
+
+$(BUILDDIR)/FFDataref.o : $(CALLBACKMANAGER)/src/FFDataref.cpp $(CALLBACKMANAGER)/include/FFDataref.h | $(BUILDDIR)
+	g++ $(CFLAGS) $(CALLBACKMANAGER)/src/FFDataref.cpp -c -o $(BUILDDIR)/FFDataref.o
 
 $(BUILDDIR)/Logger.o : $(CALLBACKMANAGER)/src/Logger.cpp $(CALLBACKMANAGER)/include/Logger.h | $(BUILDDIR)
 	g++ $(CFLAGS) $(CALLBACKMANAGER)/src/Logger.cpp -c -o $(BUILDDIR)/Logger.o
