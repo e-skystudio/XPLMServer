@@ -123,11 +123,6 @@ PLUGIN_API void XPluginReceiveMessage(XPLMPluginID inFrom, int inMsg, void* inPa
 
 float InitializerCallback(float elapsedSinceCall, float elapsedSinceLastTime, int inCounter, void* inRef)
 {
-	json data;
-	data["Operation"] = "REG_DATA";
-	data["Name"] = "VISIBILITY";
-	data["Link"] = "sim/weather/visibility_reported_m";
-	int res = callbackManager->ExecuteCallback(&data);
 	XPLMRegisterFlightLoopCallback(NetworkCallback, -1.0f, nullptr);
 	XPLMRegisterFlightLoopCallback(ExportSubscribedDataref, -1.0f, nullptr);
  	return 0.0f;
@@ -166,6 +161,9 @@ float ExportSubscribedDataref(float elapsedSinceCall, float elapsedSinceLastTime
 {
 	if (callbackManager->GetSubscribedDatarefCount() < 1)
 	{
+		json jdataOut = {
+		{"Operation", "Empty"}};
+		BroadCastData(jdataOut.dump());
 		return 1.0f;
 	}
 	auto* p_subscribedDatarefMap = callbackManager->GetSubscribedDataref();
