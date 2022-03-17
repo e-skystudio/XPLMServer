@@ -158,7 +158,6 @@ void Dataref::SetValue(std::string value)
 	case Dataref::Type::Float:
 	{
 		float val = std::stof(value) / (float)std::stod(m_conversionFactor);
-		XPLMSetDatai(m_dataref, val);
 		XPLMSetDataf(m_dataref, val);
 		break;
 	}
