@@ -153,7 +153,7 @@ float NetworkCallback(float elapsedSinceCall, float elapsedSinceLastTime, int in
 	{
 		clients.push_back(cli);
 	}
-	return -5.0f;
+	return -1.0f;
 }
 
 float ExportSubscribedDataref(float elapsedSinceCall, float elapsedSinceLastTime, int inCounter, void* inRef)
