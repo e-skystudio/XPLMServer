@@ -53,7 +53,7 @@ std::string UDPServer::ReceiveData(int maxSize,Client* outCli)
 	if (read == nullptr)
 		return std::string();
 	memset(read, 0x00, (size_t)maxSize);
-	struct timeval timeout{0, 5000};
+	struct timeval timeout{0, 10};
 
 	fd_set clients;
 	FD_ZERO(&clients);
@@ -61,7 +61,6 @@ std::string UDPServer::ReceiveData(int maxSize,Client* outCli)
 
 	if(select((int)m_socket_listen + 1, &clients, 0, 0, &timeout) <= 0) return std::string();
 	
-	log("Data is available to read\n");
 	int bytes_received = recvfrom(m_socket_listen, read, maxSize, 0,
 		(struct sockaddr*)&client_address, &client_len);
 	if (bytes_received <= 0)
@@ -76,7 +75,6 @@ std::string UDPServer::ReceiveData(int maxSize,Client* outCli)
 		NI_NUMERICHOST | NI_NUMERICSERV);
 	outCli->ip = std::string(address_buffer);
 	outCli->port = m_port + 1;
-	/*log("[" + address_buffer + ":" + service_buffer + "]>>>" + read + "")*/
 	std::string s_out(read);
 	s_out.resize(bytes_received);
 	char logBuffer[4150];
