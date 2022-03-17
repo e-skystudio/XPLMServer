@@ -153,7 +153,6 @@ float NetworkCallback(float elapsedSinceCall, float elapsedSinceLastTime, int in
 	logger.Log("Data Received : '" + data + "' started!");
 	json operation = json::parse(data);
 	callbackManager->ExecuteCallback(&operation);
-	logger.Log("Data Received : '" + data + "' done!");
 	server->SendData(operation.dump(), cli);
 	
 	bool foundClient = false;
@@ -185,14 +184,12 @@ float ExportSubscribedDataref(float elapsedSinceCall, float elapsedSinceLastTime
 		{"Datarefs", json::array()}
 	};
 	std::map<std::string, Dataref*> subDatarefMap = *(callbackManager->GetSubscribedDataref());
-	logger.Log("Exporting Datarefs : \n\n");
 	for (auto &kv : *p_subscribedDatarefMap)
 	{
 		json jdataref = {
 			{"Name", kv.first},
 			{"Value", kv.second->GetValue()}
 		};
-		logger.Log(jdataref["Name"].get<std::string>() + " = " + jdataref["Value"].get<std::string>());
 		jdataOut["Datarefs"].push_back(jdataref);
 	}
 	BroadCastData(jdataOut.dump());

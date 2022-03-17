@@ -102,6 +102,7 @@ int RegisterDataref(json* jdata, CallbackManager* callback)
 	if (jdata->contains("ConversionFactor"))
 	{
 		std::string conversionFactor = jdata->at("ConversionFactor").get<std::string>();
+		callback->Log("ConversionFactor = " + conversionFactor + "\n", Logger::Severity::WARNING);
 	}
 	else {
 		callback->Log("ConversionFactor was not provided assuming 1.0f", Logger::Severity::WARNING);

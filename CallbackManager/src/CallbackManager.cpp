@@ -113,7 +113,6 @@ int CallbackManager::LoadCallbackDLL(std::string inDllPath)
 	ss = std::stringstream();
 	ss << "There is/are " << size << " callback(s) loadable";
 	m_logger.Log(ss.str().c_str());
-
 	m_logger.Log("Creating an array of CallbackFunction...");
 	std::vector<CallbackFunctionStruct*> vec_callbacks;
 	m_logger.Log("Creating an array of CallbackFunction...[DONE]\n");

@@ -123,7 +123,6 @@ std::string Dataref::GetValue()
 		json j = json::array();
 		for (int i = 0; i < arraySize; i++)
 		{
-			//j.push_back(*(intArray + i));
 			j.push_back((*(intArray + i)) * (int)std::stod(m_conversionFactor));
 		}
 		value = j.dump();
