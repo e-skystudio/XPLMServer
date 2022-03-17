@@ -199,7 +199,7 @@
       <OptimizeReferences>true</OptimizeReferences>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <AdditionalLibraryDirectories>$(xplaneSDK)Libraries\Win\;$(SolutionDir)CallbackManager\Lib\;$(SolutionDir)Networking\lib\</AdditionalLibraryDirectories>
-      <AdditionalDependencies>Networking_64.lib;CallbackManager_64.lib;XPLM_64.lib;XPWidgets_64.lib;Datarefs_64.lib%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>Networking_64.lib;CallbackManager_64.lib;XPLM_64.lib;XPWidgets_64.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
     <Lib>
       <AdditionalLibraryDirectories>$(xplaneSDK)Libraries\Win\</AdditionalLibraryDirectories>

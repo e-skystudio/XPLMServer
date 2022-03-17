@@ -46,7 +46,6 @@ PLUGIN_API int XPluginStart(char* outName, char* outSig, char* outDesc)
 		XPLMDebugString("[XPLMServer]Unable to load configuration file\n");
 		return 0;
 	}
-	XPLMDebugString("[XPLMServer]Configuration file loaded sucessfully\n");
 	PluginConfiguration = json::parse(data.str());
 	std::string sig = PluginConfiguration["Plugin"]["Name"].get<std::string>();
 	std::string description = PluginConfiguration["Plugin"]["Description"].get<std::string>() ;
@@ -88,27 +87,19 @@ PLUGIN_API int  XPluginEnable(void)
 	#endif
 	logger.Log("Loading configuration :'" + configuration + "' & platform : '" + platform + "'");
 	std::string dllPath = PluginConfiguration["DLLFiles"][platform][configuration].get<std::string>();
-	logger.Log("Trying to load dll from path : '" + dllPath + "'");
-	logger.Log("Creating a callback manager...");
 	callbackManager = new CallbackManager();
-	logger.Log("Creating a callback manager...[DONE]\n");
-	logger.Log("Loading the dlls");
 	int res = callbackManager->LoadCallbackDLL(dllPath);
 	std::stringstream debug;
-	debug << "[XPLMServer]Loading callback from DLL returned " << res << "\n Dll Path was: " << dllPath << "\n";
 	logger.Log(debug.str());
 	logger.Log("---Server Init----");
 	if (PluginConfiguration.contains("Server") &&
 		PluginConfiguration["Server"].contains("InIp") &&
 		PluginConfiguration["Server"].contains("InPort"))
 	{
-		logger.Log("Creating server");
 		server = new UDPServer();
-		logger.Log("initlaizating server : " + std::to_string(PluginConfiguration["Server"]["InPort"].get<int>()));
 		res = server->Bind(PluginConfiguration["Server"]["InPort"].get<unsigned short>());
 		if (res == EXIT_SUCCESS)
 		{
-			logger.Log("Initalization sucess");
 			XPLMRegisterFlightLoopCallback(InitializerCallback, -1.0f, nullptr);
 		}
 		else {
@@ -137,7 +128,6 @@ float InitializerCallback(float elapsedSinceCall, float elapsedSinceLastTime, in
 	data["Name"] = "VISIBILITY";
 	data["Link"] = "sim/weather/visibility_reported_m";
 	int res = callbackManager->ExecuteCallback(&data);
-	XPLMDebugString(("[XPLMServer] CallbackManager::ExecuteCallback returned :'" + std::to_string(res) + "'\n").c_str());
 	XPLMRegisterFlightLoopCallback(NetworkCallback, -1.0f, nullptr);
 	XPLMRegisterFlightLoopCallback(ExportSubscribedDataref, -1.0f, nullptr);
  	return 0.0f;
@@ -169,7 +159,7 @@ float NetworkCallback(float elapsedSinceCall, float elapsedSinceLastTime, int in
 	{
 		clients.push_back(cli);
 	}
-	return -1.0f;
+	return -5.0f;
 }
 
 float ExportSubscribedDataref(float elapsedSinceCall, float elapsedSinceLastTime, int inCounter, void* inRef)

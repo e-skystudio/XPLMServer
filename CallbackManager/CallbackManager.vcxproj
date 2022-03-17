@@ -176,7 +176,7 @@
       <GenerateDebugInformation>true</GenerateDebugInformation>
     </Link>
     <Lib>
-      <AdditionalDependencies>XPLM_64.lib;XPWidgets_64.lib</AdditionalDependencies>
+      <AdditionalDependencies>XPLM_64.lib;XPWidgets_64.lib;%(AdditionalLibrary)</AdditionalDependencies>
     </Lib>
     <Lib>
       <AdditionalLibraryDirectories>$(xplaneSDK)Libraries\Win\;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
