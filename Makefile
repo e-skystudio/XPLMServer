@@ -1,4 +1,5 @@
-SDK			    := /Users/rdessart/Projects/CPP/SDK/XPlane/303
+SDK			    := $(xplane_sdk)
+XPLANE          := $(xplane)
 TARGET		    := XPLMServer
 BASE_DIR        := $(PWD)
 BUILDDIR	    := $(BASE_DIR)/build
@@ -61,7 +62,7 @@ $(BUILDDIR)/Logger.o : $(CALLBACKMANAGER)/src/Logger.cpp $(CALLBACKMANAGER)/incl
 $(BUILDDIR)/utils.o : $(CALLBACKMANAGER)/src/utils.cpp $(CALLBACKMANAGER)/include/utils.h | $(BUILDDIR)
 	g++ $(CFLAGS) $(CALLBACKMANAGER)/src/utils.cpp -c -o $(BUILDDIR)/utils.o
 
-$(BUILDDIR)/CallbackManager.o : $(CALLBACKMANAGER)/src/CallbackManager.cpp $(CALLBACKMANAGER)/include/CallbackManager.h | $(BUILDDIR)
+$(BUILDDIR)/CallbackManager.o : $(CALLBACKMANAGER)/src/CallbackManager.cpp $(CALLBACKMANAGER)/include/CallbackManager.h $(CALLBACKMANAGER)/include/AbstractDataref.h | $(BUILDDIR)
 	g++ $(CFLAGS) $(CALLBACKMANAGER)/src/CallbackManager.cpp -c -o $(BUILDDIR)/CallbackManager.o
 
 $(OUTPUT_DIR):
@@ -71,6 +72,9 @@ $(OUTPUT_DIR):
 
 $(BUILDDIR):
 	mkdir $(BUILDDIR)
+
+publish:
+	cp -r $(BUILDDIR)/XPLMServer $(XPLANE)/Resources/plugins/
 
 clean:
 	@echo Cleaning out everything.
