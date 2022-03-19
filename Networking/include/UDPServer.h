@@ -38,9 +38,9 @@
 #include <fstream>
 
 
+std::string GetCurrentDateTime();
 
 extern "C"{
-	std::string GetCurrentDateTime();
 	struct Client {
 		std::string ip;
 		unsigned short port;
