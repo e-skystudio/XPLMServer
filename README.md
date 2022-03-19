@@ -18,11 +18,11 @@ This behavour can be changed throught the pluginConfig.json file to be edited in
 - GetRegisteredDatarefValue / SetRegisteredDatarefValue: Get/Set the value of a registered dataref
 - Speak : Speak a message in X-Plane
 - LoadRegisterDataref: Load a CSV file with dataref to be registered and add them to the subscribe dataref callback.
-- AddConstantDataref : Set a value to a dataref to be updated at every frame with that value NOT TESTED!
+- AddConstantDataref : Set a value to a dataref to be updated at every frame with that value **NOT TESTED!**
 ### FlightFactor A320 Specific:
 - InitFlightFactorA320 : Initalise the FFA320 API Interface
 - RegisterFFDataref : Register a FlightFactor A320 Dataref
-- GetRegisterFFDatarefValue : Deprecated, use GetRegisteredDatarefValue
+- GetRegisterFFDatarefValue : **DEPRECATED** : use GetRegisteredDatarefValue
 
 # Xplane SDK for compilation
 In order to allow older version of xplane to use XPLMServer the SDK folder is adapted.
@@ -45,7 +45,7 @@ SDK\
 * = if needed to target 32bits versions
 ```
 ## On MacOs:
- - Have one variable environement pointing toward X-Plane name "xplane".
- - Have one variable environement pointing toward X-Plane SDK name "xplane_sdk"
+ - Have one variable environement pointing toward X-Plane name "*xplane*".
+ - Have one variable environement pointing toward X-Plane SDK name "*xplane_sdk*"
  - run ```make``` to build the plugin into ```./build/XPLMServer```
- - run ```make publish``` to export toward X-Plane/Resources/plugins/XPLMServer
+ - run ```make publish``` to export toward ```[X-Plane Root]/Resources/plugins/XPLMServer```
