@@ -22,7 +22,6 @@ This behavour can be changed throught the pluginConfig.json file to be edited in
 ### FlightFactor A320 Specific:
 - InitFlightFactorA320 : Initalise the FFA320 API Interface
 - RegisterFFDataref : Register a FlightFactor A320 Dataref
-- GetRegisterFFDatarefValue : **DEPRECATED** : use GetRegisteredDatarefValue
 
 # Xplane SDK for compilation
 In order to allow older version of xplane to use XPLMServer the SDK folder is adapted.
