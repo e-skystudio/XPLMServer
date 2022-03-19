@@ -35,9 +35,12 @@
 #include <stdio.h>
 #include <string>
 #include <memory.h>
+#include <fstream>
+
+
 
 extern "C"{
-
+	std::string GetCurrentDateTime();
 	struct Client {
 		std::string ip;
 		unsigned short port;
@@ -51,14 +54,14 @@ extern "C"{
 		int Bind(unsigned short port);
 		std::string ReceiveData(int maxSize,Client* outCli);
 		int SendData(std::string data, Client client);
-
+		int BroadcastData(std::string data);
 	protected:
 		unsigned short m_port;
 		struct addrinfo m_hints;
 		struct addrinfo* m_bind_address;
 		SOCKET m_socket_listen;
 		SOCKET m_socket_emit;
-		FILE* m_fout;
+		std::ofstream* m_logfile;
 	private:
 		void log(std::string data) const;
 	};
