@@ -132,7 +132,6 @@ std::string Dataref::GetValue()
 	default:
 		break;
 	}
-	m_logger.Log("Link : " + m_link + " = '" + value + "'!");
 	return value;
 }
 
