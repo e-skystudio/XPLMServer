@@ -23,13 +23,11 @@ float ExportSubscribedDataref(float elapsedSinceCall, float elapsedSinceLastTime
 static UDPServer* server;
 static Logger logger;
 static std::vector<Client> clients;
+static int XplaneVersion;
+static int XplaneSDKVersion;
 
 void BroadCastData(std::string data)
 {
-	//for (const Client c : clients)
-	//{
-	//	server->SendData(data, c);
-	//}
 	server->BroadcastData(data);
 }
 
@@ -53,6 +51,8 @@ PLUGIN_API int XPluginStart(char* outName, char* outSig, char* outDesc)
 	strcpy(outName, sig.c_str());
 	strcpy(outSig, "eskystudio.tools.XPLMServer");
 	strcpy(outDesc, description.c_str());
+	XPLMHostApplicationID hostId;
+	XPLMGetVersions(&XplaneVersion, &XplaneSDKVersion, &hostId);
 	return 1;
 }
 
@@ -161,7 +161,9 @@ float ExportSubscribedDataref(float elapsedSinceCall, float elapsedSinceLastTime
 	if (callbackManager->GetSubscribedDatarefCount() <= 0 )
 	{
 		json jdataOut = {
-			{"Operation", "Empty"}
+			{"Operation", "Beacon"},
+			{"XplaneVersion", XplaneVersion},
+			{"XplaneSDKVersion", XplaneSDKVersion}
 		};
 		BroadCastData(jdataOut.dump());
 		XPLMDebugString("[XPLMServer]Sending Empty ops beacon...\n");
