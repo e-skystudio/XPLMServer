@@ -10,18 +10,18 @@ Working with UDP on port 50555 (for inbound requests) and 50556 (for outbound me
 This behavour can be changed throught the pluginConfig.json file to be edited in the ``` [X-Plane root]/Resources/plugins/XPLMServer/ ```
 
 ## Default Callbacks Operations
-- LoadDLL to load other callbacks.
-- RegisterDatarefs to save a datarefs with a unique name (example : ``` sim/flightmodels/position/latitude ``` as latitude). To be used when you need to access those datarefs a lot as it skip ```XPLMFindDataref()```.
+- LoadDLL to load other callbacks. **TEST PENDING**
+- RegisterDatarefs to save a datarefs with a unique name (example : ``` sim/flightmodels/position/latitude ``` as latitude). To be used when you need to access those datarefs a lot as it skip ```XPLMFindDataref()```. **TEST PASS SUCESSFULLY**
 - UnregisterDatarefs : to remove a dataref from the RegisterDatarefs.
-- (Un)SubscribeDataref: Mark a registered dataref to be exported every 0.25s.
-- GetDatarefValue / SetDatarefValue: Get/Set the value of a dataref (only with non-registered dataref).
-- GetRegisteredDatarefValue / SetRegisteredDatarefValue: Get/Set the value of a registered dataref
-- Speak : Speak a message in X-Plane
-- LoadRegisterDataref: Load a CSV file with dataref to be registered and add them to the subscribe dataref callback.
-- AddConstantDataref : Set a value to a dataref to be updated at every frame with that value **NOT TESTED!**
+- (Un)SubscribeDataref: Mark a registered dataref to be exported every 0.25s. SubscribeDataref: **TEST PASS SUCESSFULLY** | UnSubscribeDataref:  **TEST PENDING**
+- GetDatarefValue / SetDatarefValue: Get/Set the value of a dataref (only with non-registered dataref).  **TEST PASS SUCESSFULLY**
+- GetRegisteredDatarefValue / SetRegisteredDatarefValue: Get/Set the value of a registered dataref  **TEST PASS SUCESSFULLY**
+- Speak : Speak a message in X-Plane  **TEST PASS SUCESSFULLY**
+- LoadRegisterDataref: Load a CSV file with dataref to be registered and add them to the subscribe dataref callback.  **TEST PENDING**
+- AddConstantDataref : Set a value to a dataref to be updated at every frame with that value **TEST PENDING**
 ### FlightFactor A320 Specific:
-- InitFlightFactorA320 : Initalise the FFA320 API Interface
-- RegisterFFDataref : Register a FlightFactor A320 Dataref
+- InitFlightFactorA320 : Initalise the FFA320 API Interface  **TEST PASS SUCESSFULLY**
+- RegisterFFDataref : Register a FlightFactor A320 Dataref  **TEST PASS SUCESSFULLY**
 
 # Xplane SDK for compilation
 In order to allow older version of xplane to use XPLMServer the SDK folder is adapted.
