@@ -1,12 +1,14 @@
 #pragma once
 #include <string>
 #include <map>
-#include "Logger.h"
 
 #include <nlohmann/json.hpp>
 
 #include <XPLMDataAccess.h>
 #include <XPLMUtilities.h>
+
+#include "Logger.h"
+#include "AbstractDataref.h"
 
 
 using json = nlohmann::json;
@@ -14,7 +16,7 @@ using json = nlohmann::json;
 ///<summary>
 /// This class represent an X-Plane dataref in OOP format.
 ///</summary>
-class Dataref
+class Dataref : public AbstractDataref
 {
 public:
 	enum class Type {
@@ -98,7 +100,6 @@ protected:
 	XPLMDataRef m_dataref;	/* Represent a void pointer locating the dataref as X - Plane SDK */
 	Dataref::Type m_type;	/* Represent the underlying data type of the dataref */
 	Logger m_logger;		/* The logger */
-
 	std::string m_link;
 	std::string m_conversionFactor;
 	int setFloatArrayFromJson(int offset, std::string value);

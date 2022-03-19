@@ -3,8 +3,9 @@
 #include <string>
 #include <nlohmann/json.hpp>
 #include "SharedValue.h"
+#include "AbstractDataref.h"
 
-class FFDataref
+class FFDataref : public AbstractDataref
 {
 public:
 	enum class Type {
@@ -24,6 +25,7 @@ public:
 	FFDataref();
 	FFDataref(SharedValuesInterface* FF_A320_api);
 	FFDataref(const FFDataref& rhs);
+	~FFDataref();
 	bool Load(std::string path);
 	FFDataref::Type GetType();
 	FFDataref::Type LoadType();
@@ -38,7 +40,6 @@ protected:
 	std::string m_conversionFactor;
 	SharedValuesInterface* m_ffapi;
 	Logger m_logger;
-
 };
 
 static std::map<std::string, FFDataref::Type> const FFStringToType{

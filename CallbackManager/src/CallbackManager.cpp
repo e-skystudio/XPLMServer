@@ -6,9 +6,9 @@ CallbackManager::CallbackManager() :
 {
 	m_ff320 = new SharedValuesInterface();
 	m_callbacks = new std::map<std::string, Callback>();
-	m_namedDatarefs = new std::map<std::string, Dataref*>();
-	m_namedFFDatarefs = new std::map<std::string, FFDataref*>();
-	m_subscribedDatarefs = new std::map<std::string, Dataref*>();
+	m_namedDatarefs = new std::map<std::string, AbstractDataref*>();
+	// m_namedFFDatarefs = new std::map<std::string, FFDataref*>();
+	m_subscribedDatarefs = new std::map<std::string, AbstractDataref*>();
 	m_constDataref = new std::vector<ConstantDataref>();
 	m_subscribedEvent = new std::map<unsigned int, std::string>{
 		{101, "Crashed"},
@@ -35,7 +35,9 @@ CallbackManager::~CallbackManager()
 		{
 			m_subscribedDatarefs->erase(kv->first);
 		}
-		delete kv->second;
+		if(kv->second->DatarefType == "XPLMDataref")    delete (Dataref*)(kv->second);
+		// else if(kv->second->DatarefType == "FFDataref") delete (FFDataref*)(kv->second);
+		// delete kv->second;
 		kv++;
 	}
 	#ifdef IBM
@@ -56,12 +58,12 @@ int CallbackManager::AppendCallback(std::string name, Callback newCallback)
 }
 
 
-std::map<std::string, Dataref*>* CallbackManager::GetNamedDataref() const
+std::map<std::string, AbstractDataref*>* CallbackManager::GetNamedDataref() const
 {
 	return m_namedDatarefs;
 }
 
-std::map<std::string, Dataref*>* CallbackManager::GetSubscribedDataref() const
+std::map<std::string, AbstractDataref*>* CallbackManager::GetSubscribedDataref() const
 {
 	return m_subscribedDatarefs;
 }
@@ -209,7 +211,10 @@ void CallbackManager::AddConstantDataref(std::string name, std::string value)
 	ConstantDataref dr;
 	dr.name = name;
 	dr.value = value;
-	dr.dataref = m_namedDatarefs->at(name);
+	AbstractDataref* dataref = m_namedDatarefs->at(name);
+	if(dataref == nullptr) return;
+	if(dataref->DatarefType != "XPLMDataref") return;
+	dr.dataref = (Dataref*)dataref;
 
 	m_constDataref->push_back(dr);
 	m_logger.Log("namedDataref : '" + name + "' founded an added to the map!");
@@ -264,10 +269,10 @@ int CallbackManager::ExecuteCallback(json* jsonData)
 	return res;
 }
 
-std::map<std::string, FFDataref*>* CallbackManager::GetNamedFFDataref() const
-{
-	return m_namedFFDatarefs;
-}
+// std::map<std::string, FFDataref*>* CallbackManager::GetNamedFFDataref() const
+// {
+// 	return m_namedFFDatarefs;
+// }
 
 SharedValuesInterface* CallbackManager::GetFF320Interface() const
 {

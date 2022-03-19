@@ -170,7 +170,7 @@ float ExportSubscribedDataref(float elapsedSinceCall, float elapsedSinceLastTime
 		{"Operation", "ExportDataref"},
 		{"Datarefs", json::array()}
 	};
-	std::map<std::string, Dataref*> subDatarefMap = *(callbackManager->GetSubscribedDataref());
+	std::map<std::string, AbstractDataref*> subDatarefMap = *(callbackManager->GetSubscribedDataref());
 	for (auto &kv : *p_subscribedDatarefMap)
 	{
 		json jdataref = {
@@ -179,6 +179,8 @@ float ExportSubscribedDataref(float elapsedSinceCall, float elapsedSinceLastTime
 		};
 		jdataOut["Datarefs"].push_back(jdataref);
 	}
+	XPLMDebugString(jdataOut.dump().c_str());
+	XPLMDebugString("\n");
 	BroadCastData(jdataOut.dump());
 	return 0.25f;
 }

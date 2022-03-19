@@ -85,7 +85,7 @@ public:
 	///  A pointer toward the list of stored datarefs
 	/// CAN BE NULL !
 	/// </returns>
-	std::map<std::string, Dataref*>* GetNamedDataref() const;
+	std::map<std::string, AbstractDataref*>* GetNamedDataref() const;
 	/// <summary>
 	///  Return the full map of Subscribed Dataref(s).
 	/// </summary>
@@ -93,7 +93,7 @@ public:
 	///  A pointer toward the list of subscribed datarefs.
 	/// CAN BE NULL !
 	/// </returns>
-	std::map<std::string, Dataref*>* GetSubscribedDataref() const;
+	std::map<std::string, AbstractDataref*>* GetSubscribedDataref() const;
 	/// <summary>
 	///  Return the full map of Subscribed Event(s).
 	/// </summary>
@@ -136,14 +136,14 @@ public:
 	///  A pointer toward the list of stored FFdatarefs
 	/// CAN BE NULL !
 	/// </returns>
-	std::map<std::string, FFDataref*>* GetNamedFFDataref() const;
+	// std::map<std::string, FFDataref*>* GetNamedFFDataref() const;
 	SharedValuesInterface* GetFF320Interface() const;
 	bool InitFF320Interface();
 protected:
 	std::map<std::string, Callback>* m_callbacks;
-	std::map<std::string, Dataref*>* m_namedDatarefs; //The datarefs stored while plugin is in used
-	std::map<std::string, FFDataref*>* m_namedFFDatarefs;
-	std::map<std::string, Dataref*>* m_subscribedDatarefs; //The datarefs that value is returned per timed basis
+	std::map<std::string, AbstractDataref*>* m_namedDatarefs; //The datarefs stored while plugin is in used
+	// std::map<std::string, FFDataref*>* m_namedFFDatarefs;
+	std::map<std::string, AbstractDataref*>* m_subscribedDatarefs; //The datarefs that value is returned per timed basis
 	std::vector<ConstantDataref>* m_constDataref; //Datarefs set as constant (value are copied from the key)
 	std::map<unsigned int, std::string>* m_subscribedEvent;
 	Logger m_logger; /* The logger */

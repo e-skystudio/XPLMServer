@@ -4,8 +4,10 @@
 Dataref::Dataref() :
 	m_dataref(nullptr), m_type(Dataref::Type::Unknown),
 	m_logger(Logger("XPLMServer.log", "Dataref", false)),
-	m_link(""), m_conversionFactor("1.0")
+	m_link(""), 
+	m_conversionFactor("1.0")
 {
+	DatarefType = "XPLMDataref";
 }
 
 /* \brief Copy Constructor */

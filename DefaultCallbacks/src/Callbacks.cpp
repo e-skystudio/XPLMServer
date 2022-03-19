@@ -242,7 +242,7 @@ int SetRegisterDatarefValue(json* jdata, CallbackManager* callback)
 #ifdef _DEBUG
 	callback->Log("Dataref '"+ name + "' found!");
 #endif
-	Dataref* p_dataref = p_datarefMap->at(name);
+	AbstractDataref* p_dataref = p_datarefMap->at(name);
 	if(p_dataref == nullptr)
 	{
 		callback->Log("Dataref pointer is null");
@@ -402,7 +402,7 @@ int RegisterFFDataref(json* jdata, CallbackManager* callback)
 		callback->Log("ConversionFactor was not provided assuming 1.0f", Logger::Severity::WARNING);
 	}
 	ffdataref->SetConversionFactor(conversionFactor);
-	auto p_datarefMap = callback->GetNamedFFDataref();
+	auto p_datarefMap = callback->GetNamedDataref();
 	callback->Log("Adding FFDataref to map", Logger::Severity::DEBUG);
 	auto sizeBefore = p_datarefMap->size();
 	callback->Log("Size before operation : " + std::to_string(sizeBefore), Logger::Severity::DEBUG);
@@ -422,7 +422,7 @@ int GetRegisterFFDatarefValue(json* jdata, CallbackManager* callback)
 	}
 	std::string name = jdata->at("Name").get<std::string>();
 	callback->Log("Looking for ffdataref '" + name + "' to get value");
-	auto p_datarefMap = callback->GetNamedFFDataref();
+	auto p_datarefMap = callback->GetNamedDataref();
 	callback->Log("Obtaining the registered ffdatarefs...[DONE]");
 	if (!p_datarefMap->contains(name))
 	{
