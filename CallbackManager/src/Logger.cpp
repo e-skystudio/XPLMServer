@@ -16,9 +16,7 @@ Logger::Logger(std::string filename, std::string module, bool erease)
 		std::stringstream debug;
 		debug << "[XPLMServer][Logger]Unable to open file : '" << filename << "' (as erease = '" << erease << "')\n";
 		XPLMDebugString(debug.str().c_str());
-
 	}
-
 }
 
 Logger::~Logger()
