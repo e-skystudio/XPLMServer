@@ -142,6 +142,5 @@ CALLBACK_FUNC int LoadRegisterDataref(json* jdata, CallbackManager* callback);
 ///    - *Type: the type of the dataref (if not set, will be loaded from SDK)
 ///    - *ConversionFactor: the conversion factor of the dataref (if not set, will be set to 1.0)
 ///</summary>
-CALLBACK_FUNC int RegisterFFDataref(json* jdata, CallbackManager* callbackManager);
-CALLBACK_FUNC int GetRegisterFFDatarefValue(json* jdata, CallbackManager* callbackManager);
 CALLBACK_FUNC int InitFlightFactorA320(json* jdata, CallbackManager* callbackManager);
+CALLBACK_FUNC int RegisterFFDataref(json* jdata, CallbackManager* callbackManager);
