@@ -33,17 +33,15 @@ int UDPServer::Bind(unsigned short port)
 		return 0x02;
 	}
 	log("bind() sucess on " + std::to_string(port) + "!");
-#ifdef IBM
-	int optVal = TRUE;
+	int broadcastEnable = 1;
 	int iOptLen = sizeof(int);
-	int res = setsockopt(m_socket_emit, SOL_SOCKET, SO_BROADCAST, (char*)&optVal, iOptLen);
+	int res = setsockopt(m_socket_emit, SOL_SOCKET, SO_BROADCAST, (char*)&broadcastEnable, iOptLen);
 	log("Setting SOL_SOCKET SO_BROADCAST = 1 returned : '" + std::to_string(res));
 	if (res != 0)
 	{
 		log("Error code is : '" + std::to_string(GETSOCKETERRNO()));
 		return 0x03;
 	}
-#endif
 	return 0x00;
 }
 
