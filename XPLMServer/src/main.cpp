@@ -26,11 +26,11 @@ static std::vector<Client> clients;
 
 void BroadCastData(std::string data)
 {
-	for (const Client c : clients)
-	{
-		server->SendData(data, c);
-	}
-
+	//for (const Client c : clients)
+	//{
+	//	server->SendData(data, c);
+	//}
+	server->BroadcastData(data);
 }
 
 PLUGIN_API int XPluginStart(char* outName, char* outSig, char* outDesc)
@@ -158,11 +158,13 @@ float NetworkCallback(float elapsedSinceCall, float elapsedSinceLastTime, int in
 
 float ExportSubscribedDataref(float elapsedSinceCall, float elapsedSinceLastTime, int inCounter, void* inRef)
 {
-	if (callbackManager->GetSubscribedDatarefCount() < 1)
+	if (callbackManager->GetSubscribedDatarefCount() <= 0 )
 	{
 		json jdataOut = {
-		{"Operation", "Empty"}};
+			{"Operation", "Empty"}
+		};
 		BroadCastData(jdataOut.dump());
+		XPLMDebugString("[XPLMServer]Sending Empty ops beacon...\n");
 		return 1.0f;
 	}
 	auto* p_subscribedDatarefMap = callbackManager->GetSubscribedDataref();
