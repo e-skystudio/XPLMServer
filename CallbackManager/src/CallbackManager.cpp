@@ -126,7 +126,7 @@ int CallbackManager::LoadCallbackDLL(std::string inDllPath)
 	
 	for (std::size_t i(0); i < vec_callbacks.size(); i++)
 	{
-		m_logger.Log(("\nLoading callback " + std::to_string(i) + " / " + std::to_string(size - 1)).c_str());
+		m_logger.Log(("Loading callback " + std::to_string(i) + " / " + std::to_string(size - 1)).c_str());
 		CallbackFunctionStruct* callback1 = vec_callbacks[i];
 		m_logger.Log(("Trying to load '" + callback1->function + "' as '" + callback1->operation + "'...").c_str());
 		Callback p_callback;
@@ -137,17 +137,17 @@ int CallbackManager::LoadCallbackDLL(std::string inDllPath)
 		#endif
 		if (p_callback == nullptr)
 		{
-			m_logger.Log("pointer callback is pointing to nullptr\n", Logger::Severity::WARNING);
+			m_logger.Log("pointer callback is pointing to nullptr", Logger::Severity::WARNING);
 			continue;
 		}
 		else
 		{
-			m_logger.Log("pointer callback is valid\n");
+			m_logger.Log("pointer callback is valid");
 		}
 			int res = this->AppendCallback(std::string(callback1->operation), p_callback);
 		if (res != EXIT_SUCCESS)
 		{
-			m_logger.Log("Appending Callback to list : [FAILED]\n", Logger::Severity::WARNING);
+			m_logger.Log("Appending Callback to list : [FAILED]", Logger::Severity::WARNING);
 			continue;
 		}
 #ifdef _DEBUG
@@ -155,7 +155,7 @@ int CallbackManager::LoadCallbackDLL(std::string inDllPath)
 			std::string(callback1->operation) + "' sucessfull!", Logger::Severity::DEBUG);
 #endif
 	}
-	m_logger.Log("LoadCallbackDLL...[FINISHED]\n");
+	m_logger.Log("LoadCallbackDLL...[FINISHED]");
 	return size;
 
 }

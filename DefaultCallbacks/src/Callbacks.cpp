@@ -61,7 +61,6 @@ void GetCallbacks(std::vector<CallbackFunctionStruct*>* callbacks, int* size)
 		callbacks->push_back(new CallbackFunctionStruct("LOAD_REG_DATA", "LoadRegisterDataref"));
 		callbacks->push_back(new CallbackFunctionStruct("FFDATA_INIT", "InitFlightFactorA320"));
 		callbacks->push_back(new CallbackFunctionStruct("REG_FFDATA", "RegisterFFDataref"));
-		callbacks->push_back(new CallbackFunctionStruct("GET_REG_FFDATA", "GetRegisterFFDatarefValue"));
 		*size = (int)callbacks->size();
 	}
 	return;

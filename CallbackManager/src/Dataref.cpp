@@ -109,7 +109,8 @@ std::string Dataref::GetValue()
 		json j = json::array();
 		for (int i = 0; i < arraySize; i++)
 		{
-			j.push_back((*(floatArray + i)) * (float)std::stod(m_conversionFactor));
+			float item = *((float*)(floatArray + i));
+			j.push_back(item * (float)std::stod(m_conversionFactor));
 		}
 		value = j.dump();
 		break;
@@ -122,13 +123,22 @@ std::string Dataref::GetValue()
 		json j = json::array();
 		for (int i = 0; i < arraySize; i++)
 		{
-			j.push_back((*(intArray + i)) * (int)std::stod(m_conversionFactor));
+			int item = *((int*)(intArray + i));
+			j.push_back(item * (int)std::stod(m_conversionFactor));
 		}
 		value = j.dump();
 		break;
 	}
 	case Dataref::Type::Data:
+	{
+		int lenght = XPLMGetDatab(m_dataref, NULL, 0, 0);
+		char* data = new char[lenght];
+		memset(data, 0x00, lenght);
+		XPLMGetDatab(m_dataref, (void*)data, 0, lenght);
+		value = std::string(data).substr(0, strlen(data));
+		m_logger.Log("[GET DATA]" + m_link + " = " + data);
 		break;
+	}
 	default:
 		break;
 	}
@@ -174,7 +184,23 @@ void Dataref::SetValue(std::string value)
 		break;
 	}
 	case Dataref::Type::Data:
+	{
+		int maxLenght = XPLMGetDatab(m_dataref, NULL, 0, 0);
+		char* zero = new char[maxLenght];
+		memset(zero, 0x00, maxLenght);
+		XPLMSetDatab(m_dataref, zero, 0, maxLenght);
+		m_logger.Log("[SET DATA]" + m_link + " has a max size of" + std::to_string(maxLenght));
+		std::size_t lenght = value.size();
+		m_logger.Log("[SET DATA]" + value + " has a size of" + std::to_string(lenght));
+		if (lenght > maxLenght)
+		{
+			lenght = maxLenght;
+		}
+		m_logger.Log("[SET DATA]" + m_link + " size of" + std::to_string(lenght));
+		XPLMSetDatab(m_dataref, (void*)value.c_str(), 0, (int)lenght);
+		m_logger.Log("[SET DATA]" + m_link + " = " + value);
 		break;
+	}
 	default:
 		break;
 	}

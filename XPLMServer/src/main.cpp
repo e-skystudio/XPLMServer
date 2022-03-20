@@ -45,12 +45,18 @@ PLUGIN_API int XPluginStart(char* outName, char* outSig, char* outDesc)
 		return 0;
 	}
 	PluginConfiguration = json::parse(data.str());
-	std::string sig = PluginConfiguration["Plugin"]["Name"].get<std::string>();
+	std::string name = PluginConfiguration["Plugin"]["Name"].get<std::string>();
 	std::string description = PluginConfiguration["Plugin"]["Description"].get<std::string>() ;
-
-	strcpy(outName, sig.c_str());
-	strcpy(outSig, "eskystudio.tools.XPLMServer");
+	std::string signature = "eskystudio.tools.XPLMServer";
+#ifdef IBM
+	strcpy_s(outName, strlen(name.c_str()) + 1, name.c_str());
+	strcpy_s(outSig, strlen(description.c_str()) + 1, description.c_str());
+	strcpy_s(outDesc, strlen(signature.c_str()) + 1, signature.c_str());
+#else
+	strcpy(outName, name.c_str());
+	strcpy(outSig, signature.c_str());
 	strcpy(outDesc, description.c_str());
+#endif
 	XPLMHostApplicationID hostId;
 	XPLMGetVersions(&XplaneVersion, &XplaneSDKVersion, &hostId);
 	return 1;

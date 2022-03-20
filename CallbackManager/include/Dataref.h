@@ -3,6 +3,7 @@
 #include <map>
 
 #include <nlohmann/json.hpp>
+#include <string.h>
 
 #include <XPLMDataAccess.h>
 #include <XPLMUtilities.h>
