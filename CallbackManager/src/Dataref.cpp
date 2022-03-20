@@ -105,6 +105,7 @@ std::string Dataref::GetValue()
 	{
 		int arraySize = XPLMGetDatavf(m_dataref, nullptr, 0, 0);
 		float* floatArray = (float*)malloc(sizeof(float) * arraySize);
+		if (floatArray == nullptr) return "";
 		XPLMGetDatavf(m_dataref, floatArray, 0, arraySize);
 		json j = json::array();
 		for (int i = 0; i < arraySize; i++)
@@ -113,12 +114,14 @@ std::string Dataref::GetValue()
 			j.push_back(item * (float)std::stod(m_conversionFactor));
 		}
 		value = j.dump();
+		free(floatArray);
 		break;
 	}
 	case Dataref::Type::IntArray:
 	{
 		int arraySize = XPLMGetDatavi(m_dataref, nullptr, 0, 0);
 		int* intArray = (int*)malloc(sizeof(int) * arraySize);
+		if (intArray == nullptr) return "";
 		XPLMGetDatavi(m_dataref, intArray, 0, arraySize);
 		json j = json::array();
 		for (int i = 0; i < arraySize; i++)
@@ -127,16 +130,19 @@ std::string Dataref::GetValue()
 			j.push_back(item * (int)std::stod(m_conversionFactor));
 		}
 		value = j.dump();
+		free(intArray);
 		break;
 	}
 	case Dataref::Type::Data:
 	{
 		int lenght = XPLMGetDatab(m_dataref, NULL, 0, 0);
-		char* data = new char[lenght];
+		char* data = (char*)malloc(lenght * sizeof(char));
+		if (data == nullptr) return "";
 		memset(data, 0x00, lenght);
 		XPLMGetDatab(m_dataref, (void*)data, 0, lenght);
 		value = std::string(data).substr(0, strlen(data));
 		m_logger.Log("[GET DATA]" + m_link + " = " + data);
+		free(data);
 		break;
 	}
 	default:
@@ -186,9 +192,12 @@ void Dataref::SetValue(std::string value)
 	case Dataref::Type::Data:
 	{
 		int maxLenght = XPLMGetDatab(m_dataref, NULL, 0, 0);
-		char* zero = new char[maxLenght];
+		char* zero = (char*)malloc(sizeof(char) * maxLenght);
+		if (zero == nullptr) return;
 		memset(zero, 0x00, maxLenght);
 		XPLMSetDatab(m_dataref, zero, 0, maxLenght);
+		free(zero);
+
 		m_logger.Log("[SET DATA]" + m_link + " has a max size of" + std::to_string(maxLenght));
 		std::size_t lenght = value.size();
 		m_logger.Log("[SET DATA]" + value + " has a size of" + std::to_string(lenght));
