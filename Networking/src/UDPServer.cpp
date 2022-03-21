@@ -143,17 +143,11 @@ int UDPServer::BroadcastData(std::string data)
 	{
 		log("There was an error during INET BROADCAST : " + std::to_string(GETSOCKETERRNO()));
 	}
-	int bytes2 = sendto(m_socket_emit, data.c_str(), (int)data.length(), 0,
-		(struct sockaddr*)&send_address2, (int)sizeof(struct sockaddr_in));
-	if (bytes2 < 0)
-	{
-		log("There was an error during LOCALHOST BROADCAST : " + std::to_string(GETSOCKETERRNO()));
-}
 	char logBuffer[4150];
 	#ifdef IBM
-		sprintf_s(logBuffer, 4150, "BROADCAST[%d]<<<'%s'(%d byte(s)) & (%d byte(s))",m_port+ 1, data.c_str(), bytes, bytes2);
+		sprintf_s(logBuffer, 4150, "BROADCAST[%d]<<<'%s'(%d byte(s))",m_port+ 1, data.c_str(), bytes);
 	#else
-		sprintf(logBuffer, "BROADCAST[%d]<<<'%s'(%d byte(s)) & (%d byte(s))", m_port + 1, data.c_str(), bytes, bytes2);
+		sprintf(logBuffer, "BROADCAST[%d]<<<'%s'(%d byte(s))", m_port + 1, data.c_str(), bytes);
 	#endif
 	log(std::string(logBuffer));
 	return 0;
