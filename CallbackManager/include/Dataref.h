@@ -21,13 +21,13 @@ class Dataref : public AbstractDataref
 {
 public:
 	enum class Type {
-		Unknown = 0,
-		Int = 1,
-		Float = 2,
-		Double = 4,
-		FloatArray=8,
-		IntArray=16,
-		Data=32
+		Unknown = xplmType_Unknown,
+		Int = xplmType_Int,
+		Float = xplmType_Float,
+		Double = xplmType_Double,
+		FloatArray= xplmType_FloatArray,
+		IntArray= xplmType_IntArray,
+		Data=xplmType_Data,
 	};
 
 	///<summary>
