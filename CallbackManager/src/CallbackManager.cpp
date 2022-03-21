@@ -249,21 +249,17 @@ int CallbackManager::ExecuteCallback(json* jsonData)
 	
 	std::string operation = jsonData->at("Operation").get<std::string>();
 	m_logger.Log("Operation '" + operation + "' was requested");
-	XPLMDebugString(("Operation '" + operation + "' was requested\n").c_str());
 
 	if (!m_callbacks->contains(operation))
 	{
 		m_logger.Log("Operation '" + operation + "' was not found", Logger::Severity::WARNING);
-		XPLMDebugString(("Operation '" + operation + "' was not found\n").c_str());
 		return 0x02;
 	}
 
-	XPLMDebugString(("Operation '" + operation + "' founded in callback\n").c_str());
 	m_logger.Log("Operation '" + operation + "' founded in callback");
 
 	int res = m_callbacks->at(operation)(jsonData, this);
 	
-	XPLMDebugString(("Operation '" + operation + "' executed and returned code : '" + std::to_string(res) + "'\n").c_str());
 	m_logger.Log("Operation '" + operation + "' executed and returned code : '" + std::to_string(res) + "'");
 	
 	return res;
