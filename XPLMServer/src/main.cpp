@@ -25,6 +25,9 @@ static Logger logger;
 static std::vector<Client> clients;
 static int XplaneVersion;
 static int XplaneSDKVersion;
+static std::string AircraftICAO;
+static std::string AircraftAuthor;
+static std::string AircraftDesciption;
 
 void BroadCastData(std::string data)
 {
@@ -59,6 +62,9 @@ PLUGIN_API int XPluginStart(char* outName, char* outSig, char* outDesc)
 #endif
 	XPLMHostApplicationID hostId;
 	XPLMGetVersions(&XplaneVersion, &XplaneSDKVersion, &hostId);
+
+
+
 	return 1;
 }
 
@@ -129,6 +135,24 @@ PLUGIN_API void XPluginReceiveMessage(XPLMPluginID inFrom, int inMsg, void* inPa
 
 float InitializerCallback(float elapsedSinceCall, float elapsedSinceLastTime, int inCounter, void* inRef)
 {
+#pragma region GettingInfoAboutLoadedAircraft
+	XPLMDataRef acftAuthor = XPLMFindDataRef("sim/aircraft/view/acf_author");
+	XPLMDataRef acftDescription = XPLMFindDataRef("sim/aircraft/view/acf_descrip");
+	XPLMDataRef acftICAO = XPLMFindDataRef("sim/aircraft/view/acf_ICAO");
+
+	char author[500];
+	char description[500];
+	char icao[40];
+
+	int size(0);
+	size = XPLMGetDatab(acftAuthor, (void*)author, 0, 500);
+	AircraftAuthor = std::string(author).substr(0, size),
+	size = XPLMGetDatab(acftDescription, (void*)description, 0, 500);
+	AircraftDesciption = std::string(description).substr(0, size),
+	size = XPLMGetDatab(acftICAO, (void*)icao, 0, 40);
+	AircraftICAO = std::string(icao).substr(0, size);
+#pragma endregion
+
 	XPLMRegisterFlightLoopCallback(NetworkCallback, -1.0f, nullptr);
 	XPLMRegisterFlightLoopCallback(ExportSubscribedDataref, -1.0f, nullptr);
  	return 0.0f;
@@ -169,7 +193,10 @@ float ExportSubscribedDataref(float elapsedSinceCall, float elapsedSinceLastTime
 		json jdataOut = {
 			{"Operation", "Beacon"},
 			{"XplaneVersion", XplaneVersion},
-			{"XplaneSDKVersion", XplaneSDKVersion}
+			{"XplaneSDKVersion", XplaneSDKVersion},
+			{"AircraftICAO", AircraftICAO},
+			{"AircraftDescription", AircraftDesciption},
+			{"AircraftAuthor", AircraftAuthor},
 		};
 		BroadCastData(jdataOut.dump());
 		XPLMDebugString("[XPLMServer]Sending Empty ops beacon...\n");
