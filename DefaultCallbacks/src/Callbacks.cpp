@@ -87,7 +87,9 @@ int RegisterDataref(json* jdata, CallbackManager* callback)
 	Dataref* dataref = new Dataref();
 	dataref->Load(link);
 
-	if (!jdata->contains("Type"))
+	if (!jdata->contains("Type") || 
+		jdata->at("Type").type() != json::value_t::string || 
+		jdata->at("Type").get<std::string>() != "UNKNWON")
 	{
 		callback->Log("Type was not present in JSON data, using XPlane SDK to determine it");
 		Dataref::Type dType = dataref->LoadType();
@@ -154,6 +156,7 @@ int SubscribeDataref(json* jdata, CallbackManager* callback)
 		callback->Log("SubscibeDataref : Missing mandatory JSON parameter 'Name'", Logger::Severity::CRITICAL);
 		return 0x01;
 	}
+	callback->AddSubscribedDataref(jdata->at("Name").get<std::string>());
 	return 0;
 }
 
@@ -232,7 +235,9 @@ int GetDatarefValue(json* jdata, CallbackManager* callback)
 	callback->Log("Will be reading dataref at location :'" + link + "'");
 	auto p_dataref = new Dataref();
 	p_dataref->Load(link);
-	if (!jdata->contains("Type") || jdata->at("Type").type() != json::value_t::string)
+	if (!jdata->contains("Type") ||
+		jdata->at("Type").type() != json::value_t::string ||
+		jdata->at("Type").get<std::string>() != "UNKNWON")
 	{
 		Dataref::Type type = p_dataref->LoadType();
 		callback->Log("Dataref is of type '" + std::to_string((int)type) + "'");
@@ -262,7 +267,9 @@ int SetDatarefValue(json* jdata, CallbackManager* callback)
 	callback->Log("Will be setting dataref at location :'" + link + "' to value + :'" + value + "'");
 	auto p_dataref = new Dataref();
 	p_dataref->Load(link);
-	if (!jdata->contains("Type"))
+	if (!jdata->contains("Type") ||
+		jdata->at("Type").type() != json::value_t::string ||
+		jdata->at("Type").get<std::string>() != "UNKNWON")
 	{
 		Dataref::Type type = p_dataref->LoadType();
 		callback->Log("Dataref is of type '" + std::to_string((int)type) + "'");
