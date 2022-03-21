@@ -89,7 +89,7 @@ int RegisterDataref(json* jdata, CallbackManager* callback)
 
 	if (!jdata->contains("Type") || 
 		jdata->at("Type").type() != json::value_t::string || 
-		jdata->at("Type").get<std::string>() != "UNKNWON")
+		jdata->at("Type").get<std::string>() == "UNKNWON")
 	{
 		callback->Log("Type was not present in JSON data, using XPlane SDK to determine it");
 		Dataref::Type dType = dataref->LoadType();
@@ -111,9 +111,7 @@ int RegisterDataref(json* jdata, CallbackManager* callback)
 	}
 	dataref->SetConversionFactor(conversionFactor);
 	auto p_datarefMap = callback->GetNamedDataref();
-	auto sizeBefore = p_datarefMap->size();
 	p_datarefMap->emplace(name, dataref);
-	auto sizeAfter = p_datarefMap->size();
 	return 0;
 }
 
@@ -237,7 +235,7 @@ int GetDatarefValue(json* jdata, CallbackManager* callback)
 	p_dataref->Load(link);
 	if (!jdata->contains("Type") ||
 		jdata->at("Type").type() != json::value_t::string ||
-		jdata->at("Type").get<std::string>() != "UNKNWON")
+		jdata->at("Type").get<std::string>() == "UNKNWON")
 	{
 		Dataref::Type type = p_dataref->LoadType();
 		callback->Log("Dataref is of type '" + std::to_string((int)type) + "'");
@@ -269,7 +267,7 @@ int SetDatarefValue(json* jdata, CallbackManager* callback)
 	p_dataref->Load(link);
 	if (!jdata->contains("Type") ||
 		jdata->at("Type").type() != json::value_t::string ||
-		jdata->at("Type").get<std::string>() != "UNKNWON")
+		jdata->at("Type").get<std::string>() == "UNKNWON")
 	{
 		Dataref::Type type = p_dataref->LoadType();
 		callback->Log("Dataref is of type '" + std::to_string((int)type) + "'");
