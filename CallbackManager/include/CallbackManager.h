@@ -42,7 +42,7 @@ typedef int(*Callback)(json* json, void* CallbackManager); ///The callback refer
 struct ConstantDataref {
 	std::string name;
 	std::string value;
-	Dataref* dataref;
+	AbstractDataref* dataref;
 };
 #pragma endregion
 
@@ -139,12 +139,13 @@ public:
 	// std::map<std::string, FFDataref*>* GetNamedFFDataref() const;
 	SharedValuesInterface* GetFF320Interface() const;
 	bool InitFF320Interface();
+	bool IsFF320InterfaceEnabled();
 protected:
 	std::map<std::string, Callback>* m_callbacks;
 	std::map<std::string, AbstractDataref*>* m_namedDatarefs; //The datarefs stored while plugin is in used
 	// std::map<std::string, FFDataref*>* m_namedFFDatarefs;
 	std::map<std::string, AbstractDataref*>* m_subscribedDatarefs; //The datarefs that value is returned per timed basis
-	std::vector<ConstantDataref>* m_constDataref; //Datarefs set as constant (value are copied from the key)
+	std::map<std::string, ConstantDataref>* m_constDataref; //Datarefs set as constant (value are copied from the key)
 	std::map<unsigned int, std::string>* m_subscribedEvent;
 	Logger m_logger; /* The logger */
 	unsigned int m_subscirbeDatarefCount;

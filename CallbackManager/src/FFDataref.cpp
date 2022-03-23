@@ -62,8 +62,7 @@ std::string FFDataref::GetValue()
 		if (m_id < 0) m_logger.Log(m_link + ": id is INVALID ID", Logger::Severity::WARNING);
 		if (m_type == Type::Deleted) m_logger.Log(m_link + ": type is 'Deleted'", Logger::Severity::WARNING);
 		return "ID OR TYPE INVALID";
-	}	
-	m_logger.Log(m_link + " has valid ID/TYPE and FFAPI Is avaialble");
+	}
 	double converstionfactor = std::stod(m_conversionFactor);
 	switch (m_type)
 	{
@@ -142,49 +141,51 @@ void FFDataref::SetValue(std::string value)
 		if (m_type == Type::Deleted) m_logger.Log(m_link + ": type is 'Deleted'", Logger::Severity::WARNING);
 		return;
 	}
-	m_logger.Log(m_link + " has valid ID/TYPE and FFAPI Is avaialble");
 	double converstionfactor = std::stod(m_conversionFactor);
+	void* val;
 	switch (m_type)
 	{
 	case FFDataref::Type::Char:
 	{
-		char val = (char)(std::stoi(value) * (int)converstionfactor);
-		m_ffapi->ValueSet(m_id, &val);
+		val = new char;
+		*(char*)val = (char)(std::stoi(value) * (int)converstionfactor);
 	}
 	case FFDataref::Type::uChar:
 	{
-		unsigned char val = (unsigned char)(std::stoi(value) * (int)converstionfactor);
-		m_ffapi->ValueSet(m_id, &val);
+		val = new unsigned char;
+		*(unsigned char*)val = (unsigned char)(std::stoi(value) * (int)converstionfactor);
 	}
 	case FFDataref::Type::Short:
 	{
-		short val = (short)(std::stoi(value) * (int)converstionfactor);
-		m_ffapi->ValueSet(m_id, &val);
+		val = new short;
+		*(short*)val = (short)(std::stoi(value) * (int)converstionfactor);
 	}
 	case FFDataref::Type::uShort:
 	{
-		unsigned short val = (unsigned short)(std::stoi(value) * (int)converstionfactor);
-		m_ffapi->ValueSet(m_id, &val);
+		val = new unsigned short;
+		*(unsigned short*)val = (unsigned short)(std::stoi(value) * (int)converstionfactor);
 	}
 	case FFDataref::Type::Int:
 	{
-		int val = (int)(std::stoi(value) * (int)converstionfactor);
-		m_ffapi->ValueSet(m_id, &val);
+		val = new int;
+		*(int*)val = (int)(std::stoi(value) * (int)converstionfactor);
 	}
 	case FFDataref::Type::uInt:
 	{
-		unsigned int val = (unsigned int)(std::stoi(value) * (int)converstionfactor);
-		m_ffapi->ValueSet(m_id, &val);
+		val = new unsigned int;
+		*(unsigned int*)val = (unsigned int)(std::stoi(value) * (unsigned int)converstionfactor);
+		m_ffapi->ValueSet(m_id, val);
 	}
 	case FFDataref::Type::Float:
 	{
-		float val = (float)(std::stod(value) * (double)converstionfactor);
-		m_ffapi->ValueSet(m_id, &val);
+		val = new float;
+		*(float*)val = (float)(std::stod(value) * (double)converstionfactor);
 	}
 	case FFDataref::Type::Double:
 	{
-		double val = (std::stod(value) * converstionfactor);
-		m_ffapi->ValueSet(m_id, &val);
+		val = new double;
+		*(double*)val = (std::stod(value) * converstionfactor);
+		
 	}
 	case FFDataref::Type::String:
 	{
@@ -201,6 +202,8 @@ void FFDataref::SetValue(std::string value)
 	default:
 		return;
 	}
+	m_ffapi->ValueSet(m_id, val);
+	delete val;
 }
 
 void FFDataref::BindAPI(SharedValuesInterface* FF_A320_api)
@@ -214,4 +217,29 @@ void FFDataref::BindAPI(SharedValuesInterface* FF_A320_api)
 void FFDataref::SetConversionFactor(std::string conversionFactor)
 {
 	m_conversionFactor = conversionFactor;
+}
+
+int FFDataref::GetID()
+{
+	return m_id;
+}
+
+int FFDataref::GetFlag()
+{
+	return m_ffapi->ValueType(m_id);
+}
+
+int FFDataref::GetUnit()
+{
+	return m_ffapi->ValueUnits(m_id);
+}
+
+std::string FFDataref::GetName()
+{
+	return std::string(m_ffapi->ValueName(m_id));
+}
+
+std::string FFDataref::GetDescription()
+{
+	return std::string(m_ffapi->ValueDesc(m_id));
 }

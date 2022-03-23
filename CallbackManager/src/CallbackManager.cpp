@@ -9,7 +9,7 @@ CallbackManager::CallbackManager() :
 	m_namedDatarefs = new std::map<std::string, AbstractDataref*>();
 	// m_namedFFDatarefs = new std::map<std::string, FFDataref*>();
 	m_subscribedDatarefs = new std::map<std::string, AbstractDataref*>();
-	m_constDataref = new std::vector<ConstantDataref>();
+	m_constDataref = new std::map<std::string, ConstantDataref>();
 	m_subscribedEvent = new std::map<unsigned int, std::string>{
 		{101, "Crashed"},
 		{102, "Plane Loaded"},
@@ -208,37 +208,37 @@ void CallbackManager::AddConstantDataref(std::string name, std::string value)
 		m_logger.Log("namedDataref is unitialised or don't contains : '" + name + "'", Logger::Severity::WARNING);
 		return;
 	}
+	//m_constDataref->
+	if (m_constDataref->contains(name))
+	{
+		m_logger.Log("Dataref " + name + "Exist and it's value is updated!");
+		m_constDataref->at(name).value = value;
+		return;
+	}
 	ConstantDataref dr;
 	dr.name = name;
 	dr.value = value;
 	AbstractDataref* dataref = m_namedDatarefs->at(name);
 	if(dataref == nullptr) return;
-	if(dataref->DatarefType != "XPLMDataref") return;
-	dr.dataref = (Dataref*)dataref;
-
-	m_constDataref->push_back(dr);
+	dr.dataref = dataref;
+	m_constDataref->emplace(name, dr);
 	m_logger.Log("namedDataref : '" + name + "' founded an added to the map!");
-	m_subscirbeDatarefCount++;
-	m_logger.Log("There is/are " + std::to_string(m_subscirbeDatarefCount) + " dataref(s) set as contant");
 }
 
 void CallbackManager::RemoveConstantDataref(std::string name)
 {
-	for (auto it = m_constDataref->begin(); it != m_constDataref->end(); ) {
-		if ((*it).name == name) {
-			it = m_constDataref->erase(it);
-		}
-		else {
-			++it;
-		}
+	if (!m_constDataref->contains(name))
+	{	
+		return;
 	}
+	m_constDataref->erase(name);
 }
 
 void CallbackManager::ExecuteConstantDataref()
 {
-	for (auto it = m_constDataref->begin(); it != m_constDataref->end(); it++)
+	for (auto &kv : *m_constDataref)
 	{
-		it->dataref->SetValue(it->value);
+		kv.second.dataref->SetValue(kv.second.value);
 	}
 }
 
@@ -265,10 +265,6 @@ int CallbackManager::ExecuteCallback(json* jsonData)
 	return res;
 }
 
-// std::map<std::string, FFDataref*>* CallbackManager::GetNamedFFDataref() const
-// {
-// 	return m_namedFFDatarefs;
-// }
 
 SharedValuesInterface* CallbackManager::GetFF320Interface() const
 {
@@ -296,4 +292,9 @@ bool CallbackManager::InitFF320Interface(){
 	m_logger.Log("[FF320API] Version : " + std::to_string(ffAPIdataversion));
 	m_logger.Log("Initalising FF320 Data Interface...6");
 	return true;
+}
+
+bool CallbackManager::IsFF320InterfaceEnabled()
+{
+	return m_ff320->DataVersion != NULL;
 }

@@ -33,6 +33,11 @@ public:
 	void SetValue(std::string value);
 	void BindAPI(SharedValuesInterface* FF_A320_api);
 	void SetConversionFactor(std::string conversionFactor);
+	int GetID();
+	int GetFlag();
+	int GetUnit();
+	std::string GetName();
+	std::string GetDescription();
 protected:
 	std::string m_link;
 	int m_id;
