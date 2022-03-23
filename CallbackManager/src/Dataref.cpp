@@ -60,9 +60,10 @@ Dataref::Type Dataref::LoadType()
 	{
 		m_type = (Dataref::Type)XPLMGetDataRefTypes(m_dataref);
 		// handling case where data can be either double or int
-		if ((int)m_type && ((int)Type::Float || (int)Type::Double))
+		//if ((int)m_type && ((int)Type::Float || (int)Type::Double))
+		if ((int)m_type & ((int)Type::Float | (int)Type::Double))
 		{
-			m_type == Type::Double;
+			m_type = Type::Double;
 		}
 		return m_type;
 	}

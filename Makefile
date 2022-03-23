@@ -26,8 +26,9 @@ CFLAGS := $(DEFINES) $(INCLUDES) -std=c++20 -fPIC -fvisibility=hidden -arch x86_
 #RELEASE :
 # CFLAGS := $(DEFINES) $(INCLUDES) -std=c++20 -fPIC -fvisibility=hidden -arch x86_64
 ###XPLMServer
-$(BUILDDIR)/mac.xpl : $(BUILDDIR)/UDPServer.o $(BUILDDIR)/XPLMServer.o | $(BUILDDIR) $(BUILDDIR)/libNetworking.a $(BUILDDIR)/libCallbackManager.a $(OUTPUT_DIR)/DefaultCallbacks64.dylib $(OUTPUT_DIR)
+$(OUTPUT_DIR)/64/mac.xpl : $(BUILDDIR)/UDPServer.o $(BUILDDIR)/XPLMServer.o | $(BUILDDIR) $(BUILDDIR)/libNetworking.a $(BUILDDIR)/libCallbackManager.a $(OUTPUT_DIR)/DefaultCallbacks64.dylib $(OUTPUT_DIR)
 	g++ $(CFLAGS) -m64 -dynamiclib -Wl, $(BUILDDIR)/UDPServer.o $(BUILDDIR)/Dataref.o $(BUILDDIR)/Logger.o $(BUILDDIR)/utils.o $(BUILDDIR)/CallbackManager.o $(BUILDDIR)/XPLMServer.o  -o $(OUTPUT_DIR)/64/mac.xpl $(LIB)
+	cp $(XPLMServer)/pluginConfig.json $(OUTPUT_DIR)
 
 $(BUILDDIR)/XPLMServer.o : $(XPLMServer)/src/main.cpp
 	g++ $(CFLAGS) $(XPLMServer)/src/main.cpp -c -o $(BUILDDIR)/XPLMServer.o

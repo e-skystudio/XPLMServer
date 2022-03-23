@@ -203,7 +203,7 @@ void FFDataref::SetValue(std::string value)
 		return;
 	}
 	m_ffapi->ValueSet(m_id, val);
-	delete val;
+	free(val);
 }
 
 void FFDataref::BindAPI(SharedValuesInterface* FF_A320_api)

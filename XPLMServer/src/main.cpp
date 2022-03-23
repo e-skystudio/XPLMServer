@@ -17,9 +17,6 @@ using json = nlohmann::json;
 static json PluginConfiguration;
 static CallbackManager* callbackManager;
 static int counter = 0;
-float InitializerCallback(float elapsedSinceCall, float elapsedSinceLastTime, int inCounter, void* inRef);
-float NetworkCallback(float elapsedSinceCall, float elapsedSinceLastTime, int inCounter, void* inRef);
-float ExportSubscribedDataref(float elapsedSinceCall, float elapsedSinceLastTime, int inCounter, void* inRef);
 static UDPServer* server;
 static Logger logger;
 static std::vector<Client> clients;
@@ -29,9 +26,17 @@ static std::string AircraftICAO;
 static std::string AircraftAuthor;
 static std::string AircraftDesciption;
 
+float InitializerCallback(float elapsedSinceCall, float elapsedSinceLastTime, int inCounter, void* inRef);
+float NetworkCallback(float elapsedSinceCall, float elapsedSinceLastTime, int inCounter, void* inRef);
+float ExportSubscribedDataref(float elapsedSinceCall, float elapsedSinceLastTime, int inCounter, void* inRef);
+float BeaconCallback(float elapsedSinceCall, float elapsedSinceLastTime, int inCounter, void* inRef);
+
 void BroadCastData(std::string data)
 {
-	server->BroadcastData(data);
+	for (const Client &c : clients)
+	{
+		server->SendData(data, c);
+	}
 }
 
 PLUGIN_API int XPluginStart(char* outName, char* outSig, char* outDesc)
@@ -62,9 +67,6 @@ PLUGIN_API int XPluginStart(char* outName, char* outSig, char* outDesc)
 #endif
 	XPLMHostApplicationID hostId;
 	XPLMGetVersions(&XplaneVersion, &XplaneSDKVersion, &hostId);
-
-
-
 	return 1;
 }
 
@@ -76,7 +78,7 @@ PLUGIN_API void XPluginDisable(void)
 {
 }
 
-PLUGIN_API int  XPluginEnable(void)
+PLUGIN_API int XPluginEnable(void)
 { 
 	logger.Log("[XPLMServer]Enabled");
 	std::string configuration;
@@ -97,6 +99,7 @@ PLUGIN_API int  XPluginEnable(void)
 	#elif APL
 		platform = "Mac64";
 	#endif
+
 	logger.Log("Loading configuration :'" + configuration + "' & platform : '" + platform + "'");
 	std::string dllPath = PluginConfiguration["DLLFiles"][platform][configuration].get<std::string>();
 	callbackManager = new CallbackManager();
@@ -104,12 +107,19 @@ PLUGIN_API int  XPluginEnable(void)
 	std::stringstream debug;
 	logger.Log(debug.str());
 	logger.Log("---Server Init----");
+	unsigned short portIn = PluginConfiguration["Server"]["InPort"].get<unsigned short>();
+	unsigned short portOut = PluginConfiguration["Server"]["OutPort"].get<unsigned short>();
+	bool beacon = false;
+	if(PluginConfiguration["Server"].contains("BaconEnabled"))
+	{
+		beacon = PluginConfiguration["Server"]["BaconEnabled"].get<bool>();
+	}
 	if (PluginConfiguration.contains("Server") &&
 		PluginConfiguration["Server"].contains("InIp") &&
 		PluginConfiguration["Server"].contains("InPort"))
 	{
 		server = new UDPServer();
-		res = server->Bind(PluginConfiguration["Server"]["InPort"].get<unsigned short>());
+		res = server->Bind(portIn, portOut, beacon);
 		if (res == EXIT_SUCCESS)
 		{
 			XPLMRegisterFlightLoopCallback(InitializerCallback, -1.0f, nullptr);
@@ -152,9 +162,14 @@ float InitializerCallback(float elapsedSinceCall, float elapsedSinceLastTime, in
 	size = XPLMGetDatab(acftICAO, (void*)icao, 0, 40);
 	AircraftICAO = std::string(icao).substr(0, size);
 #pragma endregion
-
 	XPLMRegisterFlightLoopCallback(NetworkCallback, -1.0f, nullptr);
 	XPLMRegisterFlightLoopCallback(ExportSubscribedDataref, -1.0f, nullptr);
+	bool beaconEnable = PluginConfiguration["Server"]["BaconEnabled"].get<bool>();
+	XPLMSpeakString(std::string("Beacon is : " + std::to_string(beaconEnable) + "\n").c_str());
+	if(PluginConfiguration["Server"]["BaconEnabled"].get<bool>())
+	{
+		XPLMRegisterFlightLoopCallback(BeaconCallback, -1.0f, nullptr);
+	}
  	return 0.0f;
 }
 
@@ -188,20 +203,6 @@ float NetworkCallback(float elapsedSinceCall, float elapsedSinceLastTime, int in
 
 float ExportSubscribedDataref(float elapsedSinceCall, float elapsedSinceLastTime, int inCounter, void* inRef)
 {
-	if (callbackManager->GetSubscribedDatarefCount() <= 0 )
-	{
-		json jdataOut = {
-			{"Operation", "Beacon"},
-			{"XplaneVersion", XplaneVersion},
-			{"XplaneSDKVersion", XplaneSDKVersion},
-			{"AircraftICAO", AircraftICAO},
-			{"AircraftDescription", AircraftDesciption},
-			{"AircraftAuthor", AircraftAuthor},
-		};
-		BroadCastData(jdataOut.dump());
-		XPLMDebugString("[XPLMServer]Sending Empty ops beacon...\n");
-		return 1.0f;
-	}
 	auto* p_subscribedDatarefMap = callbackManager->GetSubscribedDataref();
 	json jdataOut = {
 		{"Operation", "ExportDataref"},
@@ -216,8 +217,22 @@ float ExportSubscribedDataref(float elapsedSinceCall, float elapsedSinceLastTime
 		};
 		jdataOut["Datarefs"].push_back(jdataref);
 	}
-	XPLMDebugString(jdataOut.dump().c_str());
-	XPLMDebugString("\n");
 	BroadCastData(jdataOut.dump());
 	return 0.25f;
+}
+
+float BeaconCallback(float elapsedSinceCall, float elapsedSinceLastTime, int inCounter, void* inRef)
+{
+	json jdataOut = {
+		{"Operation", "Beacon"},
+		{"XplaneVersion", XplaneVersion},
+		{"XplaneSDKVersion", XplaneSDKVersion},
+		{"AircraftICAO", AircraftICAO},
+		{"AircraftDescription", AircraftDesciption},
+		{"AircraftAuthor", AircraftAuthor},
+	};
+	BroadCastData(jdataOut.dump());
+	int beaconPort = PluginConfiguration["Server"]["BeaconPort"].get<int>();
+	server->BroadcastData(jdataOut.dump(), beaconPort);
+	return 1.0f;
 }

@@ -1,11 +1,13 @@
 #include "../include/UDPServer.h"
 
 UDPServer::UDPServer() : 
-    m_port(0),
+    m_inPort(0),
+    m_outPort(0),
     m_hints({0}),
     m_bind_address{0},
-    m_socket_listen(0),
-    m_socket_emit(0)
+    m_socket_listen(INVALID_SOCKET),
+    m_socket_emit(INVALID_SOCKET),
+	m_socket_beacon(INVALID_SOCKET)
 {
 	m_logfile = new std::ofstream("XPLMServer_Network.log", std::ios::out);
 	log("Loging Started");
@@ -15,32 +17,36 @@ UDPServer::~UDPServer()
 {
 }
 
-
-int UDPServer::Bind(unsigned short port)
+int UDPServer::Bind(unsigned short inPort, unsigned short outPort, bool beacon)
 {
-    m_port = port;
+    m_inPort = inPort;
+	m_outPort = outPort;
 	memset(&m_hints, 0, sizeof(m_hints));
 	m_hints.ai_family = AF_INET;
 	m_hints.ai_socktype = SOCK_DGRAM;
 	m_hints.ai_flags = AI_PASSIVE;
 	int option = 0;
-	getaddrinfo(0, std::to_string(port).c_str(), &m_hints, &m_bind_address);
+	getaddrinfo(0, std::to_string(m_inPort).c_str(), &m_hints, &m_bind_address);
 	m_socket_listen = socket(m_bind_address->ai_family, m_bind_address->ai_socktype, m_bind_address->ai_protocol);
 	m_socket_emit = socket(m_bind_address->ai_family, m_bind_address->ai_socktype, m_bind_address->ai_protocol);
 	if (bind(m_socket_listen, m_bind_address->ai_addr, (int)m_bind_address->ai_addrlen))
 	{
-		log("bind() failed on" + std::to_string(port) + "! Error code: " + std::to_string(GETSOCKETERRNO()));
+		log("bind() failed on" + std::to_string(m_inPort) + "! Error code: " + std::to_string(GETSOCKETERRNO()));
 		return 0x02;
 	}
-	log("bind() sucess on " + std::to_string(port) + "!");
-	int broadcastEnable = 1;
-	int iOptLen = sizeof(int);
-	int res = setsockopt(m_socket_emit, SOL_SOCKET, SO_BROADCAST, (char*)&broadcastEnable, iOptLen);
-	log("Setting SOL_SOCKET SO_BROADCAST = 1 returned : '" + std::to_string(res));
-	if (res != 0)
+	log("bind() sucess on " + std::to_string(m_inPort) + "!");
+	if(beacon)
 	{
-		log("Error code is : '" + std::to_string(GETSOCKETERRNO()));
-		return 0x03;
+		m_socket_beacon = socket(m_bind_address->ai_family, m_bind_address->ai_socktype, m_bind_address->ai_protocol);
+		int broadcastEnable = 1;
+		int iOptLen = sizeof(int);
+		int res = setsockopt(m_socket_beacon, SOL_SOCKET, SO_BROADCAST, (char*)&broadcastEnable, iOptLen);
+		log("Setting SOL_SOCKET SO_BROADCAST = 1 returned : '" + std::to_string(res));
+		if (res != 0)
+		{
+			log("Error code is : '" + std::to_string(GETSOCKETERRNO()));
+			return 0x03;
+		}
 	}
 	return 0x00;
 }
@@ -79,7 +85,7 @@ std::string UDPServer::ReceiveData(int maxSize,Client* outCli)
 		service_buffer, sizeof(service_buffer),
 		NI_NUMERICHOST | NI_NUMERICSERV);
 	outCli->ip = std::string(address_buffer);
-	outCli->port = m_port + 1;
+	outCli->port = m_outPort;
 	std::string s_out(read);
 	s_out.resize(bytes_received);
 	char logBuffer[4150];
@@ -123,21 +129,16 @@ int UDPServer::SendData(std::string data, Client cli)
 	return bytes;
 }
 
-int UDPServer::BroadcastData(std::string data)
+int UDPServer::BroadcastData(std::string data, int port)
 {
-
+	if(m_socket_beacon == INVALID_SOCKET) return 0;
 	struct sockaddr_in send_address;
-	struct sockaddr_in send_address2;
 	memset(&send_address, 0, sizeof(struct sockaddr_in));
-	memset(&send_address2, 0, sizeof(struct sockaddr_in));
 	send_address.sin_family = AF_INET;
-	send_address.sin_port = htons(m_port + 1);
+	send_address.sin_port = htons(port);
 	send_address.sin_addr.s_addr = INADDR_BROADCAST;
-	send_address2.sin_family = AF_INET;
-	send_address2.sin_port = htons(m_port + 1);
-	send_address2.sin_addr.s_addr = INADDR_LOOPBACK;
 	//int res = inet_pton(AF_INET, cli.ip.c_str(), &send_address.sin_addr.s_addr);
-	int bytes = sendto(m_socket_emit, data.c_str(), (int)data.length(), 0,
+	int bytes = sendto(m_socket_beacon, data.c_str(), (int)data.length(), 0,
 		(struct sockaddr*)&send_address, (int)sizeof(struct sockaddr_in));
 	if (bytes < 0)
 	{
@@ -145,9 +146,9 @@ int UDPServer::BroadcastData(std::string data)
 	}
 	char logBuffer[4150];
 	#ifdef IBM
-		sprintf_s(logBuffer, 4150, "BROADCAST[%d]<<<'%s'(%d byte(s))",m_port+ 1, data.c_str(), bytes);
+		sprintf_s(logBuffer, 4150, "BROADCAST[%d]<<<'%s'(%d byte(s))", port, data.c_str(), bytes);
 	#else
-		sprintf(logBuffer, "BROADCAST[%d]<<<'%s'(%d byte(s))", m_port + 1, data.c_str(), bytes);
+		sprintf(logBuffer, "BROADCAST[%d]<<<'%s'(%d byte(s))", port, data.c_str(), bytes);
 	#endif
 	log(std::string(logBuffer));
 	return 0;

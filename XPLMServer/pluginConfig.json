@@ -23,7 +23,10 @@
     }
   },
   "Server":{
+    "BaconEnabled": true,
+    "BeaconPort": 7575,
     "InPort": 50555,
+    "OutPort": 50556,
     "InIp": "0.0.0.0"
   }
 }
