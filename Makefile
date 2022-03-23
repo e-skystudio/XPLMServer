@@ -21,9 +21,10 @@ INCLUDES = \
 	-I$(VCPKG_INCLUDES)/
 
 DEFINES = -DXPLM200=1 -DXPLM210=1 -DAPL=1 -D_DEBUG=1 
-
-CFLAGS := $(DEFINES) $(INCLUDES) -std=c++20 -fPIC -fvisibility=hidden -arch x86_64
-
+#DEBUG:
+CFLAGS := $(DEFINES) $(INCLUDES) -std=c++20 -fPIC -fvisibility=hidden -arch x86_64 -g
+#RELEASE :
+# CFLAGS := $(DEFINES) $(INCLUDES) -std=c++20 -fPIC -fvisibility=hidden -arch x86_64
 ###XPLMServer
 $(BUILDDIR)/mac.xpl : $(BUILDDIR)/UDPServer.o $(BUILDDIR)/XPLMServer.o | $(BUILDDIR) $(BUILDDIR)/libNetworking.a $(BUILDDIR)/libCallbackManager.a $(OUTPUT_DIR)/DefaultCallbacks64.dylib $(OUTPUT_DIR)
 	g++ $(CFLAGS) -m64 -dynamiclib -Wl, $(BUILDDIR)/UDPServer.o $(BUILDDIR)/Dataref.o $(BUILDDIR)/Logger.o $(BUILDDIR)/utils.o $(BUILDDIR)/CallbackManager.o $(BUILDDIR)/XPLMServer.o  -o $(OUTPUT_DIR)/64/mac.xpl $(LIB)
