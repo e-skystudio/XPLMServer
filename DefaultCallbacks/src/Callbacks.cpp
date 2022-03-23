@@ -375,13 +375,17 @@ int RegisterFFDataref(json* jdata, CallbackManager* callback)
 		callback->Log("ConversionFactor was not provided assuming 1.0f", Logger::Severity::WARNING);
 	}
 	ffdataref->SetConversionFactor(conversionFactor);
+
+	jdata->emplace("ID", ffdataref->GetID());
+	jdata->emplace("Type", ffdataref->GetType());
+	jdata->emplace("Flag", ffdataref->GetFlag());
+	jdata->emplace("Unit", ffdataref->GetUnit());
+	jdata->emplace("Name", ffdataref->GetName());
+	jdata->emplace("Description", ffdataref->GetDescription());
+
 	auto p_datarefMap = callback->GetNamedDataref();
 	callback->Log("Adding FFDataref to map", Logger::Severity::DEBUG);
-	auto sizeBefore = p_datarefMap->size();
-	callback->Log("Size before operation : " + std::to_string(sizeBefore), Logger::Severity::DEBUG);
 	p_datarefMap->emplace(name, ffdataref);
-	auto sizeAfter = p_datarefMap->size();
-	callback->Log("Size after operation : " + std::to_string(sizeAfter), Logger::Severity::DEBUG);
 	callback->Log("RegisterFFDataref [DONE]");
 	return 0;
 }
