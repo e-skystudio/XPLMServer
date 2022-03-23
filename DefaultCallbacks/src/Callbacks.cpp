@@ -342,6 +342,11 @@ int InitFlightFactorA320(json* jdata, CallbackManager* callback)
 
 int RegisterFFDataref(json* jdata, CallbackManager* callback)
 {
+	if (!callback->IsFF320InterfaceEnabled())
+	{
+		bool res = callback->InitFF320Interface();
+		return 0x10; //Unable to execute interface;
+	}
 	SharedValuesInterface* ff320 = callback->GetFF320Interface();
 	callback->Log("RegisterFFDataref [START]");
 	if (!jdata->contains("Name") || !jdata->contains("Link"))
