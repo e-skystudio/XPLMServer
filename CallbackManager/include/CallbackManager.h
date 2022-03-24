@@ -9,6 +9,7 @@
 #include <string>
 #include <map>
 #include <sstream>
+#include <queue>
 
 #include <nlohmann/json.hpp>
 
@@ -45,6 +46,8 @@ struct ConstantDataref {
 	AbstractDataref* dataref;
 };
 #pragma endregion
+
+void FF320_Callback(double step, void* tag);
 
 ///<summary>
 /// Provide an OOP Handle to callbacks
@@ -136,10 +139,10 @@ public:
 	///  A pointer toward the list of stored FFdatarefs
 	/// CAN BE NULL !
 	/// </returns>
-	// std::map<std::string, FFDataref*>* GetNamedFFDataref() const;
 	SharedValuesInterface* GetFF320Interface() const;
 	bool InitFF320Interface();
 	bool IsFF320InterfaceEnabled();
+	// void BindFF320Callback(SharedDataUpdateProc callback);
 protected:
 	std::map<std::string, Callback>* m_callbacks;
 	std::map<std::string, AbstractDataref*>* m_namedDatarefs; //The datarefs stored while plugin is in used
@@ -147,6 +150,7 @@ protected:
 	std::map<std::string, AbstractDataref*>* m_subscribedDatarefs; //The datarefs that value is returned per timed basis
 	std::map<std::string, ConstantDataref>* m_constDataref; //Datarefs set as constant (value are copied from the key)
 	std::map<unsigned int, std::string>* m_subscribedEvent;
+	std::queue<ConstantDataref>* m_ff320_datarefs;
 	Logger m_logger; /* The logger */
 	unsigned int m_subscirbeDatarefCount;
 	#ifdef IBM

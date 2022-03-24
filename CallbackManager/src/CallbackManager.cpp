@@ -1,5 +1,25 @@
 #include "../include/CallbackManager.h"
 
+void FF320_Callback(double step, void* tag)
+{
+	CallbackManager* cm = (CallbackManager*)tag;
+	cm->ExecuteConstantDataref();
+
+	std::map<std::string, AbstractDataref*>* p_datarefs = cm->GetNamedDataref();
+
+	for(auto &dataref : *p_datarefs)
+	{
+		if(dataref.second->DatarefType == AbstractDataref::DatarefType::FFDataref)
+		{
+			FFDataref* ffdata = (FFDataref*)dataref.second;
+			if(ffdata->NeedUpdate())
+			{
+				ffdata->SetTargetValue();
+			}
+		}
+	}
+}
+
 CallbackManager::CallbackManager() :
 	m_logger(Logger("XPLMServer.log", "CallbackManager", false)),
 	m_subscirbeDatarefCount(0), m_ff320(nullptr)
@@ -7,7 +27,7 @@ CallbackManager::CallbackManager() :
 	m_ff320 = new SharedValuesInterface();
 	m_callbacks = new std::map<std::string, Callback>();
 	m_namedDatarefs = new std::map<std::string, AbstractDataref*>();
-	// m_namedFFDatarefs = new std::map<std::string, FFDataref*>();
+	m_ff320_datarefs = new std::queue<ConstantDataref>();
 	m_subscribedDatarefs = new std::map<std::string, AbstractDataref*>();
 	m_constDataref = new std::map<std::string, ConstantDataref>();
 	m_subscribedEvent = new std::map<unsigned int, std::string>{
@@ -35,7 +55,7 @@ CallbackManager::~CallbackManager()
 		{
 			m_subscribedDatarefs->erase(kv->first);
 		}
-		if(kv->second->DatarefType == "XPLMDataref")    delete (Dataref*)(kv->second);
+		if(kv->second->DatarefType == AbstractDataref::DatarefType::XPLMDataref)    delete (Dataref*)(kv->second);
 		// else if(kv->second->DatarefType == "FFDataref") delete (FFDataref*)(kv->second);
 		// delete kv->second;
 		kv++;
@@ -265,7 +285,6 @@ int CallbackManager::ExecuteCallback(json* jsonData)
 	return res;
 }
 
-
 SharedValuesInterface* CallbackManager::GetFF320Interface() const
 {
 	return m_ff320;
@@ -291,6 +310,8 @@ bool CallbackManager::InitFF320Interface(){
 	m_logger.Log("Initalising FF320 Data Interface...5");
 	m_logger.Log("[FF320API] Version : " + std::to_string(ffAPIdataversion));
 	m_logger.Log("Initalising FF320 Data Interface...6");
+
+	m_ff320->DataAddUpdate(FF320_Callback, this);
 	return true;
 }
 
@@ -298,3 +319,10 @@ bool CallbackManager::IsFF320InterfaceEnabled()
 {
 	return m_ff320->DataVersion != NULL;
 }
+
+// void CallbackManager::BindFF320Callback(SharedDataUpdateProc callback)
+// {
+// 	if(!IsFF320InterfaceEnabled()) return;
+// 	m_ff320->DataAddUpdate(callback, this->m_ff320_datarefs);
+// }
+

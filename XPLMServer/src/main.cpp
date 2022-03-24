@@ -175,7 +175,10 @@ float InitializerCallback(float elapsedSinceCall, float elapsedSinceLastTime, in
 
 float NetworkCallback(float elapsedSinceCall, float elapsedSinceLastTime, int inCounter, void* inRef)
 {
-	callbackManager->ExecuteConstantDataref();
+	if(!callbackManager->IsFF320InterfaceEnabled())
+	{
+		callbackManager->ExecuteConstantDataref();
+	}
 	Client cli;
 	std::string data = server->ReceiveData(4096, &cli);
 	if (data.length() < 1)
