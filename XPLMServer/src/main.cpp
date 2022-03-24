@@ -12,6 +12,11 @@
 #include <nlohmann/json.hpp>
 
 
+struct BeaconStatus {
+	bool BeaconEnabled = false;
+	unsigned int BeaconPort = 0;
+};
+
 using json = nlohmann::json;
 
 static json PluginConfiguration;
@@ -25,6 +30,7 @@ static int XplaneSDKVersion;
 static std::string AircraftICAO;
 static std::string AircraftAuthor;
 static std::string AircraftDesciption;
+static BeaconStatus beaconSts;
 
 float InitializerCallback(float elapsedSinceCall, float elapsedSinceLastTime, int inCounter, void* inRef);
 float NetworkCallback(float elapsedSinceCall, float elapsedSinceLastTime, int inCounter, void* inRef);
@@ -53,8 +59,18 @@ PLUGIN_API int XPluginStart(char* outName, char* outSig, char* outDesc)
 		return 0;
 	}
 	PluginConfiguration = json::parse(data.str());
-	std::string name = PluginConfiguration["Plugin"]["Name"].get<std::string>();
-	std::string description = PluginConfiguration["Plugin"]["Description"].get<std::string>() ;
+	std::string name("XPLMServer - DEFAULT");
+	std::string description("X-Plane Manipulation Server");
+	std::string author("DESSAR Romain");
+
+	if (!PluginConfiguration.contains("Plugin") || !PluginConfiguration.contains("DLLFiles") || !PluginConfiguration.contains("Server"))
+	{
+		XPLMDebugString("[XPLMServer]Warning Missing Section in config File\n");
+		XPLMDebugString("[XPLMServer]Config file should contains : 'Plugin' & 'DLLFiles' & 'Server' Sections\n");
+		return 0;
+	}
+	if(PluginConfiguration["Plugin"].contains("Name")) name = PluginConfiguration["Plugin"]["Name"].get<std::string>();
+	if (PluginConfiguration["Plugin"].contains("Description")) description = PluginConfiguration["Plugin"]["Description"].get<std::string>() ;
 	std::string signature = "eskystudio.tools.XPLMServer";
 #ifdef IBM
 	strcpy_s(outName, strlen(name.c_str()) + 1, name.c_str());
@@ -81,13 +97,13 @@ PLUGIN_API void XPluginDisable(void)
 PLUGIN_API int XPluginEnable(void)
 { 
 	logger.Log("[XPLMServer]Enabled");
-	std::string configuration;
+	std::string configuration("");
+	std::string platform("");
 	#ifndef _DEBUG
 		configuration = "Release";
 	#else
 		configuration = "Debug";
 	#endif
-	std::string platform;
 	#ifdef IBM
 		#ifndef WIN64
 			platform = "Win32";
@@ -99,36 +115,63 @@ PLUGIN_API int XPluginEnable(void)
 	#elif APL
 		platform = "Mac64";
 	#endif
-
+	XPLMDebugString("[0]\n");
 	logger.Log("Loading configuration :'" + configuration + "' & platform : '" + platform + "'");
+	if (!PluginConfiguration["DLLFiles"].contains(platform))
+	{
+		XPLMDebugString(std::string("[XPLMServer]Warning Missing Config Section in ['DLLFiles']['" + platform + "']\n").c_str());
+		return 0;
+	}
+	if (!PluginConfiguration["DLLFiles"][platform].contains(configuration))
+	{
+		XPLMDebugString(std::string("[XPLMServer]Warning Missing Config Section in ['DLLFiles']['" + platform + "']['" + configuration + "']\n").c_str());
+		return 0;
+	}
 	std::string dllPath = PluginConfiguration["DLLFiles"][platform][configuration].get<std::string>();
 	callbackManager = new CallbackManager();
 	int res = callbackManager->LoadCallbackDLL(dllPath);
 	std::stringstream debug;
 	logger.Log(debug.str());
 	logger.Log("---Server Init----");
-	unsigned short portIn = PluginConfiguration["Server"]["InPort"].get<unsigned short>();
-	unsigned short portOut = PluginConfiguration["Server"]["OutPort"].get<unsigned short>();
-	bool beacon = false;
-	if(PluginConfiguration["Server"].contains("BaconEnabled"))
+	unsigned short portIn(50556);
+	if (PluginConfiguration["Server"].contains("InPort"))
 	{
-		beacon = PluginConfiguration["Server"]["BaconEnabled"].get<bool>();
+		portIn = PluginConfiguration["Server"]["InPort"].get<unsigned short>();
 	}
-	if (PluginConfiguration.contains("Server") &&
-		PluginConfiguration["Server"].contains("InIp") &&
-		PluginConfiguration["Server"].contains("InPort"))
+	else {
+		logger.Log("[XPLMServer]Missing Config['Server']['InPort']... defaulting to 50556\n");
+	}
+	unsigned short portOut(50555);
+	if (PluginConfiguration["Server"].contains("OutPort"))
 	{
-		server = new UDPServer();
-		res = server->Bind(portIn, portOut, beacon);
-		if (res == EXIT_SUCCESS)
+		portIn = PluginConfiguration["Server"]["OutPort"].get<unsigned short>();
+	}
+	else {
+		logger.Log("[XPLMServer]Missing Config['Server']['OutPort']... defaulting to 50555\n");
+	}
+	XPLMDebugString("[4]\n");
+	if (PluginConfiguration.contains("Server"))
+	{
+		if (PluginConfiguration["Server"].contains("BaconEnabled") && PluginConfiguration["Server"].contains("BeaconPort"))
 		{
-			XPLMRegisterFlightLoopCallback(InitializerCallback, -1.0f, nullptr);
+			beaconSts.BeaconEnabled = PluginConfiguration["Server"]["BaconEnabled"].get<bool>();
+			beaconSts.BeaconPort = PluginConfiguration["Server"]["BeaconPort"].get<unsigned int>();
 		}
-		else {
-			logger.Log("Initalization failed, Res was " + std::to_string(res));
+		if (PluginConfiguration["Server"].contains("InIp") &&
+			PluginConfiguration["Server"].contains("InPort"))
+		{
+			server = new UDPServer();
+			res = server->Bind(portIn, portOut, beaconSts.BeaconEnabled);
+			if (res == EXIT_SUCCESS)
+			{
+				XPLMRegisterFlightLoopCallback(InitializerCallback, -1.0f, nullptr);
+			}
+			else
+			{
+				logger.Log("Initalization failed, Res was " + std::to_string(res));
+			}
 		}
 	}
-
 	return 1;
 }
 
@@ -164,9 +207,11 @@ float InitializerCallback(float elapsedSinceCall, float elapsedSinceLastTime, in
 #pragma endregion
 	XPLMRegisterFlightLoopCallback(NetworkCallback, -1.0f, nullptr);
 	XPLMRegisterFlightLoopCallback(ExportSubscribedDataref, -1.0f, nullptr);
-	bool beaconEnable = PluginConfiguration["Server"]["BaconEnabled"].get<bool>();
-	XPLMSpeakString(std::string("Beacon is : " + std::to_string(beaconEnable) + "\n").c_str());
-	if(PluginConfiguration["Server"]["BaconEnabled"].get<bool>())
+	/*bool beaconEnabled = false;
+	if (PluginConfiguration["Server"].contains("BeaconEnabled")) {
+		beaconEnabled = PluginConfiguration["Server"]["BeaconEnabled"].get<bool>();
+	}*/
+	if(beaconSts.BeaconEnabled)
 	{
 		XPLMRegisterFlightLoopCallback(BeaconCallback, -1.0f, nullptr);
 	}
@@ -236,6 +281,6 @@ float BeaconCallback(float elapsedSinceCall, float elapsedSinceLastTime, int inC
 	};
 	BroadCastData(jdataOut.dump());
 	int beaconPort = PluginConfiguration["Server"]["BeaconPort"].get<int>();
-	server->BroadcastData(jdataOut.dump(), beaconPort);
+	server->BroadcastData(jdataOut.dump(), beaconSts.BeaconPort);
 	return 1.0f;
 }
