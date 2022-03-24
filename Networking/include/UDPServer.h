@@ -35,9 +35,12 @@
 #include <stdio.h>
 #include <string>
 #include <memory.h>
+#include <fstream>
+
+
+std::string GetCurrentDateTime();
 
 extern "C"{
-
 	struct Client {
 		std::string ip;
 		unsigned short port;
@@ -48,17 +51,19 @@ extern "C"{
 	public:
 		UDPServer();
 		~UDPServer();
-		int Bind(unsigned short port);
+		int Bind(unsigned short inPort, unsigned short outPort, bool beacon);
 		std::string ReceiveData(int maxSize,Client* outCli);
 		int SendData(std::string data, Client client);
-
+		int BroadcastData(std::string data, int port);
 	protected:
-		unsigned short m_port;
+		unsigned short m_inPort;
+		unsigned short m_outPort;
 		struct addrinfo m_hints;
 		struct addrinfo* m_bind_address;
 		SOCKET m_socket_listen;
 		SOCKET m_socket_emit;
-		FILE* m_fout;
+		SOCKET m_socket_beacon;
+		std::ofstream* m_logfile;
 	private:
 		void log(std::string data) const;
 	};

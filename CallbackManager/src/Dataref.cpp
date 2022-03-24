@@ -4,8 +4,10 @@
 Dataref::Dataref() :
 	m_dataref(nullptr), m_type(Dataref::Type::Unknown),
 	m_logger(Logger("XPLMServer.log", "Dataref", false)),
-	m_link(""), m_conversionFactor("1.0")
+	m_link(""), 
+	m_conversionFactor("1.0")
 {
+	DatarefType = DatarefType::XPLMDataref;
 }
 
 /* \brief Copy Constructor */
@@ -57,6 +59,12 @@ Dataref::Type Dataref::LoadType()
 	if (m_dataref != nullptr)
 	{
 		m_type = (Dataref::Type)XPLMGetDataRefTypes(m_dataref);
+		// handling case where data can be either double or int
+		//if ((int)m_type && ((int)Type::Float || (int)Type::Double))
+		if ((int)m_type & ((int)Type::Float | (int)Type::Double))
+		{
+			m_type = Type::Double;
+		}
 		return m_type;
 	}
 	return Dataref::Type::Unknown;
@@ -103,34 +111,49 @@ std::string Dataref::GetValue()
 	{
 		int arraySize = XPLMGetDatavf(m_dataref, nullptr, 0, 0);
 		float* floatArray = (float*)malloc(sizeof(float) * arraySize);
+		if (floatArray == nullptr) return "";
 		XPLMGetDatavf(m_dataref, floatArray, 0, arraySize);
 		json j = json::array();
 		for (int i = 0; i < arraySize; i++)
 		{
-			j.push_back((*(floatArray + i)) * (float)std::stod(m_conversionFactor));
+			float item = *((float*)(floatArray + i));
+			j.push_back(item * (float)std::stod(m_conversionFactor));
 		}
 		value = j.dump();
+		free(floatArray);
 		break;
 	}
 	case Dataref::Type::IntArray:
 	{
 		int arraySize = XPLMGetDatavi(m_dataref, nullptr, 0, 0);
 		int* intArray = (int*)malloc(sizeof(int) * arraySize);
+		if (intArray == nullptr) return "";
 		XPLMGetDatavi(m_dataref, intArray, 0, arraySize);
 		json j = json::array();
 		for (int i = 0; i < arraySize; i++)
 		{
-			j.push_back((*(intArray + i)) * (int)std::stod(m_conversionFactor));
+			int item = *((int*)(intArray + i));
+			j.push_back(item * (int)std::stod(m_conversionFactor));
 		}
 		value = j.dump();
+		free(intArray);
 		break;
 	}
 	case Dataref::Type::Data:
+	{
+		int lenght = XPLMGetDatab(m_dataref, NULL, 0, 0);
+		char* data = (char*)malloc(lenght * sizeof(char));
+		if (data == nullptr) return "";
+		memset(data, 0x00, lenght);
+		XPLMGetDatab(m_dataref, (void*)data, 0, lenght);
+		value = std::string(data).substr(0, strlen(data));
+		m_logger.Log("[GET DATA]" + m_link + " = " + data);
+		free(data);
 		break;
+	}
 	default:
 		break;
 	}
-	m_logger.Log("Link : " + m_link + " = '" + value + "'!");
 	return value;
 }
 
@@ -173,7 +196,26 @@ void Dataref::SetValue(std::string value)
 		break;
 	}
 	case Dataref::Type::Data:
+	{
+		int maxLenght = XPLMGetDatab(m_dataref, NULL, 0, 0);
+		char* zero = (char*)malloc(sizeof(char) * maxLenght);
+		if (zero == nullptr) return;
+		memset(zero, 0x00, maxLenght);
+		XPLMSetDatab(m_dataref, zero, 0, maxLenght);
+		free(zero);
+
+		m_logger.Log("[SET DATA]" + m_link + " has a max size of" + std::to_string(maxLenght));
+		std::size_t lenght = value.size();
+		m_logger.Log("[SET DATA]" + value + " has a size of" + std::to_string(lenght));
+		if (lenght > maxLenght)
+		{
+			lenght = maxLenght;
+		}
+		m_logger.Log("[SET DATA]" + m_link + " size of" + std::to_string(lenght));
+		XPLMSetDatab(m_dataref, (void*)value.c_str(), 0, (int)lenght);
+		m_logger.Log("[SET DATA]" + m_link + " = " + value);
 		break;
+	}
 	default:
 		break;
 	}

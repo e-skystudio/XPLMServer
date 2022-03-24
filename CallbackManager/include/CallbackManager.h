@@ -9,6 +9,7 @@
 #include <string>
 #include <map>
 #include <sstream>
+#include <queue>
 
 #include <nlohmann/json.hpp>
 
@@ -42,9 +43,11 @@ typedef int(*Callback)(json* json, void* CallbackManager); ///The callback refer
 struct ConstantDataref {
 	std::string name;
 	std::string value;
-	Dataref* dataref;
+	AbstractDataref* dataref;
 };
 #pragma endregion
+
+void FF320_Callback(double step, void* tag);
 
 ///<summary>
 /// Provide an OOP Handle to callbacks
@@ -85,7 +88,7 @@ public:
 	///  A pointer toward the list of stored datarefs
 	/// CAN BE NULL !
 	/// </returns>
-	std::map<std::string, Dataref*>* GetNamedDataref() const;
+	std::map<std::string, AbstractDataref*>* GetNamedDataref() const;
 	/// <summary>
 	///  Return the full map of Subscribed Dataref(s).
 	/// </summary>
@@ -93,7 +96,7 @@ public:
 	///  A pointer toward the list of subscribed datarefs.
 	/// CAN BE NULL !
 	/// </returns>
-	std::map<std::string, Dataref*>* GetSubscribedDataref() const;
+	std::map<std::string, AbstractDataref*>* GetSubscribedDataref() const;
 	/// <summary>
 	///  Return the full map of Subscribed Event(s).
 	/// </summary>
@@ -136,16 +139,18 @@ public:
 	///  A pointer toward the list of stored FFdatarefs
 	/// CAN BE NULL !
 	/// </returns>
-	std::map<std::string, FFDataref*>* GetNamedFFDataref() const;
 	SharedValuesInterface* GetFF320Interface() const;
 	bool InitFF320Interface();
+	bool IsFF320InterfaceEnabled();
+	// void BindFF320Callback(SharedDataUpdateProc callback);
 protected:
 	std::map<std::string, Callback>* m_callbacks;
-	std::map<std::string, Dataref*>* m_namedDatarefs; //The datarefs stored while plugin is in used
-	std::map<std::string, FFDataref*>* m_namedFFDatarefs;
-	std::map<std::string, Dataref*>* m_subscribedDatarefs; //The datarefs that value is returned per timed basis
-	std::vector<ConstantDataref>* m_constDataref; //Datarefs set as constant (value are copied from the key)
+	std::map<std::string, AbstractDataref*>* m_namedDatarefs; //The datarefs stored while plugin is in used
+	// std::map<std::string, FFDataref*>* m_namedFFDatarefs;
+	std::map<std::string, AbstractDataref*>* m_subscribedDatarefs; //The datarefs that value is returned per timed basis
+	std::map<std::string, ConstantDataref>* m_constDataref; //Datarefs set as constant (value are copied from the key)
 	std::map<unsigned int, std::string>* m_subscribedEvent;
+	std::queue<ConstantDataref>* m_ff320_datarefs;
 	Logger m_logger; /* The logger */
 	unsigned int m_subscirbeDatarefCount;
 	#ifdef IBM

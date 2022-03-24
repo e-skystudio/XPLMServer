@@ -1,15 +1,35 @@
 #include "../include/CallbackManager.h"
 
+void FF320_Callback(double step, void* tag)
+{
+	CallbackManager* cm = (CallbackManager*)tag;
+	cm->ExecuteConstantDataref();
+
+	std::map<std::string, AbstractDataref*>* p_datarefs = cm->GetNamedDataref();
+
+	for(auto &dataref : *p_datarefs)
+	{
+		if(dataref.second->DatarefType == AbstractDataref::DatarefType::FFDataref)
+		{
+			FFDataref* ffdata = (FFDataref*)dataref.second;
+			if(ffdata->NeedUpdate())
+			{
+				ffdata->SetTargetValue();
+			}
+		}
+	}
+}
+
 CallbackManager::CallbackManager() :
 	m_logger(Logger("XPLMServer.log", "CallbackManager", false)),
 	m_subscirbeDatarefCount(0), m_ff320(nullptr)
 {
 	m_ff320 = new SharedValuesInterface();
 	m_callbacks = new std::map<std::string, Callback>();
-	m_namedDatarefs = new std::map<std::string, Dataref*>();
-	m_namedFFDatarefs = new std::map<std::string, FFDataref*>();
-	m_subscribedDatarefs = new std::map<std::string, Dataref*>();
-	m_constDataref = new std::vector<ConstantDataref>();
+	m_namedDatarefs = new std::map<std::string, AbstractDataref*>();
+	m_ff320_datarefs = new std::queue<ConstantDataref>();
+	m_subscribedDatarefs = new std::map<std::string, AbstractDataref*>();
+	m_constDataref = new std::map<std::string, ConstantDataref>();
 	m_subscribedEvent = new std::map<unsigned int, std::string>{
 		{101, "Crashed"},
 		{102, "Plane Loaded"},
@@ -35,7 +55,9 @@ CallbackManager::~CallbackManager()
 		{
 			m_subscribedDatarefs->erase(kv->first);
 		}
-		delete kv->second;
+		if(kv->second->DatarefType == AbstractDataref::DatarefType::XPLMDataref)    delete (Dataref*)(kv->second);
+		// else if(kv->second->DatarefType == "FFDataref") delete (FFDataref*)(kv->second);
+		// delete kv->second;
 		kv++;
 	}
 	#ifdef IBM
@@ -56,12 +78,12 @@ int CallbackManager::AppendCallback(std::string name, Callback newCallback)
 }
 
 
-std::map<std::string, Dataref*>* CallbackManager::GetNamedDataref() const
+std::map<std::string, AbstractDataref*>* CallbackManager::GetNamedDataref() const
 {
 	return m_namedDatarefs;
 }
 
-std::map<std::string, Dataref*>* CallbackManager::GetSubscribedDataref() const
+std::map<std::string, AbstractDataref*>* CallbackManager::GetSubscribedDataref() const
 {
 	return m_subscribedDatarefs;
 }
@@ -124,7 +146,7 @@ int CallbackManager::LoadCallbackDLL(std::string inDllPath)
 	
 	for (std::size_t i(0); i < vec_callbacks.size(); i++)
 	{
-		m_logger.Log(("\nLoading callback " + std::to_string(i) + " / " + std::to_string(size - 1)).c_str());
+		m_logger.Log(("Loading callback " + std::to_string(i) + " / " + std::to_string(size - 1)).c_str());
 		CallbackFunctionStruct* callback1 = vec_callbacks[i];
 		m_logger.Log(("Trying to load '" + callback1->function + "' as '" + callback1->operation + "'...").c_str());
 		Callback p_callback;
@@ -135,17 +157,17 @@ int CallbackManager::LoadCallbackDLL(std::string inDllPath)
 		#endif
 		if (p_callback == nullptr)
 		{
-			m_logger.Log("pointer callback is pointing to nullptr\n", Logger::Severity::WARNING);
+			m_logger.Log("pointer callback is pointing to nullptr", Logger::Severity::WARNING);
 			continue;
 		}
 		else
 		{
-			m_logger.Log("pointer callback is valid\n");
+			m_logger.Log("pointer callback is valid");
 		}
 			int res = this->AppendCallback(std::string(callback1->operation), p_callback);
 		if (res != EXIT_SUCCESS)
 		{
-			m_logger.Log("Appending Callback to list : [FAILED]\n", Logger::Severity::WARNING);
+			m_logger.Log("Appending Callback to list : [FAILED]", Logger::Severity::WARNING);
 			continue;
 		}
 #ifdef _DEBUG
@@ -153,7 +175,7 @@ int CallbackManager::LoadCallbackDLL(std::string inDllPath)
 			std::string(callback1->operation) + "' sucessfull!", Logger::Severity::DEBUG);
 #endif
 	}
-	m_logger.Log("LoadCallbackDLL...[FINISHED]\n");
+	m_logger.Log("LoadCallbackDLL...[FINISHED]");
 	return size;
 
 }
@@ -206,34 +228,37 @@ void CallbackManager::AddConstantDataref(std::string name, std::string value)
 		m_logger.Log("namedDataref is unitialised or don't contains : '" + name + "'", Logger::Severity::WARNING);
 		return;
 	}
+	//m_constDataref->
+	if (m_constDataref->contains(name))
+	{
+		m_logger.Log("Dataref " + name + "Exist and it's value is updated!");
+		m_constDataref->at(name).value = value;
+		return;
+	}
 	ConstantDataref dr;
 	dr.name = name;
 	dr.value = value;
-	dr.dataref = m_namedDatarefs->at(name);
-
-	m_constDataref->push_back(dr);
+	AbstractDataref* dataref = m_namedDatarefs->at(name);
+	if(dataref == nullptr) return;
+	dr.dataref = dataref;
+	m_constDataref->emplace(name, dr);
 	m_logger.Log("namedDataref : '" + name + "' founded an added to the map!");
-	m_subscirbeDatarefCount++;
-	m_logger.Log("There is/are " + std::to_string(m_subscirbeDatarefCount) + " dataref(s) set as contant");
 }
 
 void CallbackManager::RemoveConstantDataref(std::string name)
 {
-	for (auto it = m_constDataref->begin(); it != m_constDataref->end(); ) {
-		if ((*it).name == name) {
-			it = m_constDataref->erase(it);
-		}
-		else {
-			++it;
-		}
+	if (!m_constDataref->contains(name))
+	{	
+		return;
 	}
+	m_constDataref->erase(name);
 }
 
 void CallbackManager::ExecuteConstantDataref()
 {
-	for (auto it = m_constDataref->begin(); it != m_constDataref->end(); it++)
+	for (auto &kv : *m_constDataref)
 	{
-		it->dataref->SetValue(it->value);
+		kv.second.dataref->SetValue(kv.second.value);
 	}
 }
 
@@ -244,29 +269,20 @@ int CallbackManager::ExecuteCallback(json* jsonData)
 	
 	std::string operation = jsonData->at("Operation").get<std::string>();
 	m_logger.Log("Operation '" + operation + "' was requested");
-	XPLMDebugString(("Operation '" + operation + "' was requested\n").c_str());
 
 	if (!m_callbacks->contains(operation))
 	{
 		m_logger.Log("Operation '" + operation + "' was not found", Logger::Severity::WARNING);
-		XPLMDebugString(("Operation '" + operation + "' was not found\n").c_str());
 		return 0x02;
 	}
 
-	XPLMDebugString(("Operation '" + operation + "' founded in callback\n").c_str());
 	m_logger.Log("Operation '" + operation + "' founded in callback");
 
 	int res = m_callbacks->at(operation)(jsonData, this);
 	
-	XPLMDebugString(("Operation '" + operation + "' executed and returned code : '" + std::to_string(res) + "'\n").c_str());
 	m_logger.Log("Operation '" + operation + "' executed and returned code : '" + std::to_string(res) + "'");
 	
 	return res;
-}
-
-std::map<std::string, FFDataref*>* CallbackManager::GetNamedFFDataref() const
-{
-	return m_namedFFDatarefs;
 }
 
 SharedValuesInterface* CallbackManager::GetFF320Interface() const
@@ -294,5 +310,19 @@ bool CallbackManager::InitFF320Interface(){
 	m_logger.Log("Initalising FF320 Data Interface...5");
 	m_logger.Log("[FF320API] Version : " + std::to_string(ffAPIdataversion));
 	m_logger.Log("Initalising FF320 Data Interface...6");
+
+	m_ff320->DataAddUpdate(FF320_Callback, this);
 	return true;
 }
+
+bool CallbackManager::IsFF320InterfaceEnabled()
+{
+	return m_ff320->DataVersion != NULL;
+}
+
+// void CallbackManager::BindFF320Callback(SharedDataUpdateProc callback)
+// {
+// 	if(!IsFF320InterfaceEnabled()) return;
+// 	m_ff320->DataAddUpdate(callback, this->m_ff320_datarefs);
+// }
+

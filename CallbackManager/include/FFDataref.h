@@ -3,8 +3,9 @@
 #include <string>
 #include <nlohmann/json.hpp>
 #include "SharedValue.h"
+#include "AbstractDataref.h"
 
-class FFDataref
+class FFDataref : public AbstractDataref
 {
 public:
 	enum class Type {
@@ -24,21 +25,31 @@ public:
 	FFDataref();
 	FFDataref(SharedValuesInterface* FF_A320_api);
 	FFDataref(const FFDataref& rhs);
+	~FFDataref();
 	bool Load(std::string path);
 	FFDataref::Type GetType();
 	FFDataref::Type LoadType();
 	std::string GetValue();
+	// ATTENTION this would set the target value (value to be set at the next call of the callback)
 	void SetValue(std::string value);
+
+	void SetTargetValue(); // to be called into the sync loop
 	void BindAPI(SharedValuesInterface* FF_A320_api);
 	void SetConversionFactor(std::string conversionFactor);
+	int GetID() const;
+	int GetFlag() const;
+	int GetUnit() const;
+	std::string GetName() const;
+	std::string GetDescription() const;
+	bool NeedUpdate() const;
 protected:
+	std::string m_targetValue;
 	std::string m_link;
 	int m_id;
 	Type m_type;
 	std::string m_conversionFactor;
 	SharedValuesInterface* m_ffapi;
 	Logger m_logger;
-
 };
 
 static std::map<std::string, FFDataref::Type> const FFStringToType{

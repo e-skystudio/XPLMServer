@@ -6,6 +6,7 @@ FFDataref::FFDataref() : m_id(-1),
 	m_ffapi(nullptr),
 	m_logger(Logger("XPLMServer.log", "FFDataref", false))
 {
+	DatarefType = DatarefType::FFDataref;
 }
 
 FFDataref::FFDataref(SharedValuesInterface* FF_A320_api) : FFDataref()
@@ -20,6 +21,9 @@ FFDataref::FFDataref(const FFDataref& rhs)
 	m_link = rhs.m_link;
 	m_type = rhs.m_type;
 }
+
+FFDataref::~FFDataref()
+{}
 
 bool FFDataref::Load(std::string path)
 {
@@ -49,12 +53,16 @@ FFDataref::Type FFDataref::LoadType()
 std::string FFDataref::GetValue()
 {
 	m_logger.Log("FFDATAREF GetValue");
+	if(m_ffapi == nullptr) {
+		m_logger.Log(m_link + ": FlightFactor API pointer is NULL!", Logger::Severity::WARNING);
+		return "FFAPI NOT FOUND";
+	};
 	if (m_id < 0 && m_type == Type::Deleted)
 	{
-		if (m_id < 0) m_logger.Log(m_link + ": id is INVALID ID");
-		if (m_type == Type::Deleted) m_logger.Log(m_link + ": type is 'Deleted'");
-		return "";
-	}	
+		if (m_id < 0) m_logger.Log(m_link + ": id is INVALID ID", Logger::Severity::WARNING);
+		if (m_type == Type::Deleted) m_logger.Log(m_link + ": type is 'Deleted'", Logger::Severity::WARNING);
+		return "ID OR TYPE INVALID";
+	}
 	double converstionfactor = std::stod(m_conversionFactor);
 	switch (m_type)
 	{
@@ -123,58 +131,75 @@ std::string FFDataref::GetValue()
 
 void FFDataref::SetValue(std::string value)
 {
-	if (m_id < 0 && m_type == Type::Deleted) return ;
+	m_targetValue = value;
+}
+
+void FFDataref::SetTargetValue()
+{
+	if(m_ffapi == nullptr) {
+		m_logger.Log(m_link + ": FlightFactor API pointer is NULL!", Logger::Severity::WARNING);
+		return;
+	};
+	if (m_id < 0 && m_type == Type::Deleted)
+	{
+		if (m_id < 0) m_logger.Log(m_link + ": id is INVALID ID", Logger::Severity::WARNING);
+		if (m_type == Type::Deleted) m_logger.Log(m_link + ": type is 'Deleted'", Logger::Severity::WARNING);
+		return;
+	}
 	double converstionfactor = std::stod(m_conversionFactor);
+	void* val;
 	switch (m_type)
 	{
 	case FFDataref::Type::Char:
 	{
-		char val = (char)(std::stoi(value) * (int)converstionfactor);
-		m_ffapi->ValueSet(m_id, &val);
+		val = new char;
+		*(char*)val = (char)(std::stoi(m_targetValue) * (int)converstionfactor);
 	}
 	case FFDataref::Type::uChar:
 	{
-		unsigned char val = (unsigned char)(std::stoi(value) * (int)converstionfactor);
-		m_ffapi->ValueSet(m_id, &val);
+		val = new unsigned char;
+		*(unsigned char*)val = (unsigned char)(std::stoi(m_targetValue) * (int)converstionfactor);
 	}
 	case FFDataref::Type::Short:
 	{
-		short val = (short)(std::stoi(value) * (int)converstionfactor);
-		m_ffapi->ValueSet(m_id, &val);
+		val = new short;
+		*(short*)val = (short)(std::stoi(m_targetValue) * (int)converstionfactor);
 	}
 	case FFDataref::Type::uShort:
 	{
-		unsigned short val = (unsigned short)(std::stoi(value) * (int)converstionfactor);
-		m_ffapi->ValueSet(m_id, &val);
+		val = new unsigned short;
+		*(unsigned short*)val = (unsigned short)(std::stoi(m_targetValue) * (int)converstionfactor);
 	}
 	case FFDataref::Type::Int:
 	{
-		int val = (int)(std::stoi(value) * (int)converstionfactor);
-		m_ffapi->ValueSet(m_id, &val);
+		val = new int;
+		*(int*)val = (int)(std::stoi(m_targetValue) * (int)converstionfactor);
 	}
 	case FFDataref::Type::uInt:
 	{
-		unsigned int val = (unsigned int)(std::stoi(value) * (int)converstionfactor);
-		m_ffapi->ValueSet(m_id, &val);
+		val = new unsigned int;
+		*(unsigned int*)val = (unsigned int)(std::stoi(m_targetValue) * (unsigned int)converstionfactor);
+		m_ffapi->ValueSet(m_id, val);
 	}
 	case FFDataref::Type::Float:
 	{
-		float val = (float)(std::stod(value) * (double)converstionfactor);
-		m_ffapi->ValueSet(m_id, &val);
+		val = new float;
+		*(float*)val = (float)(std::stod(m_targetValue) * (double)converstionfactor);
 	}
 	case FFDataref::Type::Double:
 	{
-		double val = (std::stod(value) * converstionfactor);
-		m_ffapi->ValueSet(m_id, &val);
+		val = new double;
+		*(double*)val = (std::stod(m_targetValue) * converstionfactor);
+		
 	}
 	case FFDataref::Type::String:
 	{
 		int lenght = m_ffapi->ValueGetSize(m_id);
 		char* buffer = new char[lenght];
 		#ifdef IBM
-		strcpy_s(buffer, lenght, value.c_str());
+		strcpy_s(buffer, lenght, m_targetValue.c_str());
 		#else
-		strcpy(buffer, value.c_str());
+		strcpy(buffer, m_targetValue.c_str());
 		#endif
 		m_ffapi->ValueSet(m_id, buffer);
 		delete[] buffer;
@@ -182,6 +207,14 @@ void FFDataref::SetValue(std::string value)
 	default:
 		return;
 	}
+	m_ffapi->ValueSet(m_id, val);
+	m_targetValue = "";
+	free(val);
+}
+
+bool FFDataref::NeedUpdate() const
+{
+	return m_targetValue != "";
 }
 
 void FFDataref::BindAPI(SharedValuesInterface* FF_A320_api)
@@ -195,4 +228,29 @@ void FFDataref::BindAPI(SharedValuesInterface* FF_A320_api)
 void FFDataref::SetConversionFactor(std::string conversionFactor)
 {
 	m_conversionFactor = conversionFactor;
+}
+
+int FFDataref::GetID() const
+{
+	return m_id;
+}
+
+int FFDataref::GetFlag() const
+{
+	return m_ffapi->ValueType(m_id);
+}
+
+int FFDataref::GetUnit() const
+{
+	return m_ffapi->ValueUnits(m_id);
+}
+
+std::string FFDataref::GetName() const
+{
+	return std::string(m_ffapi->ValueName(m_id));
+}
+
+std::string FFDataref::GetDescription() const
+{
+	return std::string(m_ffapi->ValueDesc(m_id));
 }

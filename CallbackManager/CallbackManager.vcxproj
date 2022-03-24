@@ -183,9 +183,10 @@
     </Lib>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClInclude Include="include\AbstractDataref.h" />
     <ClInclude Include="include\CallbackManager.h" />
     <ClInclude Include="include\Dataref.h" />
-    <ClInclude Include="include\FFDatarefs.h" />
+    <ClInclude Include="include\FFDataref.h" />
     <ClInclude Include="include\Logger.h" />
     <ClInclude Include="include\SharedValue.h" />
     <ClInclude Include="include\utils.h" />
@@ -193,7 +194,7 @@
   <ItemGroup>
     <ClCompile Include="src\CallbackManager.cpp" />
     <ClCompile Include="src\Dataref.cpp" />
-    <ClCompile Include="src\FFDatarefs.cpp" />
+    <ClCompile Include="src\FFDataref.cpp" />
     <ClCompile Include="src\Logger.cpp" />
     <ClCompile Include="src\utils.cpp" />
   </ItemGroup>

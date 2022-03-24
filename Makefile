@@ -1,4 +1,5 @@
-SDK			    := /Users/rdessart/Projects/CPP/SDK/XPlane/303
+SDK			    := $(xplane_sdk)
+XPLANE          := $(xplane)
 TARGET		    := XPLMServer
 BASE_DIR        := $(PWD)
 BUILDDIR	    := $(BASE_DIR)/build
@@ -20,12 +21,14 @@ INCLUDES = \
 	-I$(VCPKG_INCLUDES)/
 
 DEFINES = -DXPLM200=1 -DXPLM210=1 -DAPL=1 -D_DEBUG=1 
-
-CFLAGS := $(DEFINES) $(INCLUDES) -std=c++20 -fPIC -fvisibility=hidden -arch x86_64
-
+#DEBUG:
+CFLAGS := $(DEFINES) $(INCLUDES) -std=c++20 -fPIC -fvisibility=hidden -arch x86_64 -g
+#RELEASE :
+# CFLAGS := $(DEFINES) $(INCLUDES) -std=c++20 -fPIC -fvisibility=hidden -arch x86_64
 ###XPLMServer
-$(BUILDDIR)/mac.xpl : $(BUILDDIR)/UDPServer.o $(BUILDDIR)/XPLMServer.o | $(BUILDDIR) $(BUILDDIR)/libNetworking.a $(BUILDDIR)/libCallbackManager.a $(OUTPUT_DIR)/DefaultCallbacks64.dylib $(OUTPUT_DIR)
-	g++ $(CFLAGS) -m64 -dynamiclib -Wl, $(BUILDDIR)/UDPServer.o $(BUILDDIR)/Dataref.o $(BUILDDIR)/Logger.o $(BUILDDIR)/utils.o $(BUILDDIR)/CallbackManager.o $(BUILDDIR)/XPLMServer.o  -o $(OUTPUT_DIR)/64/mac.xpl $(LIB)
+$(OUTPUT_DIR)/64/mac.xpl : $(BUILDDIR)/UDPServer.o $(BUILDDIR)/XPLMServer.o $(BUILDDIR)/FFDataref.o | $(BUILDDIR) $(BUILDDIR)/libNetworking.a $(BUILDDIR)/libCallbackManager.a $(OUTPUT_DIR)/DefaultCallbacks64.dylib $(OUTPUT_DIR)
+	g++ $(CFLAGS) -m64 -dynamiclib -Wl, -L$(BUILDDIR) -lCallbackManager -lNetworking $(BUILDDIR)/XPLMServer.o   -o $(OUTPUT_DIR)/64/mac.xpl $(LIB)
+	cp $(XPLMServer)/pluginConfig.json $(OUTPUT_DIR)
 
 $(BUILDDIR)/XPLMServer.o : $(XPLMServer)/src/main.cpp
 	g++ $(CFLAGS) $(XPLMServer)/src/main.cpp -c -o $(BUILDDIR)/XPLMServer.o
@@ -61,7 +64,7 @@ $(BUILDDIR)/Logger.o : $(CALLBACKMANAGER)/src/Logger.cpp $(CALLBACKMANAGER)/incl
 $(BUILDDIR)/utils.o : $(CALLBACKMANAGER)/src/utils.cpp $(CALLBACKMANAGER)/include/utils.h | $(BUILDDIR)
 	g++ $(CFLAGS) $(CALLBACKMANAGER)/src/utils.cpp -c -o $(BUILDDIR)/utils.o
 
-$(BUILDDIR)/CallbackManager.o : $(CALLBACKMANAGER)/src/CallbackManager.cpp $(CALLBACKMANAGER)/include/CallbackManager.h | $(BUILDDIR)
+$(BUILDDIR)/CallbackManager.o : $(CALLBACKMANAGER)/src/CallbackManager.cpp $(CALLBACKMANAGER)/include/CallbackManager.h $(CALLBACKMANAGER)/include/AbstractDataref.h | $(BUILDDIR)
 	g++ $(CFLAGS) $(CALLBACKMANAGER)/src/CallbackManager.cpp -c -o $(BUILDDIR)/CallbackManager.o
 
 $(OUTPUT_DIR):
@@ -71,6 +74,9 @@ $(OUTPUT_DIR):
 
 $(BUILDDIR):
 	mkdir $(BUILDDIR)
+
+publish:
+	cp -r $(BUILDDIR)/XPLMServer $(XPLANE)/Resources/plugins/
 
 clean:
 	@echo Cleaning out everything.
