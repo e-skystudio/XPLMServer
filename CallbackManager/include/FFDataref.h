@@ -30,15 +30,20 @@ public:
 	FFDataref::Type GetType();
 	FFDataref::Type LoadType();
 	std::string GetValue();
+	// ATTENTION this would set the target value (value to be set at the next call of the callback)
 	void SetValue(std::string value);
+
+	void SetTargetValue(); // to be called into the sync loop
 	void BindAPI(SharedValuesInterface* FF_A320_api);
 	void SetConversionFactor(std::string conversionFactor);
-	int GetID();
-	int GetFlag();
-	int GetUnit();
-	std::string GetName();
-	std::string GetDescription();
+	int GetID() const;
+	int GetFlag() const;
+	int GetUnit() const;
+	std::string GetName() const;
+	std::string GetDescription() const;
+	bool NeedUpdate() const;
 protected:
+	std::string m_targetValue;
 	std::string m_link;
 	int m_id;
 	Type m_type;
