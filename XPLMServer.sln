@@ -11,6 +11,20 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "CallbackManager", "Callback
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Networking", "Networking\Networking.vcxproj", "{C6A4B221-4ACF-4130-9F77-D22A4F6F1EDC}"
 EndProject
+Project("{911E67C6-3D85-4FCE-B560-20A9C3E3FF48}") = "X-Plane", "..\..\..\..\..\X-Plane 11\X-Plane.exe", "{68036669-D99B-45FA-AA55-20815EC0575E}"
+	ProjectSection(DebuggerProjectSystem) = preProject
+		PortSupplier = 00000000-0000-0000-0000-000000000000
+		Executable = C:\X-Plane 11\X-Plane.exe
+		RemoteMachine = ZOIDBERG
+		StartingDirectory = C:\X-Plane 11
+		Environment = Default
+		LaunchingEngine = 00000000-0000-0000-0000-000000000000
+		UseLegacyDebugEngines = No
+		LaunchSQLEngine = No
+		AttachLaunchAction = No
+		IORedirection = Auto
+	EndProjectSection
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|x64 = Debug|x64
@@ -51,6 +65,10 @@ Global
 		{C6A4B221-4ACF-4130-9F77-D22A4F6F1EDC}.Release|x64.Build.0 = Release|x64
 		{C6A4B221-4ACF-4130-9F77-D22A4F6F1EDC}.Release|x86.ActiveCfg = Release|Win32
 		{C6A4B221-4ACF-4130-9F77-D22A4F6F1EDC}.Release|x86.Build.0 = Release|Win32
+		{68036669-D99B-45FA-AA55-20815EC0575E}.Debug|x64.ActiveCfg = Release|x64
+		{68036669-D99B-45FA-AA55-20815EC0575E}.Debug|x86.ActiveCfg = Release|x64
+		{68036669-D99B-45FA-AA55-20815EC0575E}.Release|x64.ActiveCfg = Release|x64
+		{68036669-D99B-45FA-AA55-20815EC0575E}.Release|x86.ActiveCfg = Release|x64
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
