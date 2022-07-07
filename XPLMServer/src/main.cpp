@@ -115,7 +115,6 @@ PLUGIN_API int XPluginEnable(void)
 	#elif APL
 		platform = "Mac64";
 	#endif
-	XPLMDebugString("[0]\n");
 	logger.Log("Loading configuration :'" + configuration + "' & platform : '" + platform + "'");
 	if (!PluginConfiguration["DLLFiles"].contains(platform))
 	{
@@ -149,7 +148,6 @@ PLUGIN_API int XPluginEnable(void)
 	else {
 		logger.Log("[XPLMServer]Missing Config['Server']['OutPort']... defaulting to 50555\n");
 	}
-	XPLMDebugString("[4]\n");
 	if (PluginConfiguration.contains("Server"))
 	{
 		if (PluginConfiguration["Server"].contains("BaconEnabled") && PluginConfiguration["Server"].contains("BeaconPort"))
@@ -207,10 +205,6 @@ float InitializerCallback(float elapsedSinceCall, float elapsedSinceLastTime, in
 #pragma endregion
 	XPLMRegisterFlightLoopCallback(NetworkCallback, -1.0f, nullptr);
 	XPLMRegisterFlightLoopCallback(ExportSubscribedDataref, -1.0f, nullptr);
-	/*bool beaconEnabled = false;
-	if (PluginConfiguration["Server"].contains("BeaconEnabled")) {
-		beaconEnabled = PluginConfiguration["Server"]["BeaconEnabled"].get<bool>();
-	}*/
 	if(beaconSts.BeaconEnabled)
 	{
 		XPLMRegisterFlightLoopCallback(BeaconCallback, -1.0f, nullptr);
