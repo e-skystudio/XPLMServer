@@ -160,6 +160,16 @@ void UDPServer::log(std::string data) const
 	m_logfile->flush();
 }
 
+int UDPServer::GetInboundPort() const
+{
+	return m_inPort;
+}
+
+int UDPServer::GetOutboundPort() const
+{
+	return m_outPort;
+}
+
 std::string GetCurrentDateTime()
 {
 	struct tm* ltm;
