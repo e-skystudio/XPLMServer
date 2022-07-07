@@ -1,6 +1,5 @@
 #pragma once
 
-
 #ifdef _WIN32
 	#include <WinSock2.h>
 	#include <WS2tcpip.h>
@@ -32,9 +31,7 @@
 	#define GETSOCKETERRNO() (errno)
 #endif
 
-#include <stdio.h>
 #include <string>
-#include <memory.h>
 #include <fstream>
 
 
@@ -46,26 +43,35 @@ extern "C"{
 		unsigned short port;
 	};
 
-	class UDPServer
+	class UdpServer
 	{
 	public:
-		UDPServer();
-		~UDPServer();
-		int Bind(unsigned short inPort, unsigned short outPort, bool beacon);
-		std::string ReceiveData(int maxSize,Client* outCli);
-		int SendData(std::string data, Client client);
-		int BroadcastData(std::string data, int port);
+		UdpServer();
+		UdpServer(const UdpServer&) = delete;
+		UdpServer(const UdpServer&&) = delete;
+		UdpServer& operator=(const UdpServer&) = delete;
+		UdpServer& operator=(const UdpServer&&) = delete;
+
+		~UdpServer();
+
+		int Bind(unsigned short const inPort, unsigned short const outPort, bool const beacon);
+		[[nodiscard]] std::string ReceiveData(int const maxSize,Client* outCli) const;
+		int SendData(std::string const &data, Client const& client) const;  // NOLINT(modernize-use-nodiscard)
+		[[nodiscard]] int BroadcastData(std::string const &data, u_short const port) const;
+		[[nodiscard]] int GetInboundPort() const;
+		[[nodiscard]] int GetOutboundPort() const;
+		[[nodiscard]] std::string GetLocalIp() const;
 	protected:
 		unsigned short m_inPort;
 		unsigned short m_outPort;
-		struct addrinfo m_hints;
 		struct addrinfo* m_bind_address;
 		SOCKET m_socket_listen;
 		SOCKET m_socket_emit;
 		SOCKET m_socket_beacon;
 		std::ofstream* m_logfile;
+		std::string m_local_ip;
 	private:
-		void log(std::string data) const;
+		void log(std::string const &data) const;
 	};
 
 }

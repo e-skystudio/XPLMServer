@@ -1,86 +1,91 @@
 #include "../include/UDPServer.h"
 
-UDPServer::UDPServer() : 
-    m_inPort(0),
-    m_outPort(0),
-    m_hints({0}),
-    m_bind_address{0},
+UdpServer::UdpServer() :
+	m_inPort(0),
+	m_outPort(0),
+    m_bind_address{nullptr},
     m_socket_listen(INVALID_SOCKET),
     m_socket_emit(INVALID_SOCKET),
 	m_socket_beacon(INVALID_SOCKET)
+
 {
 	m_logfile = new std::ofstream("XPLMServer_Network.log", std::ios::out);
 	log("Loging Started");
 }
 
-UDPServer::~UDPServer()
-{
-}
 
-int UDPServer::Bind(unsigned short inPort, unsigned short outPort, bool beacon)
+
+UdpServer::~UdpServer() = default;
+
+
+int UdpServer::Bind(unsigned short const inPort, unsigned short const outPort, bool const beacon)
 {
     m_inPort = inPort;
 	m_outPort = outPort;
-	memset(&m_hints, 0, sizeof(m_hints));
-	m_hints.ai_family = AF_INET;
-	m_hints.ai_socktype = SOCK_DGRAM;
-	m_hints.ai_flags = AI_PASSIVE;
-	int option = 0;
-	getaddrinfo(0, std::to_string(m_inPort).c_str(), &m_hints, &m_bind_address);
-	m_socket_listen = socket(m_bind_address->ai_family, m_bind_address->ai_socktype, m_bind_address->ai_protocol);
+    addrinfo hints = {};
+    hints.ai_family = AF_INET;
+	hints.ai_socktype = SOCK_DGRAM;
+	hints.ai_flags = AI_PASSIVE;
+	int _ = getaddrinfo(0, std::to_string(m_inPort).c_str(), &hints, &m_bind_address);
+    m_socket_listen = socket(m_bind_address->ai_family, m_bind_address->ai_socktype, m_bind_address->ai_protocol);
 	m_socket_emit = socket(m_bind_address->ai_family, m_bind_address->ai_socktype, m_bind_address->ai_protocol);
-	if (bind(m_socket_listen, m_bind_address->ai_addr, (int)m_bind_address->ai_addrlen))
+	if (bind(m_socket_listen, m_bind_address->ai_addr, static_cast<int>(m_bind_address->ai_addrlen)))
 	{
 		log("bind() failed on" + std::to_string(m_inPort) + "! Error code: " + std::to_string(GETSOCKETERRNO()));
 		return 0x02;
 	}
-	log("bind() sucess on " + std::to_string(m_inPort) + "!");
+	log("bind() success on " + std::to_string(m_inPort) + "!");
 	if(beacon)
 	{
 		m_socket_beacon = socket(m_bind_address->ai_family, m_bind_address->ai_socktype, m_bind_address->ai_protocol);
-		int broadcastEnable = 1;
-		int iOptLen = sizeof(int);
-		int res = setsockopt(m_socket_beacon, SOL_SOCKET, SO_BROADCAST, (char*)&broadcastEnable, iOptLen);
+		int broadcast_enable = 1;
+		constexpr int optlen = sizeof(int);
+		int const res = setsockopt(m_socket_beacon, SOL_SOCKET, SO_BROADCAST, reinterpret_cast<char*>(&broadcast_enable), optlen);
 		log("Setting SOL_SOCKET SO_BROADCAST = 1 returned : '" + std::to_string(res));
 		if (res != 0)
 		{
 			log("Error code is : '" + std::to_string(GETSOCKETERRNO()));
 			return 0x03;
 		}
+		char sz_host_name[255];
+		gethostname(sz_host_name, 255);
+		const hostent* host_entry = gethostbyname(sz_host_name);  // NOLINT(concurrency-mt-unsafe)
+		m_local_ip = std::string(inet_ntoa(*reinterpret_cast<in_addr*>(*host_entry->h_addr_list)));  // NOLINT(concurrency-mt-unsafe)
+		log("Local IP address(2) is: " + std::string(m_local_ip));
 	}
 	return 0x00;
 }
 
-std::string UDPServer::ReceiveData(int maxSize,Client* outCli)
+std::string UdpServer::ReceiveData(int const maxSize,Client* outCli) const
 {
     if (maxSize < 0)
 	{
 		log("MaxSize < 0! ERROR");
-		return std::string();
+		return {};
 	}
-	struct sockaddr_storage client_address = {0};
+    sockaddr_storage client_address;  // NOLINT(cppcoreguidelines-pro-type-member-init)
 	socklen_t client_len = sizeof(client_address);
-	char* read = (char *)malloc((size_t)maxSize);
+    const auto read = static_cast<char*>(malloc(static_cast<size_t>(maxSize)));
 	if (read == nullptr)
-		return std::string();
-	memset(read, 0x00, (size_t)maxSize);
-	struct timeval timeout{0, 10};
+		return {};
+	memset(read, 0x00, static_cast<size_t>(maxSize));
+    constexpr timeval timeout{0, 10};
 
 	fd_set clients;
 	FD_ZERO(&clients);
 	FD_SET(m_socket_listen, &clients);
 
-	if(select((int)m_socket_listen + 1, &clients, 0, 0, &timeout) <= 0) return std::string();
+	if(select(static_cast<int>(m_socket_listen) + 1, &clients, 0, 0, &timeout) <= 0) return {};
 	
 	int bytes_received = recvfrom(m_socket_listen, read, maxSize, 0,
-		(struct sockaddr*)&client_address, &client_len);
+		reinterpret_cast<sockaddr*>(&client_address), &client_len);
 	if (bytes_received <= 0)
 	{
 		log(">>> " + std::to_string(bytes_received) + "bytes received");
 	}
 	char address_buffer[100];
 	char service_buffer[100];
-	getnameinfo(((struct sockaddr*)&client_address),
+	getnameinfo(reinterpret_cast<sockaddr*>(&client_address),
 		client_len, address_buffer, sizeof(address_buffer),
 		service_buffer, sizeof(service_buffer),
 		NI_NUMERICHOST | NI_NUMERICSERV);
@@ -98,11 +103,10 @@ std::string UDPServer::ReceiveData(int maxSize,Client* outCli)
 	return s_out;
 }
 
-int UDPServer::SendData(std::string data, Client cli)
+int UdpServer::SendData(std::string const &data, Client const& client) const
 {
-	struct sockaddr_in send_address;
-	memset(&send_address, 0, sizeof(struct sockaddr_in));
-	int res = inet_pton(AF_INET, cli.ip.c_str(), &send_address.sin_addr.s_addr);
+	sockaddr_in send_address = {};
+	int res = inet_pton(AF_INET, client.ip.c_str(), &send_address.sin_addr.s_addr);
 	if (res < 0)
 	{
 		log("Error message with InetPton() : " + std::to_string(GETSOCKETERRNO()));
@@ -112,16 +116,16 @@ int UDPServer::SendData(std::string data, Client cli)
 		log("Client address is not valid !");
 	}
 	send_address.sin_family = AF_INET;
-	send_address.sin_port = htons(cli.port);
-	int bytes = sendto(m_socket_emit, data.c_str(), (int)data.length(), 0, 
-		(struct sockaddr*)&send_address, (int)sizeof(struct sockaddr_in));
-	char logBuffer[4150];
+	send_address.sin_port = htons(client.port);
+	int bytes = sendto(m_socket_emit, data.c_str(), static_cast<int>(data.length()), 0, 
+		reinterpret_cast<sockaddr*>(&send_address), static_cast<int>(sizeof(struct sockaddr_in)));
+	char log_buffer[4150];
 	#ifdef IBM
-	sprintf_s(logBuffer, 4150, "[%s:%d]<<<'%s'(%d byte(s))", cli.ip.c_str(), cli.port, data.c_str(), bytes);
+	sprintf_s(log_buffer, 4150, "[%s:%d]<<<'%s'(%d byte(s))", client.ip.c_str(), client.port, data.c_str(), bytes);
 	#else
-	sprintf(logBuffer, "[%s:%d]<<<'%s'(%d byte(s))", cli.ip.c_str(), cli.port, data.c_str(), bytes);
+	sprintf(logBuffer, "[%s:%d]<<<'%s'(%d byte(s))", client.ip.c_str(), client.port, data.c_str(), bytes);
 	#endif
-	log(std::string(logBuffer));
+	log(std::string(log_buffer));
 	if (bytes <= 0)
 	{
 		log("Error message : " + std::to_string(GETSOCKETERRNO()));
@@ -129,43 +133,57 @@ int UDPServer::SendData(std::string data, Client cli)
 	return bytes;
 }
 
-int UDPServer::BroadcastData(std::string data, int port)
+int UdpServer::BroadcastData(std::string const &data, u_short const port) const
 {
 	if(m_socket_beacon == INVALID_SOCKET) return 0;
-	struct sockaddr_in send_address;
-	memset(&send_address, 0, sizeof(struct sockaddr_in));
+	sockaddr_in send_address = {};
 	send_address.sin_family = AF_INET;
 	send_address.sin_port = htons(port);
 	send_address.sin_addr.s_addr = INADDR_BROADCAST;
 	//int res = inet_pton(AF_INET, cli.ip.c_str(), &send_address.sin_addr.s_addr);
-	int bytes = sendto(m_socket_beacon, data.c_str(), (int)data.length(), 0,
-		(struct sockaddr*)&send_address, (int)sizeof(struct sockaddr_in));
+	int bytes = sendto(m_socket_beacon, data.c_str(), static_cast<int>(data.length()), 0,
+		reinterpret_cast<sockaddr*>(&send_address), static_cast<int>(sizeof(struct sockaddr_in)));
 	if (bytes < 0)
 	{
-		log("There was an error during INET BROADCAST : " + std::to_string(GETSOCKETERRNO()));
+		log("There was an error during broadcast : " + std::to_string(GETSOCKETERRNO()));
 	}
-	char logBuffer[4150];
+	char log_buffer[4150];
 	#ifdef IBM
-		sprintf_s(logBuffer, 4150, "BROADCAST[%d]<<<'%s'(%d byte(s))", port, data.c_str(), bytes);
+		sprintf_s(log_buffer, 4150, "BROADCAST[%d]<<<'%s'(%d byte(s))", port, data.c_str(), bytes);
 	#else
 		sprintf(logBuffer, "BROADCAST[%d]<<<'%s'(%d byte(s))", port, data.c_str(), bytes);
 	#endif
-	log(std::string(logBuffer));
+	log(std::string(log_buffer));
 	return 0;
 }
 
-void UDPServer::log(std::string data) const
+void UdpServer::log(std::string const &data) const
 {
 	*m_logfile << GetCurrentDateTime() << "\t" << "UDP" << "\t" << data << "\n";
 	m_logfile->flush();
 }
 
+int UdpServer::GetInboundPort() const
+{
+	return m_inPort;
+}
+
+int UdpServer::GetOutboundPort() const
+{
+	return m_outPort;
+}
+
+std::string UdpServer::GetLocalIp() const
+{
+	return m_local_ip;
+}
+
 std::string GetCurrentDateTime()
 {
-	struct tm* ltm;
+	tm* ltm;
 	time_t now = time(0);
 #ifdef IBM
-	ltm = new struct tm;
+	ltm = new tm;
 	localtime_s(ltm, &now);
 #else
 	ltm = localtime(&now);
@@ -178,5 +196,5 @@ std::string GetCurrentDateTime()
 	sprintf(time, "%02d/%02d/%04d %02d:%02d:%02d", ltm->tm_mday, ltm->tm_mon, ltm->tm_year,
 		ltm->tm_hour, ltm->tm_min, ltm->tm_sec);
 #endif
-	return std::string((const char*)time);
+	return { time };
 }

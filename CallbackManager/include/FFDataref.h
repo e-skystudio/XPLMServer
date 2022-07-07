@@ -32,10 +32,13 @@ public:
 	std::string GetValue();
 	// ATTENTION this would set the target value (value to be set at the next call of the callback)
 	void SetValue(std::string value);
-
-	void SetTargetValue(); // to be called into the sync loop
+#pragma region disabled
+	//void SetTargetValue(); // to be called into the sync loop
+#pragma endregion
 	void BindAPI(SharedValuesInterface* FF_A320_api);
 	void SetConversionFactor(std::string conversionFactor);
+	void DoSetValue(std::string value);
+	std::string GetTargetValue();
 	int GetID() const;
 	int GetFlag() const;
 	int GetUnit() const;
@@ -43,6 +46,7 @@ public:
 	std::string GetDescription() const;
 	bool NeedUpdate() const;
 protected:
+	bool m_needUpdate;
 	std::string m_targetValue;
 	std::string m_link;
 	int m_id;
@@ -50,6 +54,7 @@ protected:
 	std::string m_conversionFactor;
 	SharedValuesInterface* m_ffapi;
 	Logger m_logger;
+	void* m_buffer;
 };
 
 static std::map<std::string, FFDataref::Type> const FFStringToType{

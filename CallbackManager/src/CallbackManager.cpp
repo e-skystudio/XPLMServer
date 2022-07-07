@@ -9,12 +9,13 @@ void FF320_Callback(double step, void* tag)
 
 	for(auto &dataref : *p_datarefs)
 	{
-		if(dataref.second->DatarefType == AbstractDataref::DatarefType::FFDataref)
+		if(dataref.second->DatarefType == DatarefType::FFDataref)
 		{
 			FFDataref* ffdata = (FFDataref*)dataref.second;
 			if(ffdata->NeedUpdate())
 			{
-				ffdata->SetTargetValue();
+				cm->Log(ffdata->GetName() + " need update ? " + std::to_string(ffdata->NeedUpdate()));
+				ffdata->DoSetValue(ffdata->GetTargetValue());
 			}
 		}
 	}
@@ -22,7 +23,9 @@ void FF320_Callback(double step, void* tag)
 
 CallbackManager::CallbackManager() :
 	m_logger(Logger("XPLMServer.log", "CallbackManager", false)),
-	m_subscirbeDatarefCount(0), m_ff320(nullptr)
+	m_subscirbeDatarefCount(0), 
+	m_ff320(nullptr),
+	m_hDLL(0)
 {
 	m_ff320 = new SharedValuesInterface();
 	m_callbacks = new std::map<std::string, Callback>();
@@ -55,7 +58,7 @@ CallbackManager::~CallbackManager()
 		{
 			m_subscribedDatarefs->erase(kv->first);
 		}
-		if(kv->second->DatarefType == AbstractDataref::DatarefType::XPLMDataref)    delete (Dataref*)(kv->second);
+		if(kv->second->DatarefType == DatarefType::XPLMDataref)    delete (Dataref*)(kv->second);
 		// else if(kv->second->DatarefType == "FFDataref") delete (FFDataref*)(kv->second);
 		// delete kv->second;
 		kv++;

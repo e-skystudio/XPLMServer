@@ -1,7 +1,7 @@
 {
   "Plugin": {
-    "Name": "XPLM Server v1.0.1 alpha",
-    "Description": "Two-Way Server implemting shared libraries callbacks",
+    "Name": "XPLM Server v1.0.1.0 dev",
+    "Description": "X-Plane Manipulation Server",
     "Author": "Dessart Romain"
   },
   "DLLFiles": {
@@ -23,7 +23,7 @@
     }
   },
   "Server":{
-    "BaconEnabled": true,
+    "BeaconEnabled": true,
     "BeaconPort": 7575,
     "InPort": 50555,
     "OutPort": 50556,

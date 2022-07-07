@@ -2,9 +2,10 @@
 
 FFDataref::FFDataref() : m_id(-1),
 	m_type(Type::Deleted), m_link(""),
-	m_conversionFactor("1.0"), 
+	m_conversionFactor("1.0"),
 	m_ffapi(nullptr),
-	m_logger(Logger("XPLMServer.log", "FFDataref", false))
+	m_logger(Logger("XPLMServer.log", "FFDataref", false)),
+	m_needUpdate(false)
 {
 	DatarefType = DatarefType::FFDataref;
 }
@@ -132,89 +133,148 @@ std::string FFDataref::GetValue()
 void FFDataref::SetValue(std::string value)
 {
 	m_targetValue = value;
+	m_needUpdate = true;
 }
 
-void FFDataref::SetTargetValue()
+void FFDataref::DoSetValue(std::string value)
 {
-	if(m_ffapi == nullptr) {
-		m_logger.Log(m_link + ": FlightFactor API pointer is NULL!", Logger::Severity::WARNING);
-		return;
-	};
-	if (m_id < 0 && m_type == Type::Deleted)
+	m_logger.Log("[DO_SET_VALUE]" + m_link + " Setting value to " + value);
+	int type = m_ffapi->ValueType(m_id);
+	if (type == Value_Type_float32)
 	{
-		if (m_id < 0) m_logger.Log(m_link + ": id is INVALID ID", Logger::Severity::WARNING);
-		if (m_type == Type::Deleted) m_logger.Log(m_link + ": type is 'Deleted'", Logger::Severity::WARNING);
-		return;
+		m_logger.Log("[DO_SET_VALUE]" + m_link + " Type is  " + std::to_string(type) + " (float32)");
+		float val(0.0f);
+		try
+		{
+			val = std::stof(value);
+		}
+		catch (std::invalid_argument)
+		{
+			m_logger.Log("[DO_SET_VALUE]" + m_link + " std::stof has crashed because of an invalid argument", Logger::Severity::CRITICAL);
+			return;
+		}
+		m_ffapi->ValueSet(m_id, &val);
 	}
-	double converstionfactor = std::stod(m_conversionFactor);
-	void* val;
-	switch (m_type)
+	else if (type == Value_Type_float64)
 	{
-	case FFDataref::Type::Char:
+		m_logger.Log("[DO_SET_VALUE]" + m_link + " Type is  " + std::to_string(type) + " (float64)");
+		double val(0.0);
+		try
+		{
+			val = std::stod(value);
+		}
+		catch (std::invalid_argument)
+		{
+			m_logger.Log("[DO_SET_VALUE]" + m_link + " std::stof has crashed because of an invalid argument", Logger::Severity::CRITICAL);
+			return;
+		}
+		m_ffapi->ValueSet(m_id, &val);
+	}
+	else if (type == Value_Type_sint32)
 	{
-		val = new char;
-		*(char*)val = (char)(std::stoi(m_targetValue) * (int)converstionfactor);
+		m_logger.Log("[DO_SET_VALUE]" + m_link + " Type is  " + std::to_string(type) + " (sint32)");
+		int val(0);
+		try
+		{
+			val = std::stoi(value);
+		}
+		catch (std::invalid_argument)
+		{
+			m_logger.Log("[DO_SET_VALUE]" + m_link + " std::stof has crashed because of an invalid argument", Logger::Severity::CRITICAL);
+			return;
+		}
+		m_ffapi->ValueSet(m_id, &val);
 	}
-	case FFDataref::Type::uChar:
-	{
-		val = new unsigned char;
-		*(unsigned char*)val = (unsigned char)(std::stoi(m_targetValue) * (int)converstionfactor);
-	}
-	case FFDataref::Type::Short:
-	{
-		val = new short;
-		*(short*)val = (short)(std::stoi(m_targetValue) * (int)converstionfactor);
-	}
-	case FFDataref::Type::uShort:
-	{
-		val = new unsigned short;
-		*(unsigned short*)val = (unsigned short)(std::stoi(m_targetValue) * (int)converstionfactor);
-	}
-	case FFDataref::Type::Int:
-	{
-		val = new int;
-		*(int*)val = (int)(std::stoi(m_targetValue) * (int)converstionfactor);
-	}
-	case FFDataref::Type::uInt:
-	{
-		val = new unsigned int;
-		*(unsigned int*)val = (unsigned int)(std::stoi(m_targetValue) * (unsigned int)converstionfactor);
-		m_ffapi->ValueSet(m_id, val);
-	}
-	case FFDataref::Type::Float:
-	{
-		val = new float;
-		*(float*)val = (float)(std::stod(m_targetValue) * (double)converstionfactor);
-	}
-	case FFDataref::Type::Double:
-	{
-		val = new double;
-		*(double*)val = (std::stod(m_targetValue) * converstionfactor);
-		
-	}
-	case FFDataref::Type::String:
-	{
-		int lenght = m_ffapi->ValueGetSize(m_id);
-		char* buffer = new char[lenght];
-		#ifdef IBM
-		strcpy_s(buffer, lenght, m_targetValue.c_str());
-		#else
-		strcpy(buffer, m_targetValue.c_str());
-		#endif
-		m_ffapi->ValueSet(m_id, buffer);
-		delete[] buffer;
-	}
-	default:
-		return;
-	}
-	m_ffapi->ValueSet(m_id, val);
-	m_targetValue = "";
-	free(val);
 }
 
+std::string FFDataref::GetTargetValue()
+{
+	return m_targetValue;
+}
+#pragma region disabled
+//void FFDataref::SetTargetValue()
+//{
+//	m_needUpdate = false;
+//	XPLMSpeakString(std::string("Updating value for '" + m_link + "'!").c_str());
+//	if(m_ffapi == nullptr) {
+//		m_logger.Log(m_link + ": FlightFactor API pointer is NULL!", Logger::Severity::WARNING);
+//		return;
+//	};
+//	if (m_id < 0 && m_type == Type::Deleted)
+//	{
+//		if (m_id < 0) m_logger.Log(m_link + ": id is INVALID ID", Logger::Severity::WARNING);
+//		if (m_type == Type::Deleted) m_logger.Log(m_link + ": type is 'Deleted'", Logger::Severity::WARNING);
+//		return;
+//	}
+//	double converstionfactor = std::stod(m_conversionFactor);
+//	void* val(nullptr);
+//	switch (m_type)
+//	{
+//	case FFDataref::Type::Char:
+//	{
+//		val = malloc(sizeof(char));
+//		*(char*)val = (char)(std::stoi(m_targetValue) * (int)converstionfactor);
+//	}
+//	case FFDataref::Type::uChar:
+//	{
+//		val = malloc(sizeof(char));
+//		*(unsigned char*)val = (unsigned char)(std::stoi(m_targetValue) * (int)converstionfactor);
+//	}
+//	case FFDataref::Type::Short:
+//	{
+//		val = malloc(sizeof(short));
+//		*(short*)val = (short)(std::stoi(m_targetValue) * (int)converstionfactor);
+//	}
+//	case FFDataref::Type::uShort:
+//	{
+//		val = malloc(sizeof(short));
+//		*(unsigned short*)val = (unsigned short)(std::stoi(m_targetValue) * (int)converstionfactor);
+//	}
+//	case FFDataref::Type::Int:
+//	{
+//		val = malloc(sizeof(int));
+//		*(int*)val = (int)(std::stoi(m_targetValue) * (int)converstionfactor);
+//	}
+//	case FFDataref::Type::uInt:
+//	{
+//		val = malloc(sizeof(int));
+//		*(unsigned int*)val = (unsigned int)(std::stoi(m_targetValue) * (unsigned int)converstionfactor);
+//		m_ffapi->ValueSet(m_id, val);
+//	}
+//	case FFDataref::Type::Float:
+//	{
+//		val = malloc(sizeof(float));
+//		*(float*)val = (float)(std::stod(m_targetValue) * (double)converstionfactor);
+//	}
+//	case FFDataref::Type::Double:
+//	{
+//		val = malloc(sizeof(double));
+//		*(double*)val = (std::stod(m_targetValue) * converstionfactor);
+//	}
+//	case FFDataref::Type::String:
+//	{
+//		int lenght = m_ffapi->ValueGetSize(m_id);
+//		char* buffer = new char[lenght];
+//		#ifdef IBM
+//		strcpy_s(buffer, lenght, m_targetValue.c_str());
+//		#else
+//		strcpy(buffer, m_targetValue.c_str());
+//		#endif
+//		m_ffapi->ValueSet(m_id, buffer);
+//		delete[] buffer;
+//	}
+//	default:
+//		return;
+//	}
+//	m_ffapi->ValueSet(m_id, val);
+//	m_logger.Log("Reinitalising Dataref");
+//	m_targetValue = "";
+//	free(val);
+//}
+#pragma endregion
 bool FFDataref::NeedUpdate() const
 {
-	return m_targetValue != "";
+	return m_needUpdate;
 }
 
 void FFDataref::BindAPI(SharedValuesInterface* FF_A320_api)
