@@ -55,6 +55,8 @@ extern "C"{
 		std::string ReceiveData(int maxSize,Client* outCli);
 		int SendData(std::string data, Client client);
 		int BroadcastData(std::string data, int port);
+		int GetInboundPort() const;
+		int GetOutboundPort() const;
 	protected:
 		unsigned short m_inPort;
 		unsigned short m_outPort;

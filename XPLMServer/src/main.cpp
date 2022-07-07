@@ -278,6 +278,9 @@ float BeaconCallback(float elapsedSinceCall, float elapsedSinceLastTime, int inC
 		{"AircraftICAO", AircraftICAO},
 		{"AircraftDescription", AircraftDesciption},
 		{"AircraftAuthor", AircraftAuthor},
+		{"AircraftAuthor", AircraftAuthor},
+		{"XplaneUDPReceive", server->GetInboundPort()},
+		{"XplaneUDPEmit", server->GetOutboundPort()},
 	};
 	BroadCastData(jdataOut.dump());
 	int beaconPort = PluginConfiguration["Server"]["BeaconPort"].get<int>();
