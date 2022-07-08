@@ -1,5 +1,12 @@
 #include "../include/CallbackManager.h"
 
+/*
+ *-- Note -- :
+ *Maybe we can create a function that will check for exisiting element and their required type.
+ *Function will take a List of Key-Value pairs ("string" - "JSON Type") and a JSON object and will return
+ *true if all the required keys are correct.
+ */
+
 void FF320_Callback(double step, void* tag)
 {
 	CallbackManager* cm = (CallbackManager*)tag;

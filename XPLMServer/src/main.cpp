@@ -34,6 +34,10 @@ static std::string AIRCRAFT_AUTHOR;
 static std::string AIRCRAFT_DESCIPTION;
 static BeaconStatus BEACON_STS;
 
+static XPLMDataRef acft_author = XPLMFindDataRef("sim/aircraft/view/acf_author");
+static XPLMDataRef acft_description = XPLMFindDataRef("sim/aircraft/view/acf_descrip");
+static XPLMDataRef acft_icao = XPLMFindDataRef("sim/aircraft/view/acf_ICAO");
+
 float InitializerCallback(float elapsedSinceCall, float elapsedSinceLastTime, int inCounter, void* inRef);
 float NetworkCallback(float elapsedSinceCall, float elapsedSinceLastTime, int inCounter, void* inRef);
 float ExportSubscribedDataref(float elapsedSinceCall, float elapsedSinceLastTime, int inCounter, void* inRef);
@@ -167,6 +171,9 @@ PLUGIN_API int XPluginEnable(void)
 			XPLMRegisterFlightLoopCallback(InitializerCallback, -1.0f, nullptr);
 		}
 	}
+	acft_author = XPLMFindDataRef("sim/aircraft/view/acf_author");
+	acft_description = XPLMFindDataRef("sim/aircraft/view/acf_descrip");
+	acft_icao = XPLMFindDataRef("sim/aircraft/view/acf_ICAO");
 	return 1;
 }
 
@@ -247,10 +254,6 @@ float ExportSubscribedDataref(float elapsedSinceCall, float elapsedSinceLastTime
 float BeaconCallback(float elapsedSinceCall, float elapsedSinceLastTime, int inCounter, void* inRef)
 {
 #pragma region GettingInfoAboutLoadedAircraft
-	const XPLMDataRef acft_author = XPLMFindDataRef("sim/aircraft/view/acf_author");
-	const XPLMDataRef acft_description = XPLMFindDataRef("sim/aircraft/view/acf_descrip");
-	const XPLMDataRef acft_icao = XPLMFindDataRef("sim/aircraft/view/acf_ICAO");
-
 	char author[500];
 	char description[500];
 	char icao[40];
