@@ -183,22 +183,7 @@ PLUGIN_API void XPluginReceiveMessage(XPLMPluginID inFrom, int inMsg, void* inPa
 
 float InitializerCallback(float elapsedSinceCall, float elapsedSinceLastTime, int inCounter, void* inRef)
 {
-#pragma region GettingInfoAboutLoadedAircraft
-	const XPLMDataRef acft_author = XPLMFindDataRef("sim/aircraft/view/acf_author");
-	const XPLMDataRef acft_description = XPLMFindDataRef("sim/aircraft/view/acf_descrip");
-	const XPLMDataRef acft_icao = XPLMFindDataRef("sim/aircraft/view/acf_ICAO");
 
-	char author[500];
-	char description[500];
-	char icao[40];
-
-	int size = XPLMGetDatab(acft_author, (void*)author, 0, 500);
-	AIRCRAFT_AUTHOR = std::string(author).substr(0, size),  // NOLINT(clang-diagnostic-comma)
-	size = XPLMGetDatab(acft_description, (void*)description, 0, 500);
-	AIRCRAFT_DESCIPTION = std::string(description).substr(0, size),
-	size = XPLMGetDatab(acft_icao, (void*)icao, 0, 40);
-	AIRCRAFT_ICAO = std::string(icao).substr(0, size);
-#pragma endregion
 	XPLMRegisterFlightLoopCallback(NetworkCallback, -1.0f, nullptr);
 	XPLMRegisterFlightLoopCallback(ExportSubscribedDataref, -1.0f, nullptr);
 	if(BEACON_STS.BeaconEnabled)
@@ -261,6 +246,23 @@ float ExportSubscribedDataref(float elapsedSinceCall, float elapsedSinceLastTime
 
 float BeaconCallback(float elapsedSinceCall, float elapsedSinceLastTime, int inCounter, void* inRef)
 {
+#pragma region GettingInfoAboutLoadedAircraft
+	const XPLMDataRef acft_author = XPLMFindDataRef("sim/aircraft/view/acf_author");
+	const XPLMDataRef acft_description = XPLMFindDataRef("sim/aircraft/view/acf_descrip");
+	const XPLMDataRef acft_icao = XPLMFindDataRef("sim/aircraft/view/acf_ICAO");
+
+	char author[500];
+	char description[500];
+	char icao[40];
+	std::string aircraft_author, aircraft_description;
+
+	int size = XPLMGetDatab(acft_author, (void*)author, 0, 500);
+	aircraft_author = std::string(author).substr(0, size),  // NOLINT(clang-diagnostic-comma)
+	size = XPLMGetDatab(acft_description, (void*)description, 0, 500);
+	aircraft_description = std::string(description).substr(0, size),
+	size = XPLMGetDatab(acft_icao, (void*)icao, 0, 40);
+	std::string aircraft_icao = std::string(icao).substr(0, size);
+#pragma endregion
 	json jdataOut = {
 		{"Operation", "Beacon"},
 		{"Simulator", "XPLANE"},
@@ -270,9 +272,9 @@ float BeaconCallback(float elapsedSinceCall, float elapsedSinceLastTime, int inC
 		{"SimulatorReceive", SERVER->GetInboundPort()},
 		{"SimulatorEmit", SERVER->GetOutboundPort()},
 		{"SimulatorIp", SERVER->GetLocalIp()},
-		{"AircraftAuthor", AIRCRAFT_AUTHOR},
-		{"AircraftDescription", AIRCRAFT_DESCIPTION},
-		{"AircraftICAO", AIRCRAFT_ICAO},
+		{"AircraftAuthor", aircraft_author},
+		{"AircraftDescription", aircraft_description},
+		{"AircraftICAO", aircraft_icao},
 	};
 	BroadCastData(jdataOut.dump());
 	int _ = SERVER->BroadcastData(jdataOut.dump(), BEACON_STS.BeaconPort);
