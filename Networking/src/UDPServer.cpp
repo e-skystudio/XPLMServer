@@ -69,7 +69,11 @@ std::string UdpServer::ReceiveData(int const maxSize,Client* outCli) const
 	if (read == nullptr)
 		return {};
 	memset(read, 0x00, static_cast<size_t>(maxSize));
-    constexpr timeval timeout{0, 10};
+	#ifdef IBM
+    	constexpr timeval timeout{0, 10};
+	#else
+		timeval timeout{0, 10};
+	#endif
 
 	fd_set clients;
 	FD_ZERO(&clients);
@@ -123,7 +127,7 @@ int UdpServer::SendData(std::string const &data, Client const& client) const
 	#ifdef IBM
 	sprintf_s(log_buffer, 4150, "[%s:%d]<<<'%s'(%d byte(s))", client.ip.c_str(), client.port, data.c_str(), bytes);
 	#else
-	sprintf(logBuffer, "[%s:%d]<<<'%s'(%d byte(s))", client.ip.c_str(), client.port, data.c_str(), bytes);
+	sprintf(log_buffer, "[%s:%d]<<<'%s'(%d byte(s))", client.ip.c_str(), client.port, data.c_str(), bytes);
 	#endif
 	log(std::string(log_buffer));
 	if (bytes <= 0)
@@ -151,7 +155,7 @@ int UdpServer::BroadcastData(std::string const &data, u_short const port) const
 	#ifdef IBM
 		sprintf_s(log_buffer, 4150, "BROADCAST[%d]<<<'%s'(%d byte(s))", port, data.c_str(), bytes);
 	#else
-		sprintf(logBuffer, "BROADCAST[%d]<<<'%s'(%d byte(s))", port, data.c_str(), bytes);
+		sprintf(log_buffer, "BROADCAST[%d]<<<'%s'(%d byte(s))", port, data.c_str(), bytes);
 	#endif
 	log(std::string(log_buffer));
 	return 0;
