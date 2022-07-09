@@ -23,6 +23,7 @@
 	#include <unistd.h>
 	#include <errno.h>
 	#include <memory.h>
+	#include "Networking.h"
 
 	#define INVALID_SOCKET 0
 	#define ISVALIDSOCKET(s) ((s) > 0)

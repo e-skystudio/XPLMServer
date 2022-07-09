@@ -179,7 +179,11 @@ int UdpServer::GetOutboundPort() const
 
 std::string UdpServer::GetLocalIp() const
 {
+	#ifdef IBM
 	return m_local_ip;
+	#else
+	return findIp()[0];
+	#endif
 }
 
 std::string GetCurrentDateTime()
