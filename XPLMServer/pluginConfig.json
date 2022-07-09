@@ -24,7 +24,7 @@
   },
   "Server":{
     "BeaconEnabled": true,
-    "BeaconPort": 7575,
+    "BeaconPort": 55888,
     "InPort": 50555,
     "OutPort": 50556,
     "InIp": "0.0.0.0"
