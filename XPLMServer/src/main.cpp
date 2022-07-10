@@ -3,6 +3,8 @@
 #pragma warning(disable : 6054)
 
 #include "UDPServer.h" //avoid error on windows
+#include "Beacon.h"
+
 #include <sstream>
 #include <string>
 
@@ -32,7 +34,8 @@ static int XPLANE_SDK_VERSION;
 static std::string AIRCRAFT_ICAO;
 static std::string AIRCRAFT_AUTHOR;
 static std::string AIRCRAFT_DESCIPTION;
-static BeaconStatus BEACON_STS;
+static bool BEACON_ENABLED = false;
+static Beacon* BEACON;
 
 static XPLMDataRef acft_author = XPLMFindDataRef("sim/aircraft/view/acf_author");
 static XPLMDataRef acft_description = XPLMFindDataRef("sim/aircraft/view/acf_descrip");
@@ -42,6 +45,7 @@ float InitializerCallback(float elapsedSinceCall, float elapsedSinceLastTime, in
 float NetworkCallback(float elapsedSinceCall, float elapsedSinceLastTime, int inCounter, void* inRef);
 float ExportSubscribedDataref(float elapsedSinceCall, float elapsedSinceLastTime, int inCounter, void* inRef);
 float BeaconCallback(float elapsedSinceCall, float elapsedSinceLastTime, int inCounter, void* inRef);
+void ConfigureBeacon();
 
 void BroadCastData(const std::string& data)
 {
@@ -152,18 +156,14 @@ PLUGIN_API int XPluginEnable(void)
 	else {
 		LOGGER.Log("[XPLMServer]Missing Config['Server']['OutPort']... defaulting to 50555\n");
 	}
-	if (PLUGIN_CONFIGURATION.contains("Server"))
+	if (PLUGIN_CONFIGURATION.contains("Server") && !PLUGIN_CONFIGURATION["Server"].is_null())
 	{
-		if (PLUGIN_CONFIGURATION["Server"].contains("BeaconEnabled") && PLUGIN_CONFIGURATION["Server"].contains("BeaconPort"))
-		{
-			BEACON_STS.BeaconEnabled = PLUGIN_CONFIGURATION["Server"]["BeaconEnabled"].get<bool>();
-			BEACON_STS.BeaconPort = PLUGIN_CONFIGURATION["Server"]["BeaconPort"].get<unsigned short>();
-		}
+		ConfigureBeacon();
 		if (PLUGIN_CONFIGURATION["Server"].contains("InIp") &&
 			PLUGIN_CONFIGURATION["Server"].contains("InPort"))
 		{
 			SERVER = new UdpServer();
-			if (const int serverInitRes = SERVER->Bind(portIn, portOut, BEACON_STS.BeaconEnabled) != EXIT_SUCCESS)
+			if (const int serverInitRes = SERVER->Bind(portIn, portOut) != EXIT_SUCCESS)
 			{
 				LOGGER.Log("Initalization failed, Res was " + std::to_string(serverInitRes));
 				return 0;
@@ -188,12 +188,36 @@ PLUGIN_API void XPluginReceiveMessage(XPLMPluginID inFrom, int inMsg, void* inPa
 	}
 }
 
+void ConfigureBeacon()
+{
+	if(PLUGIN_CONFIGURATION["Server"].contains("Beacon") && !PLUGIN_CONFIGURATION["Beacon"].is_null())
+	{
+		json beaconConfig = PLUGIN_CONFIGURATION["Server"]["Beacon"];
+		if(beaconConfig.contains("Enabled") && !beaconConfig["Enabled"].is_null() && beaconConfig["Enabled"].get<bool>())
+		{
+			if(!beaconConfig.contains("Port") || beaconConfig["Port"].is_null()) return;
+			unsigned short beaconPort = beaconConfig["Port"].get<unsigned short>();
+			if(beaconConfig.contains("Enabled") && beaconConfig["Enabled"].is_null())
+			{
+				BEACON = new Beacon();
+				if(BEACON->Configure("", beaconPort, true) == 0) BEACON_ENABLED = true;
+				return;
+			}
+			if(!beaconConfig.contains("Ip") || beaconConfig["Ip"].is_null()) return;
+			std::string beaconIp = beaconConfig["Ip"].get<std::string>();
+			BEACON = new Beacon();
+			if(BEACON->Configure(beaconIp, beaconPort, false) == 0) BEACON_ENABLED = true;
+			return;
+		}
+	}
+}
+
 float InitializerCallback(float elapsedSinceCall, float elapsedSinceLastTime, int inCounter, void* inRef)
 {
 
 	XPLMRegisterFlightLoopCallback(NetworkCallback, -1.0f, nullptr);
 	XPLMRegisterFlightLoopCallback(ExportSubscribedDataref, -1.0f, nullptr);
-	if(BEACON_STS.BeaconEnabled)
+	if(BEACON_ENABLED)
 	{
 		XPLMRegisterFlightLoopCallback(BeaconCallback, -1.0f, nullptr);
 	}
@@ -280,6 +304,6 @@ float BeaconCallback(float elapsedSinceCall, float elapsedSinceLastTime, int inC
 		{"AircraftICAO", aircraft_icao},
 	};
 	BroadCastData(jdataOut.dump());
-	int _ = SERVER->BroadcastData(jdataOut.dump(), BEACON_STS.BeaconPort);
+	int _ = BEACON->SendData(jdataOut.dump());
 	return 1.0f;
 }

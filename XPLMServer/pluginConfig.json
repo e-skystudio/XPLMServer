@@ -23,8 +23,12 @@
     }
   },
   "Server":{
-    "BeaconEnabled": true,
-    "BeaconPort": 55888,
+    "Beacon" : {
+      "Enabled": true,
+      "Broadcast": false,
+      "Ip" : "127.0.0.1",
+      "Port": 55888
+    },
     "InPort": 50555,
     "OutPort": 50556,
     "InIp": "0.0.0.0"
