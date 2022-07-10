@@ -18,7 +18,7 @@ UdpServer::UdpServer() :
 UdpServer::~UdpServer() = default;
 
 
-int UdpServer::Bind(unsigned short const inPort, unsigned short const outPort, bool const beacon)
+int UdpServer::Bind(unsigned short const inPort, unsigned short const outPort)
 {
     m_inPort = inPort;
 	m_outPort = outPort;
@@ -35,24 +35,11 @@ int UdpServer::Bind(unsigned short const inPort, unsigned short const outPort, b
 		return 0x02;
 	}
 	log("bind() success on " + std::to_string(m_inPort) + "!");
-	if(beacon)
-	{
-		m_socket_beacon = socket(m_bind_address->ai_family, m_bind_address->ai_socktype, m_bind_address->ai_protocol);
-		int broadcast_enable = 1;
-		constexpr int optlen = sizeof(int);
-		int const res = setsockopt(m_socket_beacon, SOL_SOCKET, SO_BROADCAST, reinterpret_cast<char*>(&broadcast_enable), optlen);
-		log("Setting SOL_SOCKET SO_BROADCAST = 1 returned : '" + std::to_string(res));
-		if (res != 0)
-		{
-			log("Error code is : '" + std::to_string(GETSOCKETERRNO()));
-			return 0x03;
-		}
-		char sz_host_name[255];
-		gethostname(sz_host_name, 255);
-		const hostent* host_entry = gethostbyname(sz_host_name);  // NOLINT(concurrency-mt-unsafe)
-		m_local_ip = std::string(inet_ntoa(*reinterpret_cast<in_addr*>(*host_entry->h_addr_list)));  // NOLINT(concurrency-mt-unsafe)
-		log("Local IP address(2) is: " + std::string(m_local_ip));
-	}
+	#ifdef IBM
+	m_local_ip = std::string(inet_ntoa(*reinterpret_cast<in_addr*>(*host_entry->h_addr_list)));  // NOLINT(concurrency-mt-unsafe)
+	#else
+	m_local_ip = "";
+	#endif
 	return 0x00;
 }
 

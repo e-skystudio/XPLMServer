@@ -55,7 +55,8 @@ extern "C"{
 
 		~UdpServer();
 
-		int Bind(unsigned short const inPort, unsigned short const outPort, bool const beacon);
+		// int Bind(unsigned short const inPort, unsigned short const outPort, bool const beacon);
+		int Bind(unsigned short const inPort, unsigned short const outPort);
 		[[nodiscard]] std::string ReceiveData(int const maxSize,Client* outCli) const;
 		int SendData(std::string const &data, Client const& client) const;  // NOLINT(modernize-use-nodiscard)
 		[[nodiscard]] int BroadcastData(std::string const &data, u_short const port) const;
