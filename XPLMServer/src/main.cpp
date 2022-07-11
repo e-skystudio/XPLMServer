@@ -140,7 +140,9 @@ PLUGIN_API int XPluginEnable(void)
 	CALLBACK_MANAGER = new CallbackManager();
 	int res = CALLBACK_MANAGER->LoadCallbackDLL(dllPath);
 	LOGGER.Log("---Server Init----");
-	unsigned short portIn(50556);
+	unsigned short portIn(50555);
+	unsigned short portOut(50556);
+
 	if (PLUGIN_CONFIGURATION["Server"].contains("InPort"))
 	{
 		portIn = PLUGIN_CONFIGURATION["Server"]["InPort"].get<unsigned short>();
@@ -150,7 +152,7 @@ PLUGIN_API int XPluginEnable(void)
 	}
 	if (PLUGIN_CONFIGURATION["Server"].contains("OutPort"))
 	{
-		portIn = PLUGIN_CONFIGURATION["Server"]["OutPort"].get<unsigned short>();
+		portOut = PLUGIN_CONFIGURATION["Server"]["OutPort"].get<unsigned short>();
 	}
 	else {
 		LOGGER.Log("[XPLMServer]Missing Config['Server']['OutPort']... defaulting to 50555\n");
@@ -158,18 +160,13 @@ PLUGIN_API int XPluginEnable(void)
 	if (PLUGIN_CONFIGURATION.contains("Server") && !PLUGIN_CONFIGURATION["Server"].is_null())
 	{
 		ConfigureBeacon();
-		if (PLUGIN_CONFIGURATION["Server"].contains("InIp") &&
-			PLUGIN_CONFIGURATION["Server"].contains("InPort"))
+		SERVER = new UdpServer();
+		if (const int serverInitRes = SERVER->Bind(portIn, portOut) != EXIT_SUCCESS)
 		{
-			unsigned short portOut(50555);
-			SERVER = new UdpServer();
-			if (const int serverInitRes = SERVER->Bind(portIn, portOut) != EXIT_SUCCESS)
-			{
-				LOGGER.Log("Initalization failed, Res was " + std::to_string(serverInitRes));
-				return 0;
-			}
-			XPLMRegisterFlightLoopCallback(InitializerCallback, -1.0f, nullptr);
+			LOGGER.Log("Initalization failed, Res was " + std::to_string(serverInitRes));
+			return 0;
 		}
+		XPLMRegisterFlightLoopCallback(InitializerCallback, -1.0f, nullptr);
 	}
 	acft_author = XPLMFindDataRef("sim/aircraft/view/acf_author");
 	acft_description = XPLMFindDataRef("sim/aircraft/view/acf_descrip");
