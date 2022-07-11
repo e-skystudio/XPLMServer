@@ -23,7 +23,6 @@
 	#include <unistd.h>
 	#include <errno.h>
 	#include <memory.h>
-	#include "Networking.h"
 
 	#define INVALID_SOCKET 0
 	#define ISVALIDSOCKET(s) ((s) > 0)
@@ -34,14 +33,15 @@
 
 #include <string>
 #include <fstream>
+#include "Networking.h"
 
 
 std::string GetCurrentDateTime();
 
 extern "C"{
 	struct Client {
-		std::string ip;
-		unsigned short port;
+		std::string Ip;
+		unsigned short Port;
 	};
 
 	class UdpServer
@@ -55,13 +55,14 @@ extern "C"{
 
 		~UdpServer();
 
-		int Bind(unsigned short const inPort, unsigned short const outPort, bool const beacon);
+		// int Bind(unsigned short const inPort, unsigned short const outPort, bool const beacon);
+		int Bind(unsigned short const inPort, unsigned short const outPort);
 		[[nodiscard]] std::string ReceiveData(int const maxSize,Client* outCli) const;
 		int SendData(std::string const &data, Client const& client) const;  // NOLINT(modernize-use-nodiscard)
 		[[nodiscard]] int BroadcastData(std::string const &data, u_short const port) const;
 		[[nodiscard]] int GetInboundPort() const;
 		[[nodiscard]] int GetOutboundPort() const;
-		[[nodiscard]] std::string GetLocalIp() const;
+		[[nodiscard]] static std::string GetLocalIp();
 	protected:
 		unsigned short m_inPort;
 		unsigned short m_outPort;
@@ -71,6 +72,9 @@ extern "C"{
 		SOCKET m_socket_beacon;
 		std::ofstream* m_logfile;
 		std::string m_local_ip;
+#ifdef IBM
+		WSADATA m_wsa;
+#endif
 	private:
 		void log(std::string const &data) const;
 	};

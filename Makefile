@@ -42,8 +42,14 @@ $(BUILDDIR)/DefaultCallbacks.o : $(DEFAULTCALLBACK)/src/Callbacks.cpp $(DEFAULTC
 	g++ $(CFLAGS) $(DEFAULTCALLBACK)/src/Callbacks.cpp -c -o $(BUILDDIR)/DefaultCallbacks.o
 
 ### Networking
-$(BUILDDIR)/libNetworking.a: $(BUILDDIR)/UDPServer.o | $(BUILDDIR)
-	ar rcs $(BUILDDIR)/libNetworking.a $(BUILDDIR)/UDPServer.o
+$(BUILDDIR)/libNetworking.a: $(BUILDDIR)/Networking.o $(BUILDDIR)/Beacon.o $(BUILDDIR)/UDPServer.o | $(BUILDDIR)
+	ar rcs $(BUILDDIR)/libNetworking.a  $(BUILDDIR)/Networking.o $(BUILDDIR)/Beacon.o $(BUILDDIR)/UDPServer.o
+
+$(BUILDDIR)/Beacon.o : $(NETWORKING)/src/Beacon.cpp | $(BUILDDIR)
+	g++ $(CFLAGS) $(NETWORKING)/src/Beacon.cpp -c -o $(BUILDDIR)/Beacon.o
+
+$(BUILDDIR)/Networking.o : $(NETWORKING)/src/Networking.o | $(BUILDDIR)
+	g++ $(CFLAGS) $(NETWORKING)/src/Networking.cpp -c -o $(BUILDDIR)/Networking.o
 
 $(BUILDDIR)/UDPServer.o : $(NETWORKING)/src/UDPServer.cpp | $(BUILDDIR)
 	g++ $(CFLAGS) $(NETWORKING)/src/UDPServer.cpp -c -o $(BUILDDIR)/UDPServer.o

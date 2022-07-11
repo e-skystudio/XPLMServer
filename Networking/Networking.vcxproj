@@ -158,10 +158,14 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="src\Beacon.cpp" />
+    <ClCompile Include="src\Networking.cpp" />
     <ClCompile Include="src\TCPServer.cpp" />
     <ClCompile Include="src\UDPServer.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="include\Beacon.h" />
+    <ClInclude Include="include\Networking.h" />
     <ClInclude Include="include\TCPServer.h" />
     <ClInclude Include="include\UDPServer.h" />
   </ItemGroup>

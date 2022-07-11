@@ -3,6 +3,8 @@
 #pragma warning(disable : 6054)
 
 #include "UDPServer.h" //avoid error on windows
+#include "Beacon.h"
+
 #include <sstream>
 #include <string>
 
@@ -32,7 +34,8 @@ static int XPLANE_SDK_VERSION;
 static std::string AIRCRAFT_ICAO;
 static std::string AIRCRAFT_AUTHOR;
 static std::string AIRCRAFT_DESCIPTION;
-static BeaconStatus BEACON_STS;
+static bool BEACON_ENABLED = false;
+static Beacon* BEACON;
 
 static XPLMDataRef acft_author = XPLMFindDataRef("sim/aircraft/view/acf_author");
 static XPLMDataRef acft_description = XPLMFindDataRef("sim/aircraft/view/acf_descrip");
@@ -42,6 +45,7 @@ float InitializerCallback(float elapsedSinceCall, float elapsedSinceLastTime, in
 float NetworkCallback(float elapsedSinceCall, float elapsedSinceLastTime, int inCounter, void* inRef);
 float ExportSubscribedDataref(float elapsedSinceCall, float elapsedSinceLastTime, int inCounter, void* inRef);
 float BeaconCallback(float elapsedSinceCall, float elapsedSinceLastTime, int inCounter, void* inRef);
+void ConfigureBeacon();
 
 void BroadCastData(const std::string& data)
 {
@@ -136,7 +140,9 @@ PLUGIN_API int XPluginEnable(void)
 	CALLBACK_MANAGER = new CallbackManager();
 	int res = CALLBACK_MANAGER->LoadCallbackDLL(dllPath);
 	LOGGER.Log("---Server Init----");
-	unsigned short portIn(50556);
+	unsigned short portIn(50555);
+	unsigned short portOut(50556);
+
 	if (PLUGIN_CONFIGURATION["Server"].contains("InPort"))
 	{
 		portIn = PLUGIN_CONFIGURATION["Server"]["InPort"].get<unsigned short>();
@@ -144,32 +150,23 @@ PLUGIN_API int XPluginEnable(void)
 	else {
 		LOGGER.Log("[XPLMServer]Missing Config['Server']['InPort']... defaulting to 50556\n");
 	}
-	unsigned short portOut(50555);
 	if (PLUGIN_CONFIGURATION["Server"].contains("OutPort"))
 	{
-		portIn = PLUGIN_CONFIGURATION["Server"]["OutPort"].get<unsigned short>();
+		portOut = PLUGIN_CONFIGURATION["Server"]["OutPort"].get<unsigned short>();
 	}
 	else {
 		LOGGER.Log("[XPLMServer]Missing Config['Server']['OutPort']... defaulting to 50555\n");
 	}
-	if (PLUGIN_CONFIGURATION.contains("Server"))
+	if (PLUGIN_CONFIGURATION.contains("Server") && !PLUGIN_CONFIGURATION["Server"].is_null())
 	{
-		if (PLUGIN_CONFIGURATION["Server"].contains("BeaconEnabled") && PLUGIN_CONFIGURATION["Server"].contains("BeaconPort"))
+		ConfigureBeacon();
+		SERVER = new UdpServer();
+		if (const int serverInitRes = SERVER->Bind(portIn, portOut) != EXIT_SUCCESS)
 		{
-			BEACON_STS.BeaconEnabled = PLUGIN_CONFIGURATION["Server"]["BeaconEnabled"].get<bool>();
-			BEACON_STS.BeaconPort = PLUGIN_CONFIGURATION["Server"]["BeaconPort"].get<unsigned short>();
+			LOGGER.Log("Initalization failed, Res was " + std::to_string(serverInitRes));
+			return 0;
 		}
-		if (PLUGIN_CONFIGURATION["Server"].contains("InIp") &&
-			PLUGIN_CONFIGURATION["Server"].contains("InPort"))
-		{
-			SERVER = new UdpServer();
-			if (const int serverInitRes = SERVER->Bind(portIn, portOut, BEACON_STS.BeaconEnabled) != EXIT_SUCCESS)
-			{
-				LOGGER.Log("Initalization failed, Res was " + std::to_string(serverInitRes));
-				return 0;
-			}
-			XPLMRegisterFlightLoopCallback(InitializerCallback, -1.0f, nullptr);
-		}
+		XPLMRegisterFlightLoopCallback(InitializerCallback, -1.0f, nullptr);
 	}
 	acft_author = XPLMFindDataRef("sim/aircraft/view/acf_author");
 	acft_description = XPLMFindDataRef("sim/aircraft/view/acf_descrip");
@@ -177,29 +174,55 @@ PLUGIN_API int XPluginEnable(void)
 	return 1;
 }
 
+// ReSharper disable once CppParameterMayBeConst
 PLUGIN_API void XPluginReceiveMessage(XPLMPluginID inFrom, int inMsg, void* inParam) 
 {
-	if (CALLBACK_MANAGER->GetSubscribedEventMap()->contains((unsigned int)inMsg))
+	if (CALLBACK_MANAGER->GetSubscribedEventMap()->contains(static_cast<unsigned>(inMsg)))
 	{
 		json ops;
 		ops["Operation"] = "Event Triggered";
-		ops["Value"] = CALLBACK_MANAGER->GetSubscribedEventMap()->at((unsigned int)inMsg);
+		ops["Value"] = CALLBACK_MANAGER->GetSubscribedEventMap()->at(static_cast<unsigned>(inMsg));
 		BroadCastData(ops.dump());
 	}
 }
 
+void ConfigureBeacon()
+{
+	if (PLUGIN_CONFIGURATION["Server"].contains("Beacon") && !PLUGIN_CONFIGURATION["Server"]["Beacon"].is_null())
+	{
+		json beaconConfig = PLUGIN_CONFIGURATION["Server"]["Beacon"];
+		if (beaconConfig.contains("Enabled") && !beaconConfig["Enabled"].is_null() && beaconConfig["Enabled"].get<bool>())
+		{
+			if (!beaconConfig.contains("Port") || beaconConfig["Port"].is_null()) return;
+			const auto beaconPort = beaconConfig["Port"].get<unsigned short>();
+			if (beaconConfig.contains("Broadcast") && !beaconConfig["Broadcast"].is_null())
+			{
+				BEACON = new Beacon();
+				if (BEACON->Configure("", beaconPort, true) == 0) BEACON_ENABLED = true;
+				return;
+			}
+			if (!beaconConfig.contains("Ip") || beaconConfig["Ip"].is_null()) return;
+			const auto beaconIp = beaconConfig["Ip"].get<std::string>();
+			BEACON = new Beacon();
+			if (BEACON->Configure(beaconIp, beaconPort, false) == 0) BEACON_ENABLED = true;
+		}
+	}
+}
+
+// ReSharper disable once CppParameterNeverUsed
 float InitializerCallback(float elapsedSinceCall, float elapsedSinceLastTime, int inCounter, void* inRef)
 {
 
 	XPLMRegisterFlightLoopCallback(NetworkCallback, -1.0f, nullptr);
 	XPLMRegisterFlightLoopCallback(ExportSubscribedDataref, -1.0f, nullptr);
-	if(BEACON_STS.BeaconEnabled)
+	if(BEACON_ENABLED)
 	{
 		XPLMRegisterFlightLoopCallback(BeaconCallback, -1.0f, nullptr);
 	}
  	return 0.0f;
 }
 
+// ReSharper disable once CppParameterNeverUsed
 float NetworkCallback(float elapsedSinceCall, float elapsedSinceLastTime, int inCounter, void* inRef)
 {
 	if(!CALLBACK_MANAGER->IsFF320InterfaceEnabled())
@@ -217,7 +240,7 @@ float NetworkCallback(float elapsedSinceCall, float elapsedSinceLastTime, int in
 	bool foundClient = false;
 	for (const auto& [ip, port] : CLIENTS)
 	{
-		if (ip == cli.ip && port == cli.port)
+		if (ip == cli.Ip && port == cli.Port)
 		{
 			foundClient = true;
 			break;
@@ -231,6 +254,7 @@ float NetworkCallback(float elapsedSinceCall, float elapsedSinceLastTime, int in
 	return -1.0f;
 }
 
+// ReSharper disable once CppParameterNeverUsed
 float ExportSubscribedDataref(float elapsedSinceCall, float elapsedSinceLastTime, int inCounter, void* inRef)
 {
 	const auto* p_subscribedDatarefMap = CALLBACK_MANAGER->GetSubscribedDataref();
@@ -251,6 +275,7 @@ float ExportSubscribedDataref(float elapsedSinceCall, float elapsedSinceLastTime
 	return 0.25f;
 }
 
+// ReSharper disable once CppParameterNeverUsed
 float BeaconCallback(float elapsedSinceCall, float elapsedSinceLastTime, int inCounter, void* inRef)
 {
 #pragma region GettingInfoAboutLoadedAircraft
@@ -280,6 +305,6 @@ float BeaconCallback(float elapsedSinceCall, float elapsedSinceLastTime, int inC
 		{"AircraftICAO", aircraft_icao},
 	};
 	BroadCastData(jdataOut.dump());
-	int _ = SERVER->BroadcastData(jdataOut.dump(), BEACON_STS.BeaconPort);
+	int _ = BEACON->SendData(jdataOut.dump());
 	return 1.0f;
 }

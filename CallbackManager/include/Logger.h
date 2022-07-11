@@ -26,7 +26,7 @@ public:
 	~Logger();
 	std::string GetModuleName();
 	void SetModuleName(std::string module);
-	virtual void Log(std::string message, Logger::Severity severity= Logger::Severity::DEBUG);
+	virtual void Log(std::string const& message, const Logger::Severity severity = Logger::Severity::DEBUG);
 	const char* CurrentDateTime();
 	void operator+=(const std::string& message);
 protected:
