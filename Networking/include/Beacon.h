@@ -60,7 +60,7 @@ extern "C"{
 		sockaddr_in m_si_other;
 		int m_slen = sizeof(m_si_other);
 	private:
-		void log(std::string const &data) const;
+		void Log(std::string const &data) const;
 	};
 
 }

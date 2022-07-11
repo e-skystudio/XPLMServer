@@ -44,7 +44,9 @@ void Logger::Log(std::string const &message, const Logger::Severity severity)
 		return;
 	}
 	*m_logfile << ss.str();
+#ifdef IBM
 	OutputDebugString(reinterpret_cast<LPCWSTR>(ss.str().c_str()));
+#endif
 	m_logfile->flush();
 }
 
