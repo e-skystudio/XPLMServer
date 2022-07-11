@@ -116,7 +116,7 @@ int UdpServer::SendData(std::string const &data, Client const& client) const
 	#ifdef IBM
 	sprintf_s(log_buffer, 4150, "[%s:%d]<<<'%s'(%d byte(s))", client.Ip.c_str(), client.Port, data.c_str(), bytes);
 	#else
-	sprintf(log_buffer, "[%s:%d]<<<'%s'(%d byte(s))", client.ip.c_str(), client.port, data.c_str(), bytes);
+	sprintf(log_buffer, "[%s:%d]<<<'%s'(%d byte(s))", client.Ip.c_str(), client.Port, data.c_str(), bytes);
 	#endif
 	log(std::string(log_buffer));
 	if (bytes <= 0)
