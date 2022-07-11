@@ -49,16 +49,16 @@ extern "C"{
 		Beacon& operator=(const Beacon&&) = delete;
 		~Beacon();
 
-		int Configure(std::string const targetIp, unsigned short const outPort, bool const broadcast = false);
+		int Configure(std::string const& targetIp, unsigned short const outPort, bool const broadcast = false);
 		int SendData(std::string const &data) const;  // NOLINT(modernize-use-nodiscard)
-		[[nodiscard]] std::string GetLocalIp() const;
 	protected:
-		unsigned short m_outPort;
-		std::string m_ip;
-		SOCKET m_socket;
+#ifdef IBM
+		WSADATA m_wsa = WSAData(0x00);
+#endif
+		SOCKET m_socket{INVALID_SOCKET};
 		std::ofstream* m_logfile;
-		std::string m_local_ip;
-        struct sockaddr_in* m_targetAddress;
+		sockaddr_in m_si_other;
+		int m_slen = sizeof(m_si_other);
 	private:
 		void log(std::string const &data) const;
 	};

@@ -10,6 +10,8 @@ UdpServer::UdpServer() :
 	m_local_ip("")
 
 {
+
+
 	m_logfile = new std::ofstream("XPLMServer_Network.log", std::ios::out);
 	log("Loging Started");
 }
@@ -21,6 +23,10 @@ UdpServer::~UdpServer() = default;
 
 int UdpServer::Bind(unsigned short const inPort, unsigned short const outPort)
 {
+#ifdef IBM
+	if (WSAStartup(MAKEWORD(2, 2), &m_wsa) != 0)
+		return 0x01;
+#endif
     m_inPort = inPort;
 	m_outPort = outPort;
     addrinfo hints = {};
@@ -76,8 +82,8 @@ std::string UdpServer::ReceiveData(int const maxSize,Client* outCli) const
 		client_len, address_buffer, sizeof(address_buffer),
 		service_buffer, sizeof(service_buffer),
 		NI_NUMERICHOST | NI_NUMERICSERV);
-	outCli->ip = std::string(address_buffer);
-	outCli->port = m_outPort;
+	outCli->Ip = std::string(address_buffer);
+	outCli->Port = m_outPort;
 	std::string s_out(read);
 	s_out.resize(bytes_received);
 	char logBuffer[4150];
@@ -93,7 +99,7 @@ std::string UdpServer::ReceiveData(int const maxSize,Client* outCli) const
 int UdpServer::SendData(std::string const &data, Client const& client) const
 {
 	sockaddr_in send_address = {};
-	int res = inet_pton(AF_INET, client.ip.c_str(), &send_address.sin_addr.s_addr);
+	int res = inet_pton(AF_INET, client.Ip.c_str(), &send_address.sin_addr.s_addr);
 	if (res < 0)
 	{
 		log("Error message with InetPton() : " + std::to_string(GETSOCKETERRNO()));
@@ -103,12 +109,12 @@ int UdpServer::SendData(std::string const &data, Client const& client) const
 		log("Client address is not valid !");
 	}
 	send_address.sin_family = AF_INET;
-	send_address.sin_port = htons(client.port);
+	send_address.sin_port = htons(client.Port);
 	int bytes = sendto(m_socket_emit, data.c_str(), static_cast<int>(data.length()), 0, 
 		reinterpret_cast<sockaddr*>(&send_address), static_cast<int>(sizeof(struct sockaddr_in)));
 	char log_buffer[4150];
 	#ifdef IBM
-	sprintf_s(log_buffer, 4150, "[%s:%d]<<<'%s'(%d byte(s))", client.ip.c_str(), client.port, data.c_str(), bytes);
+	sprintf_s(log_buffer, 4150, "[%s:%d]<<<'%s'(%d byte(s))", client.Ip.c_str(), client.Port, data.c_str(), bytes);
 	#else
 	sprintf(log_buffer, "[%s:%d]<<<'%s'(%d byte(s))", client.ip.c_str(), client.port, data.c_str(), bytes);
 	#endif

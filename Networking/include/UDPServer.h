@@ -40,8 +40,8 @@ std::string GetCurrentDateTime();
 
 extern "C"{
 	struct Client {
-		std::string ip;
-		unsigned short port;
+		std::string Ip;
+		unsigned short Port;
 	};
 
 	class UdpServer
@@ -72,6 +72,9 @@ extern "C"{
 		SOCKET m_socket_beacon;
 		std::ofstream* m_logfile;
 		std::string m_local_ip;
+#ifdef IBM
+		WSADATA m_wsa;
+#endif
 	private:
 		void log(std::string const &data) const;
 	};

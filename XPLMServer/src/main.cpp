@@ -148,7 +148,6 @@ PLUGIN_API int XPluginEnable(void)
 	else {
 		LOGGER.Log("[XPLMServer]Missing Config['Server']['InPort']... defaulting to 50556\n");
 	}
-	unsigned short portOut(50555);
 	if (PLUGIN_CONFIGURATION["Server"].contains("OutPort"))
 	{
 		portIn = PLUGIN_CONFIGURATION["Server"]["OutPort"].get<unsigned short>();
@@ -162,6 +161,7 @@ PLUGIN_API int XPluginEnable(void)
 		if (PLUGIN_CONFIGURATION["Server"].contains("InIp") &&
 			PLUGIN_CONFIGURATION["Server"].contains("InPort"))
 		{
+			unsigned short portOut(50555);
 			SERVER = new UdpServer();
 			if (const int serverInitRes = SERVER->Bind(portIn, portOut) != EXIT_SUCCESS)
 			{
@@ -191,23 +191,26 @@ PLUGIN_API void XPluginReceiveMessage(XPLMPluginID inFrom, int inMsg, void* inPa
 
 void ConfigureBeacon()
 {
-	if(PLUGIN_CONFIGURATION["Server"].contains("Beacon") && !PLUGIN_CONFIGURATION["Beacon"].is_null())
+	if (PLUGIN_CONFIGURATION["Server"].contains("Beacon"))
 	{
-		json beaconConfig = PLUGIN_CONFIGURATION["Server"]["Beacon"];
-		if(beaconConfig.contains("Enabled") && !beaconConfig["Enabled"].is_null() && beaconConfig["Enabled"].get<bool>())
+		if (!PLUGIN_CONFIGURATION["Server"]["Beacon"].is_null())
 		{
-			if(!beaconConfig.contains("Port") || beaconConfig["Port"].is_null()) return;
-			const auto beaconPort = beaconConfig["Port"].get<unsigned short>();
-			if(beaconConfig.contains("Enabled") && beaconConfig["Enabled"].is_null())
+			json beaconConfig = PLUGIN_CONFIGURATION["Server"]["Beacon"];
+			if (beaconConfig.contains("Enabled") && !beaconConfig["Enabled"].is_null() && beaconConfig["Enabled"].get<bool>())
 			{
+				if (!beaconConfig.contains("Port") || beaconConfig["Port"].is_null()) return;
+				const auto beaconPort = beaconConfig["Port"].get<unsigned short>();
+				if (beaconConfig.contains("Enabled") && beaconConfig["Enabled"].is_null())
+				{
+					BEACON = new Beacon();
+					if (BEACON->Configure("", beaconPort, true) == 0) BEACON_ENABLED = true;
+					return;
+				}
+				if (!beaconConfig.contains("Ip") || beaconConfig["Ip"].is_null()) return;
+				const auto beaconIp = beaconConfig["Ip"].get<std::string>();
 				BEACON = new Beacon();
-				if(BEACON->Configure("", beaconPort, true) == 0) BEACON_ENABLED = true;
-				return;
+				if (BEACON->Configure(beaconIp, beaconPort, false) == 0) BEACON_ENABLED = true;
 			}
-			if(!beaconConfig.contains("Ip") || beaconConfig["Ip"].is_null()) return;
-			const auto beaconIp = beaconConfig["Ip"].get<std::string>();
-			BEACON = new Beacon();
-			if(BEACON->Configure(beaconIp, beaconPort, false) == 0) BEACON_ENABLED = true;
 		}
 	}
 }
@@ -243,7 +246,7 @@ float NetworkCallback(float elapsedSinceCall, float elapsedSinceLastTime, int in
 	bool foundClient = false;
 	for (const auto& [ip, port] : CLIENTS)
 	{
-		if (ip == cli.ip && port == cli.port)
+		if (ip == cli.Ip && port == cli.Port)
 		{
 			foundClient = true;
 			break;
