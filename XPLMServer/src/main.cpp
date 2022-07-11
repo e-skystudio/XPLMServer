@@ -191,26 +191,23 @@ PLUGIN_API void XPluginReceiveMessage(XPLMPluginID inFrom, int inMsg, void* inPa
 
 void ConfigureBeacon()
 {
-	if (PLUGIN_CONFIGURATION["Server"].contains("Beacon"))
+	if (PLUGIN_CONFIGURATION["Server"].contains("Beacon") && !PLUGIN_CONFIGURATION["Server"]["Beacon"].is_null())
 	{
-		if (!PLUGIN_CONFIGURATION["Server"]["Beacon"].is_null())
+		json beaconConfig = PLUGIN_CONFIGURATION["Server"]["Beacon"];
+		if (beaconConfig.contains("Enabled") && !beaconConfig["Enabled"].is_null() && beaconConfig["Enabled"].get<bool>())
 		{
-			json beaconConfig = PLUGIN_CONFIGURATION["Server"]["Beacon"];
-			if (beaconConfig.contains("Enabled") && !beaconConfig["Enabled"].is_null() && beaconConfig["Enabled"].get<bool>())
+			if (!beaconConfig.contains("Port") || beaconConfig["Port"].is_null()) return;
+			const auto beaconPort = beaconConfig["Port"].get<unsigned short>();
+			if (beaconConfig.contains("Broadcast") && !beaconConfig["Broadcast"].is_null())
 			{
-				if (!beaconConfig.contains("Port") || beaconConfig["Port"].is_null()) return;
-				const auto beaconPort = beaconConfig["Port"].get<unsigned short>();
-				if (beaconConfig.contains("Enabled") && beaconConfig["Enabled"].is_null())
-				{
-					BEACON = new Beacon();
-					if (BEACON->Configure("", beaconPort, true) == 0) BEACON_ENABLED = true;
-					return;
-				}
-				if (!beaconConfig.contains("Ip") || beaconConfig["Ip"].is_null()) return;
-				const auto beaconIp = beaconConfig["Ip"].get<std::string>();
 				BEACON = new Beacon();
-				if (BEACON->Configure(beaconIp, beaconPort, false) == 0) BEACON_ENABLED = true;
+				if (BEACON->Configure("", beaconPort, true) == 0) BEACON_ENABLED = true;
+				return;
 			}
+			if (!beaconConfig.contains("Ip") || beaconConfig["Ip"].is_null()) return;
+			const auto beaconIp = beaconConfig["Ip"].get<std::string>();
+			BEACON = new Beacon();
+			if (BEACON->Configure(beaconIp, beaconPort, false) == 0) BEACON_ENABLED = true;
 		}
 	}
 }

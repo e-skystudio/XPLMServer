@@ -182,7 +182,7 @@ int CallbackManager::LoadCallbackDLL(std::string inDllPath)
 		}
 #ifdef _DEBUG
 		m_logger.Log("loading of '" + std::string(callback1->function) + "' as '" +
-			std::string(callback1->operation) + "' sucessfull!", Logger::Severity::DEBUG);
+		             std::string(callback1->operation) + "' sucessfull!", Logger::Severity::DEBUG);
 #endif
 	}
 	m_logger.Log("LoadCallbackDLL...[FINISHED]");

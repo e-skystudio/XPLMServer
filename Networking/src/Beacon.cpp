@@ -73,6 +73,7 @@ int Beacon::SendData(std::string const &data) const
 
 void Beacon::log(std::string const &data) const
 {
+    OutputDebugString(reinterpret_cast<LPCWSTR>(data.c_str()));
 	*m_logfile << GetCurrentDateTime() << "\t" << "BEACON" << "\t" << data << "\n";
 	m_logfile->flush();
 }
