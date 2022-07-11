@@ -177,13 +177,14 @@ PLUGIN_API int XPluginEnable(void)
 	return 1;
 }
 
+// ReSharper disable once CppParameterMayBeConst
 PLUGIN_API void XPluginReceiveMessage(XPLMPluginID inFrom, int inMsg, void* inParam) 
 {
-	if (CALLBACK_MANAGER->GetSubscribedEventMap()->contains((unsigned int)inMsg))
+	if (CALLBACK_MANAGER->GetSubscribedEventMap()->contains(static_cast<unsigned>(inMsg)))
 	{
 		json ops;
 		ops["Operation"] = "Event Triggered";
-		ops["Value"] = CALLBACK_MANAGER->GetSubscribedEventMap()->at((unsigned int)inMsg);
+		ops["Value"] = CALLBACK_MANAGER->GetSubscribedEventMap()->at(static_cast<unsigned>(inMsg));
 		BroadCastData(ops.dump());
 	}
 }
@@ -196,7 +197,7 @@ void ConfigureBeacon()
 		if(beaconConfig.contains("Enabled") && !beaconConfig["Enabled"].is_null() && beaconConfig["Enabled"].get<bool>())
 		{
 			if(!beaconConfig.contains("Port") || beaconConfig["Port"].is_null()) return;
-			unsigned short beaconPort = beaconConfig["Port"].get<unsigned short>();
+			const auto beaconPort = beaconConfig["Port"].get<unsigned short>();
 			if(beaconConfig.contains("Enabled") && beaconConfig["Enabled"].is_null())
 			{
 				BEACON = new Beacon();
@@ -204,14 +205,14 @@ void ConfigureBeacon()
 				return;
 			}
 			if(!beaconConfig.contains("Ip") || beaconConfig["Ip"].is_null()) return;
-			std::string beaconIp = beaconConfig["Ip"].get<std::string>();
+			const auto beaconIp = beaconConfig["Ip"].get<std::string>();
 			BEACON = new Beacon();
 			if(BEACON->Configure(beaconIp, beaconPort, false) == 0) BEACON_ENABLED = true;
-			return;
 		}
 	}
 }
 
+// ReSharper disable once CppParameterNeverUsed
 float InitializerCallback(float elapsedSinceCall, float elapsedSinceLastTime, int inCounter, void* inRef)
 {
 
@@ -224,6 +225,7 @@ float InitializerCallback(float elapsedSinceCall, float elapsedSinceLastTime, in
  	return 0.0f;
 }
 
+// ReSharper disable once CppParameterNeverUsed
 float NetworkCallback(float elapsedSinceCall, float elapsedSinceLastTime, int inCounter, void* inRef)
 {
 	if(!CALLBACK_MANAGER->IsFF320InterfaceEnabled())
@@ -255,6 +257,7 @@ float NetworkCallback(float elapsedSinceCall, float elapsedSinceLastTime, int in
 	return -1.0f;
 }
 
+// ReSharper disable once CppParameterNeverUsed
 float ExportSubscribedDataref(float elapsedSinceCall, float elapsedSinceLastTime, int inCounter, void* inRef)
 {
 	const auto* p_subscribedDatarefMap = CALLBACK_MANAGER->GetSubscribedDataref();
@@ -275,6 +278,7 @@ float ExportSubscribedDataref(float elapsedSinceCall, float elapsedSinceLastTime
 	return 0.25f;
 }
 
+// ReSharper disable once CppParameterNeverUsed
 float BeaconCallback(float elapsedSinceCall, float elapsedSinceLastTime, int inCounter, void* inRef)
 {
 #pragma region GettingInfoAboutLoadedAircraft

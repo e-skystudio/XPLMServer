@@ -6,7 +6,8 @@ UdpServer::UdpServer() :
     m_bind_address{nullptr},
     m_socket_listen(INVALID_SOCKET),
     m_socket_emit(INVALID_SOCKET),
-	m_socket_beacon(INVALID_SOCKET)
+	m_socket_beacon(INVALID_SOCKET),
+	m_local_ip("")
 
 {
 	m_logfile = new std::ofstream("XPLMServer_Network.log", std::ios::out);
@@ -26,7 +27,7 @@ int UdpServer::Bind(unsigned short const inPort, unsigned short const outPort)
     hints.ai_family = AF_INET;
 	hints.ai_socktype = SOCK_DGRAM;
 	hints.ai_flags = AI_PASSIVE;
-	int _ = getaddrinfo(0, std::to_string(m_inPort).c_str(), &hints, &m_bind_address);
+	int _ = getaddrinfo(nullptr, std::to_string(m_inPort).c_str(), &hints, &m_bind_address);
     m_socket_listen = socket(m_bind_address->ai_family, m_bind_address->ai_socktype, m_bind_address->ai_protocol);
 	m_socket_emit = socket(m_bind_address->ai_family, m_bind_address->ai_socktype, m_bind_address->ai_protocol);
 	if (bind(m_socket_listen, m_bind_address->ai_addr, static_cast<int>(m_bind_address->ai_addrlen)))
@@ -35,11 +36,6 @@ int UdpServer::Bind(unsigned short const inPort, unsigned short const outPort)
 		return 0x02;
 	}
 	log("bind() success on " + std::to_string(m_inPort) + "!");
-	#ifdef IBM
-	m_local_ip = std::string(inet_ntoa(*reinterpret_cast<in_addr*>(*host_entry->h_addr_list)));  // NOLINT(concurrency-mt-unsafe)
-	#else
-	m_local_ip = "";
-	#endif
 	return 0x00;
 }
 
@@ -164,13 +160,9 @@ int UdpServer::GetOutboundPort() const
 	return m_outPort;
 }
 
-std::string UdpServer::GetLocalIp() const
+std::string UdpServer::GetLocalIp()
 {
-	#ifdef IBM
-	return m_local_ip;
-	#else
-	return findIp()[0];
-	#endif
+	return FindIp()[0];
 }
 
 std::string GetCurrentDateTime()

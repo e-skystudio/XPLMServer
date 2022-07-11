@@ -21,12 +21,24 @@
     <ClCompile Include="src\UDPServer.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="src\Beacon.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Networking.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="include\TCPServer.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="include\UDPServer.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="include\Beacon.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="include\Networking.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

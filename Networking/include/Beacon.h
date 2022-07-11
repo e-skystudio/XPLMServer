@@ -43,10 +43,10 @@ extern "C"{
 	{
 	public:
 		Beacon();
-		Beacon(const UdpServer&) = delete;
-		Beacon(const UdpServer&&) = delete;
-		Beacon& operator=(const UdpServer&) = delete;
-		Beacon& operator=(const UdpServer&&) = delete;
+		Beacon(const Beacon&) = delete;
+		Beacon(const Beacon&&) = delete;
+		Beacon& operator=(const Beacon&) = delete;
+		Beacon& operator=(const Beacon&&) = delete;
 		~Beacon();
 
 		int Configure(std::string const targetIp, unsigned short const outPort, bool const broadcast = false);

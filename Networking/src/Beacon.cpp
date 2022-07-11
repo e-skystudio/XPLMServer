@@ -64,7 +64,7 @@ int Beacon::SendData(std::string const &data) const
 
 	char log_buffer[4150];
 	#ifdef IBM
-	sprintf_s(log_buffer, 4150, "[%s:%d]<<<'%s'(%d byte(s))", client.ip.c_str(), client.port, data.c_str(), bytes);
+	sprintf_s(log_buffer, 4150, "[BEACON]>>>'%s'(%d byte(s))", data.c_str(), bytes);
 	#else
 	sprintf(log_buffer, "[BEACON]>>>'%s'(%d byte(s))", data.c_str(), bytes);
 	#endif
