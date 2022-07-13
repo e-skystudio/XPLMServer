@@ -142,6 +142,7 @@ public:
 	SharedValuesInterface* GetFF320Interface() const;
 	bool InitFF320Interface();
 	bool IsFF320InterfaceEnabled();
+	std::queue<FFDataref*>* GetFFDataref();
 	// void BindFF320Callback(SharedDataUpdateProc callback);
 protected:
 	std::map<std::string, Callback>* m_callbacks;
@@ -150,7 +151,8 @@ protected:
 	std::map<std::string, AbstractDataref*>* m_subscribedDatarefs; //The datarefs that value is returned per timed basis
 	std::map<std::string, ConstantDataref>* m_constDataref; //Datarefs set as constant (value are copied from the key)
 	std::map<unsigned int, std::string>* m_subscribedEvent;
-	std::queue<ConstantDataref>* m_ff320_datarefs;
+	// std::queue<ConstantDataref>* m_ff320_const_datarefs;
+	std::queue<FFDataref*>* m_ff320_datarefs;
 	Logger m_logger; /* The logger */
 	unsigned int m_subscirbeDatarefCount;
 	#ifdef IBM

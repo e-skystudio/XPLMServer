@@ -10,22 +10,43 @@
 void FF320_Callback(double step, void* tag)
 {
 	CallbackManager* cm = (CallbackManager*)tag;
+	cm->Log("0x11");
 	cm->ExecuteConstantDataref();
+	cm->Log("0x12");
 
 	std::map<std::string, AbstractDataref*>* p_datarefs = cm->GetNamedDataref();
+	cm->Log("0x13");
+	std::queue<FFDataref *>* p_datarefs2 = cm->GetFFDataref();
+	cm->Log("0x14");
 
-	for(auto &dataref : *p_datarefs)
+	while(!p_datarefs2->empty())
 	{
-		if(dataref.second->DatarefType == DatarefType::FFDataref)
-		{
-			FFDataref* ffdata = (FFDataref*)dataref.second;
-			if(ffdata->NeedUpdate())
-			{
-				cm->Log(ffdata->GetName() + " need update ? " + std::to_string(ffdata->NeedUpdate()));
-				ffdata->DoSetValue(ffdata->GetTargetValue());
-			}
-		}
+		cm->Log("0x01");
+		FFDataref* dataref = p_datarefs2->front();
+		cm->Log("0x02");
+		dataref->DoSetValue(dataref->GetTargetValue());
+		cm->Log("0x03");
+		p_datarefs2->pop();
+		cm->Log("0x04");
 	}
+	
+	// for(auto &dataref : *p_datarefs)
+	// {
+	// 	if(dataref.second->DatarefType == DatarefType::FFDataref)
+	// 	{
+	// 		FFDataref* ffdata = (FFDataref*)dataref.second;
+	// 		if(ffdata->NeedUpdate())
+	// 		{
+	// 			cm->Log(ffdata->GetName() + " need update ? " + std::to_string(ffdata->NeedUpdate()));
+	// 			ffdata->DoSetValue(ffdata->GetTargetValue());
+	// 		}
+	// 	}
+	// }
+}
+
+std::queue<FFDataref*>* CallbackManager::GetFFDataref()
+{
+	return m_ff320_datarefs;
 }
 
 CallbackManager::CallbackManager() :
@@ -37,7 +58,8 @@ CallbackManager::CallbackManager() :
 	m_ff320 = new SharedValuesInterface();
 	m_callbacks = new std::map<std::string, Callback>();
 	m_namedDatarefs = new std::map<std::string, AbstractDataref*>();
-	m_ff320_datarefs = new std::queue<ConstantDataref>();
+	m_ff320_datarefs = new std::queue<FFDataref*>();
+	// m_ff320_const_datarefs = new std::queue<ConstantDataref>();
 	m_subscribedDatarefs = new std::map<std::string, AbstractDataref*>();
 	m_constDataref = new std::map<std::string, ConstantDataref>();
 	m_subscribedEvent = new std::map<unsigned int, std::string>{

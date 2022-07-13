@@ -257,20 +257,42 @@ int SetDatarefValue(json* jdata, CallbackManager* callback)
 	}
 	std::string link = jdata->at("Link").get<std::string>();
 	callback->Log("Will be setting dataref at location :'" + link + "' to value + :'" + value + "'");
-	auto p_dataref = new Dataref();
-	p_dataref->Load(link);
-	if (!jdata->contains("Type") || jdata->at("Type").is_null() ||
-		jdata->at("Type").type() != json::value_t::string ||
-		jdata->at("Type").get<std::string>() == "UNKNWON")
+	if(link.find("Aircraft") != std::string::npos && link.find(".") != std::string::npos)
+    {
+		SharedValuesInterface* ff320 = callback->GetFF320Interface();
+        auto p_dataref = new FFDataref(ff320);
+		p_dataref->Load(link);
+		FFDataref::Type dType = p_dataref->LoadType();
+		callback->Log("FFDataref Type is " + std::to_string((int)dType));
+		jdata->emplace("ID", p_dataref->GetID());
+		jdata->emplace("Type", p_dataref->GetType());
+		jdata->emplace("Flag", p_dataref->GetFlag());
+		jdata->emplace("Unit", p_dataref->GetUnit());
+		jdata->emplace("Name", p_dataref->GetName());
+		callback->Log("1");
+		jdata->emplace("Description", p_dataref->GetDescription());
+		callback->Log("2");
+		callback->GetFFDataref()->push(p_dataref);
+		callback->Log("3");
+    }
+	else
 	{
-		Dataref::Type type = p_dataref->LoadType();
-		callback->Log("Dataref is of type '" + std::to_string((int)type) + "'");
+		callback->Log("REGULAR DATAREF FOUND !");
+		auto p_dataref = new Dataref();
+		p_dataref->Load(link);
+		if (!jdata->contains("Type") || jdata->at("Type").is_null() ||
+			jdata->at("Type").type() != json::value_t::string ||
+			jdata->at("Type").get<std::string>() == "UNKNWON")
+		{
+			Dataref::Type type = p_dataref->LoadType();
+			callback->Log("Dataref is of type '" + std::to_string((int)type) + "'");
+		}
+		else {
+			std::string type = jdata->at("Type").get<std::string>();
+			p_dataref->SetType(type);
+		}
+		p_dataref->SetValue(value);
 	}
-	else {
-		std::string type = jdata->at("Type").get<std::string>();
-		p_dataref->SetType(type);
-	}
-	p_dataref->SetValue(value);
 	return 0;
 }
 
@@ -331,7 +353,9 @@ int LoadRegisterDataref(json* jdata, CallbackManager* callback)
 
 int InitFlightFactorA320(json* jdata, CallbackManager* callback)
 {
+	callback->Log("FFA32F INIT START");
 	bool res = callback->InitFF320Interface();
+	callback->Log("FFA32F INIT STOP WITH CODE : " + std::to_string(res));
 	return res ? 0 : 1;
 }
 
