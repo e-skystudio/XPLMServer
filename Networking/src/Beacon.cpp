@@ -41,7 +41,7 @@ int Beacon::Configure(std::string const& targetIp, unsigned short const outPort,
         }
     }
     m_si_other.sin_family = AF_INET;
-    m_si_other.sin_port = htons(55888);
+    m_si_other.sin_port = htons(outPort);
     Log("[BEACON] Sending to : " + targetIp + ":" + std::to_string(outPort));
     return 0x00;
 
