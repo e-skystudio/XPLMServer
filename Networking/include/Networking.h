@@ -13,7 +13,7 @@
 #include <sys/ioctl.h>
 #include <netdb.h>
 #include <arpa/inet.h>
-#include <iostrem>
+#include <iostream>
 #endif
 #include <fstream>
 #include <string>
