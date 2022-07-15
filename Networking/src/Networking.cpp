@@ -60,7 +60,7 @@ std::string GetCurrentDateTime()
     sprintf(time, "%02d/%02d/%04d %02d:%02d:%02d", ltm->tm_mday, ltm->tm_mon, ltm->tm_year,
         ltm->tm_hour, ltm->tm_min, ltm->tm_sec);
 #endif
-    return { time };
+    return std::string(time);
 }
 
 void DebugLog(std::string const& data, std::ofstream* logfile)

@@ -157,7 +157,7 @@ int CallbackManager::LoadCallbackDLL(const std::string& inDllPath)
 		#ifdef IBM
 		 	p_callback = reinterpret_cast<Callback>(GetProcAddress(m_hDLL, callback1->Function.c_str()));
 		#else
-			p_callback = reinterpret_cast<Callback>(dlsym(m_hDLL, callback1->function.c_str()));
+			p_callback = reinterpret_cast<Callback>(dlsym(m_hDLL, callback1->Function.c_str()));
 		#endif
 		if (p_callback == nullptr)
 		{

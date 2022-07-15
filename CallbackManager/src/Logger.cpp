@@ -40,7 +40,7 @@ void Logger::Log(std::string const& message, const Logger::Severity severity) co
 #ifdef IBM
 	OutputDebugStringA(ss.str().c_str());
 #else
-	std::clog << debug.str();
+	std::clog << ss.str();
 #endif
 	if (m_logfile == nullptr || m_logfile->fail())
 	{
