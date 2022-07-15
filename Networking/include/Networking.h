@@ -13,9 +13,13 @@
 #include <sys/ioctl.h>
 #include <netdb.h>
 #include <arpa/inet.h>
-
+#include <iostream>
 #endif
+#include <fstream>
 #include <string>
 #include <vector>
+#include <sstream>
 
 std::vector<std::string> FindIp();
+std::string GetCurrentDateTime();
+void DebugLog(std::string const& data, std::ofstream* logfile);

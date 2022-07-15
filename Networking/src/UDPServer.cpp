@@ -13,7 +13,7 @@ UdpServer::UdpServer() :
 
 
 	m_logfile = new std::ofstream("XPLMServer_Network.log", std::ios::out);
-	log("Loging Started");
+	Log("Loging Started");
 }
 
 
@@ -38,10 +38,10 @@ int UdpServer::Bind(unsigned short const inPort, unsigned short const outPort)
 	m_socket_emit = socket(m_bind_address->ai_family, m_bind_address->ai_socktype, m_bind_address->ai_protocol);
 	if (bind(m_socket_listen, m_bind_address->ai_addr, static_cast<int>(m_bind_address->ai_addrlen)))
 	{
-		log("bind() failed on" + std::to_string(m_inPort) + "! Error code: " + std::to_string(GETSOCKETERRNO()));
+		Log("bind() failed on" + std::to_string(m_inPort) + "! Error code: " + std::to_string(GETSOCKETERRNO()));
 		return 0x02;
 	}
-	log("bind() success on " + std::to_string(m_inPort) + "!");
+	Log("bind() success on " + std::to_string(m_inPort) + "!");
 	return 0x00;
 }
 
@@ -49,7 +49,7 @@ std::string UdpServer::ReceiveData(int const maxSize,Client* outCli) const
 {
     if (maxSize < 0)
 	{
-		log("MaxSize < 0! ERROR");
+		Log("MaxSize < 0! ERROR");
 		return {};
 	}
     sockaddr_storage client_address;  // NOLINT(cppcoreguidelines-pro-type-member-init)
@@ -74,7 +74,7 @@ std::string UdpServer::ReceiveData(int const maxSize,Client* outCli) const
 		reinterpret_cast<sockaddr*>(&client_address), &client_len);
 	if (bytes_received <= 0)
 	{
-		log(">>> " + std::to_string(bytes_received) + "bytes received");
+		Log(">>> " + std::to_string(bytes_received) + "bytes received");
 	}
 	char address_buffer[100];
 	char service_buffer[100];
@@ -92,7 +92,7 @@ std::string UdpServer::ReceiveData(int const maxSize,Client* outCli) const
 	#else
 	sprintf(logBuffer, "[%s:%s]>>>'%s'(%d byte(s))", address_buffer, service_buffer, s_out.c_str(), bytes_received);
 	#endif
-	log(std::string(logBuffer));
+	Log(std::string(logBuffer));
 	return s_out;
 }
 
@@ -102,11 +102,11 @@ int UdpServer::SendData(std::string const &data, Client const& client) const
 	int res = inet_pton(AF_INET, client.Ip.c_str(), &send_address.sin_addr.s_addr);
 	if (res < 0)
 	{
-		log("Error message with InetPton() : " + std::to_string(GETSOCKETERRNO()));
+		Log("Error message with InetPton() : " + std::to_string(GETSOCKETERRNO()));
 	}
 	else if (res == 0)
 	{
-		log("Client address is not valid !");
+		Log("Client address is not valid !");
 	}
 	send_address.sin_family = AF_INET;
 	send_address.sin_port = htons(client.Port);
@@ -118,10 +118,10 @@ int UdpServer::SendData(std::string const &data, Client const& client) const
 	#else
 	sprintf(log_buffer, "[%s:%d]<<<'%s'(%d byte(s))", client.Ip.c_str(), client.Port, data.c_str(), bytes);
 	#endif
-	log(std::string(log_buffer));
+	Log(std::string(log_buffer));
 	if (bytes <= 0)
 	{
-		log("Error message : " + std::to_string(GETSOCKETERRNO()));
+		Log("Error message : " + std::to_string(GETSOCKETERRNO()));
 	}
 	return bytes;
 }
@@ -138,7 +138,7 @@ int UdpServer::BroadcastData(std::string const &data, u_short const port) const
 		reinterpret_cast<sockaddr*>(&send_address), static_cast<int>(sizeof(struct sockaddr_in)));
 	if (bytes < 0)
 	{
-		log("There was an error during broadcast : " + std::to_string(GETSOCKETERRNO()));
+		Log("There was an error during broadcast : " + std::to_string(GETSOCKETERRNO()));
 	}
 	char log_buffer[4150];
 	#ifdef IBM
@@ -146,14 +146,8 @@ int UdpServer::BroadcastData(std::string const &data, u_short const port) const
 	#else
 		sprintf(log_buffer, "BROADCAST[%d]<<<'%s'(%d byte(s))", port, data.c_str(), bytes);
 	#endif
-	log(std::string(log_buffer));
+	Log(std::string(log_buffer));
 	return 0;
-}
-
-void UdpServer::log(std::string const &data) const
-{
-	*m_logfile << GetCurrentDateTime() << "\t" << "UDP" << "\t" << data << "\n";
-	m_logfile->flush();
 }
 
 int UdpServer::GetInboundPort() const
@@ -171,23 +165,7 @@ std::string UdpServer::GetLocalIp()
 	return FindIp()[0];
 }
 
-std::string GetCurrentDateTime()
+void UdpServer::Log(std::string const& data) const
 {
-	tm* ltm;
-	time_t now = time(0);
-#ifdef IBM
-	ltm = new tm;
-	localtime_s(ltm, &now);
-#else
-	ltm = localtime(&now);
-#endif
-	char* time = new char[20];
-#ifdef IBM
-	sprintf_s(time, 20, "%02d/%02d/%04d %02d:%02d:%02d", ltm->tm_mday, ltm->tm_mon, ltm->tm_year,
-		ltm->tm_hour, ltm->tm_min, ltm->tm_sec);
-#else
-	sprintf(time, "%02d/%02d/%04d %02d:%02d:%02d", ltm->tm_mday, ltm->tm_mon, ltm->tm_year,
-		ltm->tm_hour, ltm->tm_min, ltm->tm_sec);
-#endif
-	return { time };
+	DebugLog(data, this->m_logfile);
 }

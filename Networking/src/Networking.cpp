@@ -41,3 +41,40 @@ std::vector<std::string> FindIp()
     #endif
     return ips;
 }
+
+std::string GetCurrentDateTime()
+{
+    tm* ltm;
+    time_t now = time(0);
+#ifdef IBM
+    ltm = new tm;
+    localtime_s(ltm, &now);
+#else
+    ltm = localtime(&now);
+#endif
+    char* time = new char[20];
+#ifdef IBM
+    sprintf_s(time, 20, "%02d/%02d/%04d %02d:%02d:%02d", ltm->tm_mday, ltm->tm_mon, ltm->tm_year,
+        ltm->tm_hour, ltm->tm_min, ltm->tm_sec);
+#else
+    sprintf(time, "%02d/%02d/%04d %02d:%02d:%02d", ltm->tm_mday, ltm->tm_mon, ltm->tm_year,
+        ltm->tm_hour, ltm->tm_min, ltm->tm_sec);
+#endif
+    return std::string(time);
+}
+
+void DebugLog(std::string const& data, std::ofstream* logfile)
+{
+    std::stringstream debug;
+	debug << GetCurrentDateTime() << "\t" << "UDP" << "\t" << data << "\n";
+#ifdef IBM
+    OutputDebugStringA(debug.str().c_str());
+#else
+    std::clog << debug.str();
+#endif
+    if (logfile != nullptr && logfile->is_open())
+    {
+        *logfile << debug.str();
+        logfile->flush();
+    }
+}

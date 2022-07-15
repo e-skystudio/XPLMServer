@@ -75,7 +75,7 @@ $(BUILDDIR)/CallbackManager.o : $(CALLBACKMANAGER)/src/CallbackManager.cpp $(CAL
 
 $(OUTPUT_DIR):
 	mkdir $(OUTPUT_DIR)
-	cp $(BASE_DIR)/XPLMServer/pluginConfig.json $(OUTPUT_DIR)/pluginConfig.json
+	# cp $(BASE_DIR)/XPLMServer/pluginConfig.json $(OUTPUT_DIR)/pluginConfig.json
 	mkdir $(OUTPUT_DIR)/64/
 
 $(BUILDDIR):

@@ -17,11 +17,6 @@
 #include <nlohmann/json.hpp>
 
 
-struct BeaconStatus {
-	bool BeaconEnabled = false;
-	unsigned short BeaconPort = 0;
-};
-
 using json = nlohmann::json;
 
 static json PLUGIN_CONFIGURATION;
@@ -188,24 +183,47 @@ PLUGIN_API void XPluginReceiveMessage(XPLMPluginID inFrom, int inMsg, void* inPa
 
 void ConfigureBeacon()
 {
+	XPLMDebugString("BEACON CONFIG INIT");
 	if (PLUGIN_CONFIGURATION["Server"].contains("Beacon") && !PLUGIN_CONFIGURATION["Server"]["Beacon"].is_null())
 	{
 		json beaconConfig = PLUGIN_CONFIGURATION["Server"]["Beacon"];
 		if (beaconConfig.contains("Enabled") && !beaconConfig["Enabled"].is_null() && beaconConfig["Enabled"].get<bool>())
 		{
-			if (!beaconConfig.contains("Port") || beaconConfig["Port"].is_null()) return;
-			const auto beaconPort = beaconConfig["Port"].get<unsigned short>();
-			if (beaconConfig.contains("Broadcast") && !beaconConfig["Broadcast"].is_null())
-			{
-				BEACON = new Beacon();
-				if (BEACON->Configure("", beaconPort, true) == 0) BEACON_ENABLED = true;
+			if (!beaconConfig.contains("Port") || beaconConfig["Port"].is_null()) {
+				XPLMDebugString("BEACON CONFIG FAILED -- MISSING PORT");
 				return;
 			}
-			if (!beaconConfig.contains("Ip") || beaconConfig["Ip"].is_null()) return;
+			const auto beaconPort = beaconConfig["Port"].get<unsigned short>();
+			if (beaconConfig.contains("Broadcast") && !beaconConfig["Broadcast"].is_null() && beaconConfig["Broadcast"].get<bool>())
+			{
+				XPLMDebugString(std::string("BEACON IS BROADCAST ON " + std::to_string(beaconPort) + "\n").c_str());
+				BEACON = new Beacon();
+				if (BEACON->Configure("", beaconPort, true) == 0) BEACON_ENABLED = true;
+				else{
+					XPLMDebugString("BEACON CONFIG FAILED");
+				}
+				return;
+			}
+			if (!beaconConfig.contains("Ip") || beaconConfig["Ip"].is_null()) 
+			{
+				XPLMDebugString(std::string("BEACON IP FAILED\n").c_str());
+				return;
+			}
 			const auto beaconIp = beaconConfig["Ip"].get<std::string>();
 			BEACON = new Beacon();
 			if (BEACON->Configure(beaconIp, beaconPort, false) == 0) BEACON_ENABLED = true;
+			else{
+					XPLMDebugString("BEACON CONFIG FAILED (2)");
+			}
+			XPLMDebugString(std::string("BEACON IS SENDING TON " + beaconIp + ":" +  std::to_string(beaconPort) + "\n").c_str());
 		}
+		else
+		{
+			XPLMDebugString("BEACON CONFIG END -- BEACON DISABLED IN JSON");
+		}
+	}
+	else{
+		XPLMDebugString("BEACON CONFIG END -- NO BEACON SECTION");
 	}
 }
 

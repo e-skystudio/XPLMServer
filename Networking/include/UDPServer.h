@@ -32,6 +32,7 @@
 #endif
 
 #include <string>
+#include <sstream>
 #include <fstream>
 #include "Networking.h"
 
@@ -76,7 +77,7 @@ extern "C"{
 		WSADATA m_wsa;
 #endif
 	private:
-		void log(std::string const &data) const;
+		void Log(std::string const &data) const;
 	};
 
 }

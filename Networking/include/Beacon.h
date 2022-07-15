@@ -23,20 +23,15 @@
 	#include <unistd.h>
 	#include <errno.h>
 	#include <memory.h>
-	#include "Networking.h"
-
 	#define INVALID_SOCKET 0
 	#define ISVALIDSOCKET(s) ((s) > 0)
 	#define SOCKET int
 	#define CLOSESOCKET(s) close(s)
 	#define GETSOCKETERRNO() (errno)
 #endif
-
+#include "Networking.h"
 #include <string>
 #include <fstream>
-
-
-std::string GetCurrentDateTime();
 
 extern "C"{
 	class Beacon
@@ -56,8 +51,8 @@ extern "C"{
 		WSADATA m_wsa = WSAData(0x00);
 #endif
 		SOCKET m_socket{INVALID_SOCKET};
-		std::ofstream* m_logfile;
-		sockaddr_in m_si_other;
+		std::ofstream* m_logfile = nullptr;
+		sockaddr_in m_si_other{};
 		int m_slen = sizeof(m_si_other);
 	private:
 		void Log(std::string const &data) const;

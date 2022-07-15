@@ -1,13 +1,16 @@
 #pragma once
 
+#ifndef IBM
 #include <iostream>
+#include <ctime>
+#endif
+
 #include <string>
 #include <fstream>
 #include <sstream>
-#include <ctime>
 #include <XPLMUtilities.h>
 
-class Logger
+class Logger final
 {
 /*
 * Class used to manage logger object.
@@ -22,15 +25,15 @@ public:
 		FATAL // Crashed
 	};
 	Logger();
-	Logger(std::string filename, std::string module="", bool erease = false);
+	explicit Logger(const std::string& filename, std::string module="", bool erease = false);
 	~Logger();
 	std::string GetModuleName();
-	void SetModuleName(std::string module);
-	virtual void Log(std::string const& message, const Logger::Severity severity = Logger::Severity::DEBUG);
-	const char* CurrentDateTime();
-	void operator+=(const std::string& message);
+	void SetModuleName(const std::string& module);
+	virtual void Log(std::string const& message, const Logger::Severity severity = Logger::Severity::DEBUG) const;
+	const char* CurrentDateTime() const;
+	void operator+=(const std::string& message) const;
 protected:
-	std::string getSeverityStr(Logger::Severity severity);
+static std::string GetSeverityStr(Logger::Severity severity);
 	std::string m_module;
-	std::ofstream* m_logfile;
+	std::ofstream* m_logfile = nullptr;
 };

@@ -1,56 +1,57 @@
+#include <utility>
+
 #include "../include/Logger.h"
 
-Logger::Logger() : m_logfile(nullptr), m_module("")
-{
-}
+Logger::Logger() = default;
 
-Logger::Logger(std::string filename, std::string module, bool erease)
+Logger::Logger(const std::string& filename, std::string module, const bool erease)
 {
-	m_module = module;
+	m_module = std::move(module);
 	if (erease)
 		m_logfile = new std::ofstream(filename, std::ios::out);
 	else
 		m_logfile = new std::ofstream(filename, std::ios::app);
 	if (m_logfile->fail())
 	{
+		m_logfile = nullptr;
+
 		std::stringstream debug;
 		debug << "[XPLMServer][Logger]Unable to open file : '" << filename << "' (as erease = '" << erease << "')\n";
-		XPLMDebugString(debug.str().c_str());
+		Log(debug.str());
 	}
 }
 
-Logger::~Logger()
-{
-}
+Logger::~Logger() = default;
 
 std::string Logger::GetModuleName()
 {
 	return m_module;
 }
 
-void Logger::SetModuleName(std::string module)
+void Logger::SetModuleName(const std::string& module)
 {
 	m_module = module;
 }
 
-void Logger::Log(std::string const &message, const Logger::Severity severity)
+void Logger::Log(std::string const& message, const Logger::Severity severity) const
 {
 	std::stringstream ss;
-	ss << CurrentDateTime() << "\t" << m_module << "\t" << this->getSeverityStr(severity) \
-		<< "\t" << message << "\n";
+	ss << CurrentDateTime() << "\t" << m_module << "\t" << GetSeverityStr(severity)  << "\t" << message << "\n";
+#ifdef IBM
+	OutputDebugStringA(ss.str().c_str());
+#else
+	std::clog << ss.str();
+#endif
 	if (m_logfile == nullptr || m_logfile->fail())
 	{
 		XPLMDebugString(ss.str().c_str());
 		return;
 	}
 	*m_logfile << ss.str();
-#ifdef IBM
-	OutputDebugString(reinterpret_cast<LPCWSTR>(ss.str().c_str()));
-#endif
 	m_logfile->flush();
 }
 
-const char* Logger::CurrentDateTime()
+const char* Logger::CurrentDateTime() const
 {
 	struct tm* ltm;
 	time_t now = time(0);
@@ -60,7 +61,7 @@ const char* Logger::CurrentDateTime()
 	#else
 		ltm = localtime(&now);
 	#endif
-	char* time = new char[20];
+	auto time = new char[20];
 	#ifdef IBM
 		sprintf_s(time, 20,"%02d/%02d/%04d %02d:%02d:%02d", ltm->tm_mday, ltm->tm_mon, ltm->tm_year,
 				  ltm->tm_hour, ltm->tm_min, ltm->tm_sec);
@@ -71,12 +72,12 @@ const char* Logger::CurrentDateTime()
 	return (const char*)time;
 }
 
-void Logger::operator+=(const std::string& message)
+void Logger::operator+=(const std::string& message) const
 {
 	Log(message);
 }
 
-std::string Logger::getSeverityStr(Logger::Severity severity)
+std::string Logger::GetSeverityStr(Logger::Severity severity)
 {
 	switch (severity)
 	{

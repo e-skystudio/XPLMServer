@@ -2,7 +2,9 @@
 
 Beacon::Beacon()
 {
-	m_logfile = new std::ofstream("XPLMServer_Network.log", std::ios::out);
+#if defined(_DEBUG) && defined(_DEBUG_BEACON)
+	m_logfile = new std::ofstream("XPLMServer_BeaconNetwork.log", std::ios::out);
+#endif
 	Log("Loging Started");
 }
 
@@ -41,7 +43,7 @@ int Beacon::Configure(std::string const& targetIp, unsigned short const outPort,
         }
     }
     m_si_other.sin_family = AF_INET;
-    m_si_other.sin_port = htons(55888);
+    m_si_other.sin_port = htons(outPort);
     Log("[BEACON] Sending to : " + targetIp + ":" + std::to_string(outPort));
     return 0x00;
 
@@ -52,7 +54,7 @@ int Beacon::SendData(std::string const &data) const
     int bytes = sendto(
         m_socket,
         data.c_str(),
-        data.length(),
+        static_cast<int>(data.length()),
         0x00,
         reinterpret_cast<const sockaddr*>(&m_si_other),
         m_slen);
@@ -73,10 +75,6 @@ int Beacon::SendData(std::string const &data) const
 
 void Beacon::Log(std::string const &data) const
 {
-#ifdef IBM
-    OutputDebugString(reinterpret_cast<LPCWSTR>(data.c_str()));
-#endif
-	*m_logfile << GetCurrentDateTime() << "\t" << "BEACON" << "\t" << data << "\n";
-	m_logfile->flush();
+    DebugLog(data, m_logfile);
 }
 
