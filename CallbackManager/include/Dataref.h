@@ -1,3 +1,4 @@
+// ReSharper disable CppClangTidyClangDiagnosticShadowField
 #pragma once
 #include <string>
 #include <map>
@@ -31,11 +32,11 @@ public:
 	};
 
 	///<summary>
-	/// Default empty consturctor
+	/// Default empty constructor
 	///</summary>
 	Dataref();
 	///<summary>
-	/// Copy Consturctor
+	/// Copy Constructor
 	///</summary>
 	///<param name="rhs">The dataref to be copied.</param>
 	Dataref(const Dataref& rhs);
@@ -48,30 +49,30 @@ public:
 	///</summary>
 	///
 	///
-	///<returns>True if sucessfully loaded</returns>
-	bool Load(std::string path);
+	///<returns>True if successfully loaded</returns>
+	bool Load(const std::string path) override;
 	///<summary>
 	///Check if the dataref can be written to:
 	///Dataref is not null and XPLMCanWriteDataRef() return true.]]>
 	///</summary>
 	///<returns>True if dataref is not readonly</returns>
-	bool CanWrite();
+	bool CanWrite() const;
 	///<summary>
 	///Check if the dataref is accessible:
 	///Dataref is not null and XPLMIsDataRefGood() return true.
 	///</summary>
 	///<returns>True if dataref is valid</returns>
-	bool IsGood();
+	bool IsGood() const;
 	///<summary>
 	///Return the type of the dataref stored in memory
 	///</summary>
 	///<returns>Dataref::Type</returns>
-	Dataref::Type GetType();
+	Type GetType() const;
 	///<summary>
 	/// Ask X-Plane SDK to return the type of the dataref
 	///</summary>
 	///<returns>The dataref type according the SDK</returns>
-	Dataref::Type LoadType();
+	Type LoadType();
 	///<summary>
 	/// Override the type of the dataref.
 	///</summary>
@@ -81,34 +82,34 @@ public:
 	/// Override the type of the dataref.
 	///</summary>
 	///<param name="newType">The new type as string</param>
-	void SetType(std::string newType);
+	void SetType(const std::string& newType);
 	///<summary>
 	/// Return the current value of the dataref (JSON formated).
 	///</summary>
 	///<returns>The value of the dataref as JSON</returns>
-	std::string GetValue();
+	std::string GetValue() override;
 	///<summary>
 	/// Send a new value to the dataref.
 	///</summary>
 	///<param name="value">The value to be sent to the dataref (as JSON)</param>
-	void SetValue(std::string value);
+	void SetValue(std::string value) override;
 	///<summary>
 	/// Set a conversion factor to a dataref.
 	///</summary>
 	///<param name="conversionFactor">The multiplication factor to be applied to the dataref on get and set (as a division)</param>
-	void SetConversionFactor(std::string conversionFactor);
+	void SetConversionFactor(std::string conversionFactor) override;
 protected:
-	XPLMDataRef m_dataref;	/* Represent a void pointer locating the dataref as X - Plane SDK */
-	Dataref::Type m_type;	/* Represent the underlying data type of the dataref */
-	Logger m_logger;		/* The logger */
-	std::string m_link;
-	std::string m_conversionFactor;
-	int setFloatArrayFromJson(int offset, std::string value);
-	int setIntArrayFromJson(int offset, std::string value);
+	XPLMDataRef m_dataref = nullptr;	/* Represent a void pointer locating the dataref as X - Plane SDK */
+	Dataref::Type m_type = Dataref::Type::Unknown;	/* Represent the underlying data type of the dataref */
+	Logger m_logger = Logger("XPLMServer.log", "Dataref", false);		/* The logger */
+	std::string m_link = "";
+	std::string m_conversionFactor = "1.0";
+	int SetFloatArrayFromJson(int offset, const std::string& value);
+	int SetIntArrayFromJson(int offset, const std::string& value);
 };
 
 
-static std::map<std::string, Dataref::Type> const StringToType{
+static std::map<std::string, Dataref::Type> const string_to_type{
 	{"Unknown", Dataref::Type::Unknown},
 	{"INT", Dataref::Type::Int},
 	{"FLOAT", Dataref::Type::Float},

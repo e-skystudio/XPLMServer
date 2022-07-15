@@ -1,32 +1,28 @@
+// ReSharper disable CppTooWideScopeInitStatement
 #include "../include/Dataref.h"
 
 /* \brief Default Constructor */
-Dataref::Dataref() :
-	m_dataref(nullptr), m_type(Dataref::Type::Unknown),
-	m_logger(Logger("XPLMServer.log", "Dataref", false)),
-	m_link(""), 
-	m_conversionFactor("1.0")
+Dataref::Dataref()
 {
 	DatarefType = DatarefType::XPLMDataref;
 }
 
 /* \brief Copy Constructor */
 Dataref::Dataref(const Dataref& rhs)
+	: AbstractDataref(rhs)
 {
 
 	m_dataref = rhs.m_dataref;
 	m_type = rhs.m_type;
 }
 
-Dataref::~Dataref()
-{
-}
+Dataref::~Dataref() = default;
 
 /* \brief Load a dataref with a specific path
 * \param[in] path the path of the dataref
 * \return boolean True if the path return a valid dataref
 */
-bool Dataref::Load(std::string path)
+bool Dataref::Load(const std::string path)
 {
 	m_link = path;
 	m_dataref = XPLMFindDataRef(path.c_str());
@@ -39,17 +35,17 @@ bool Dataref::Load(std::string path)
 	return true;
 }
 
-bool Dataref::CanWrite()
+bool Dataref::CanWrite() const
 {
 	return m_dataref && XPLMCanWriteDataRef(m_dataref);
 }
 
-bool Dataref::IsGood()
+bool Dataref::IsGood() const
 {
 	return m_dataref && XPLMIsDataRefGood(m_dataref);
 }
 
-Dataref::Type Dataref::GetType()
+Dataref::Type Dataref::GetType() const
 {
 	return m_type;
 }
@@ -58,10 +54,10 @@ Dataref::Type Dataref::LoadType()
 {
 	if (m_dataref != nullptr)
 	{
-		m_type = (Dataref::Type)XPLMGetDataRefTypes(m_dataref);
+		m_type = static_cast<Dataref::Type>(XPLMGetDataRefTypes(m_dataref));
 		// handling case where data can be either double or int
 		//if ((int)m_type && ((int)Type::Float || (int)Type::Double))
-		if ((int)m_type & ((int)Type::Float | (int)Type::Double))
+		if (static_cast<int>(m_type) & (static_cast<int>(Type::Float) | static_cast<int>(Type::Double)))
 		{
 			m_type = Type::Double;
 		}
@@ -75,11 +71,11 @@ void Dataref::SetType(Dataref::Type newType)
 	m_type = newType;
 }
 
-void Dataref::SetType(std::string newType)
+void Dataref::SetType(const std::string& newType)
 {
-	if (StringToType.contains(newType))
+	if (string_to_type.contains(newType))
 	{
-		m_type = StringToType.at(newType);
+		m_type = string_to_type.at(newType);
 	}
 	else {
 		m_type = Dataref::Type::Unknown;
@@ -88,7 +84,7 @@ void Dataref::SetType(std::string newType)
 
 std::string Dataref::GetValue()
 {
-	if (m_dataref == NULL)
+	if (m_dataref == nullptr)
 	{
 		return std::string();
 	}
@@ -99,25 +95,25 @@ std::string Dataref::GetValue()
 	case Dataref::Type::Unknown:
 		break;
 	case Dataref::Type::Int:
-		value = std::to_string(XPLMGetDatai(m_dataref) * (int)std::stod(m_conversionFactor));
+		value = std::to_string(XPLMGetDatai(m_dataref) * static_cast<int>(std::stod(m_conversionFactor)));
 		break;
 	case Dataref::Type::Float:
-		value = std::to_string(XPLMGetDataf(m_dataref) * (float)std::stod(m_conversionFactor));
+		value = std::to_string(XPLMGetDataf(m_dataref) * static_cast<float>(std::stod(m_conversionFactor)));
 		break;
 	case Dataref::Type::Double:
 		value = std::to_string(XPLMGetDatad(m_dataref) * std::stod(m_conversionFactor));
 		break;
 	case Dataref::Type::FloatArray:
 	{
-		int arraySize = XPLMGetDatavf(m_dataref, nullptr, 0, 0);
-		float* floatArray = (float*)malloc(sizeof(float) * arraySize);
+		const int arraySize = XPLMGetDatavf(m_dataref, nullptr, 0, 0);
+		float* floatArray = static_cast<float*>(malloc(sizeof(float) * arraySize));
 		if (floatArray == nullptr) return "";
 		XPLMGetDatavf(m_dataref, floatArray, 0, arraySize);
 		json j = json::array();
 		for (int i = 0; i < arraySize; i++)
 		{
 			float item = *((float*)(floatArray + i));
-			j.push_back(item * (float)std::stod(m_conversionFactor));
+			j.push_back(item * static_cast<float>(std::stod(m_conversionFactor)));
 		}
 		value = j.dump();
 		free(floatArray);
@@ -125,15 +121,15 @@ std::string Dataref::GetValue()
 	}
 	case Dataref::Type::IntArray:
 	{
-		int arraySize = XPLMGetDatavi(m_dataref, nullptr, 0, 0);
-		int* intArray = (int*)malloc(sizeof(int) * arraySize);
+		const int arraySize = XPLMGetDatavi(m_dataref, nullptr, 0, 0);
+		const auto intArray = static_cast<int*>(malloc(sizeof(int) * arraySize));
 		if (intArray == nullptr) return "";
 		XPLMGetDatavi(m_dataref, intArray, 0, arraySize);
 		json j = json::array();
 		for (int i = 0; i < arraySize; i++)
 		{
 			int item = *((int*)(intArray + i));
-			j.push_back(item * (int)std::stod(m_conversionFactor));
+			j.push_back(item * static_cast<int>(std::stod(m_conversionFactor)));
 		}
 		value = j.dump();
 		free(intArray);
@@ -141,8 +137,8 @@ std::string Dataref::GetValue()
 	}
 	case Dataref::Type::Data:
 	{
-		int lenght = XPLMGetDatab(m_dataref, NULL, 0, 0);
-		char* data = (char*)malloc(lenght * sizeof(char));
+		const int lenght = XPLMGetDatab(m_dataref, nullptr, 0, 0);
+		const auto data = static_cast<char*>(malloc(lenght * sizeof(char)));
 		if (data == nullptr) return "";
 		memset(data, 0x00, lenght);
 		XPLMGetDatab(m_dataref, (void*)data, 0, lenght);
@@ -159,7 +155,7 @@ std::string Dataref::GetValue()
 
 void Dataref::SetValue(std::string value)
 {
-	if (m_dataref == NULL || !this->CanWrite())
+	if (m_dataref == nullptr || !this->CanWrite())
 	{
 		return;
 	}
@@ -169,36 +165,36 @@ void Dataref::SetValue(std::string value)
 		break;
 	case Dataref::Type::Int:
 	{
-		int val = std::stoi(value) / (int)std::stod(m_conversionFactor);
+		const int val = std::stoi(value) / static_cast<int>(std::stod(m_conversionFactor));
 		XPLMSetDatai(m_dataref, val);
 		break;
 	}
 	case Dataref::Type::Float:
 	{
-		float val = std::stof(value) / (float)std::stod(m_conversionFactor);
+		const float val = std::stof(value) / static_cast<float>(std::stod(m_conversionFactor));
 		XPLMSetDataf(m_dataref, val);
 		break;
 	}
 	case Dataref::Type::Double:
 	{
-		double val = std::stod(value) / std::stod(m_conversionFactor);
+		const double val = std::stod(value) / std::stod(m_conversionFactor);
 		XPLMSetDatad(m_dataref, val);
 		break;
 	}
 	case Dataref::Type::FloatArray:
 	{
-		int res = this->setFloatArrayFromJson(0, value);
+		int res = this->SetFloatArrayFromJson(0, value);
 		break;
 	}
 	case Dataref::Type::IntArray:
 	{
-		int res = this->setIntArrayFromJson(0, value);
+		int res = this->SetIntArrayFromJson(0, value);
 		break;
 	}
 	case Dataref::Type::Data:
 	{
-		int maxLenght = XPLMGetDatab(m_dataref, NULL, 0, 0);
-		char* zero = (char*)malloc(sizeof(char) * maxLenght);
+		const int maxLenght = XPLMGetDatab(m_dataref, nullptr, 0, 0);
+		char* zero = static_cast<char*>(malloc(sizeof(char) * maxLenght));
 		if (zero == nullptr) return;
 		memset(zero, 0x00, maxLenght);
 		XPLMSetDatab(m_dataref, zero, 0, maxLenght);
@@ -212,7 +208,7 @@ void Dataref::SetValue(std::string value)
 			lenght = maxLenght;
 		}
 		m_logger.Log("[SET DATA]" + m_link + " size of" + std::to_string(lenght));
-		XPLMSetDatab(m_dataref, (void*)value.c_str(), 0, (int)lenght);
+		XPLMSetDatab(m_dataref, (void*)value.c_str(), 0, static_cast<int>(lenght));
 		m_logger.Log("[SET DATA]" + m_link + " = " + value);
 		break;
 	}
@@ -226,7 +222,7 @@ void Dataref::SetConversionFactor(std::string conversionFactor)
 	m_conversionFactor = conversionFactor;
 }
 
-int Dataref::setFloatArrayFromJson(int offset, std::string value)
+int Dataref::SetFloatArrayFromJson(const int offset, const std::string& value)
 {	
 	std::vector<float> data;
 	int maxSize = XPLMGetDatavf(m_dataref, nullptr, 0, 0);
@@ -239,11 +235,11 @@ int Dataref::setFloatArrayFromJson(int offset, std::string value)
 	}
 	else if (j.type() == json::value_t::array)
 	{
-		if ((int)j.size() < maxSize)
-			maxSize = (int)j.size();
+		if (static_cast<int>(j.size()) < maxSize)
+			maxSize = static_cast<int>(j.size());
 		m_logger.Log("FloatArray : max size is " + std::to_string(maxSize), Logger::Severity::CRITICAL);
-		std::vector<std::string> valArray = j.get<std::vector<std::string>>();
-		for (std::string strValue : valArray)
+		const std::vector<std::string> valArray = j.get<std::vector<std::string>>();
+		for (const std::string& strValue : valArray)
 		{
 			data.push_back(std::stof(strValue));
 		}
@@ -254,7 +250,7 @@ int Dataref::setFloatArrayFromJson(int offset, std::string value)
 		{
 			for (int i(0); i < maxSize; i++)
 			{
-				data.push_back(j.get<float>() / (float)std::stod(m_conversionFactor));
+				data.push_back(j.get<float>() / static_cast<float>(std::stod(m_conversionFactor)));
 			}
 		}
 	}
@@ -269,7 +265,7 @@ int Dataref::setFloatArrayFromJson(int offset, std::string value)
 		{
 			if (j["Offset"].type() == json::value_t::string)
 			{
-				f_offset = std::stoi(j["Offset"].get<std::string>()) / (int)std::stod(m_conversionFactor);
+				f_offset = std::stoi(j["Offset"].get<std::string>()) / static_cast<int>(std::stod(m_conversionFactor));
 			}
 			else
 			{
@@ -277,7 +273,7 @@ int Dataref::setFloatArrayFromJson(int offset, std::string value)
 				f_offset = 0;
 			}
 		}
-		return setFloatArrayFromJson(f_offset, j["Value"].dump());
+		return SetFloatArrayFromJson(f_offset, j["Value"].dump());
 	}
 	else {
 		m_logger.Log("FloatArray: JSON type is unknown", Logger::Severity::CRITICAL);
@@ -288,7 +284,7 @@ int Dataref::setFloatArrayFromJson(int offset, std::string value)
 	return EXIT_SUCCESS;
 }
 
-int Dataref::setIntArrayFromJson(int offset, std::string value)
+int Dataref::SetIntArrayFromJson(int offset, const std::string& value)
 {
 	std::vector<int> data;
 	int maxSize = XPLMGetDatavi(m_dataref, nullptr, 0, 0);
@@ -301,11 +297,11 @@ int Dataref::setIntArrayFromJson(int offset, std::string value)
 	}
 	else if (j.type() == json::value_t::array)
 	{
-		if ((int)j.size() < maxSize)
-			maxSize = (int)j.size();
+		if (static_cast<int>(j.size()) < maxSize)
+			maxSize = static_cast<int>(j.size());
 		m_logger.Log("IntArray : max size is " + std::to_string(maxSize), Logger::Severity::CRITICAL);
-		std::vector<std::string> valArray = j.get<std::vector<std::string>>();
-		for (std::string strValue : valArray)
+		const std::vector<std::string> valArray = j.get<std::vector<std::string>>();
+		for (const std::string& strValue : valArray)
 		{
 			data.push_back(std::stoi(strValue));
 		}
@@ -327,7 +323,7 @@ int Dataref::setIntArrayFromJson(int offset, std::string value)
 			}
 		}
 		else {
-			std::string valueStr = j.get<std::string>();
+			const std::string valueStr = j.get<std::string>();
 			for (int i(0); i < maxSize; i++)
 			{
 				data.push_back(std::stoi(valueStr));
@@ -353,7 +349,7 @@ int Dataref::setIntArrayFromJson(int offset, std::string value)
 				f_offset = 0;
 			}
 		}
-		return setIntArrayFromJson(f_offset, j["Value"].dump());
+		return SetIntArrayFromJson(f_offset, j["Value"].dump());
 	}
 	else {
 		m_logger.Log("IntArray: JSON type is unknown", Logger::Severity::CRITICAL);

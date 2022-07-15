@@ -31,7 +31,7 @@ std::string ExtractJsonValue(json* jdata, std::string fieldname, CallbackManager
 		callback->Log("Type is array");
 		break;
 	default:
-		callback->Log("Type is NOT supported ('" + std::to_string((int)jdata->at("Value").type()) + "')", Logger::Severity::CRITICAL);
+		callback->Log("Type is NOT supported ('" + std::to_string(static_cast<int>(jdata->at("Value").type())) + "')", Logger::Severity::CRITICAL);
 		break;
 	}
 	if (value.length() > 0)
@@ -61,7 +61,7 @@ void GetCallbacks(std::vector<CallbackFunctionStruct*>* callbacks, int* size)
 		callbacks->push_back(new CallbackFunctionStruct("LOAD_REG_DATA", "LoadRegisterDataref"));
 		callbacks->push_back(new CallbackFunctionStruct("FFDATA_INIT", "InitFlightFactorA320"));
 		callbacks->push_back(new CallbackFunctionStruct("REG_FFDATA", "RegisterFFDataref"));
-		*size = (int)callbacks->size();
+		*size = static_cast<int>(callbacks->size());
 	}
 	return;
 }
@@ -81,10 +81,10 @@ int RegisterDataref(json* jdata, CallbackManager* callback)
 		callback->Log("RegisterDataref [DONE]");
 		return 0x01;
 	}
-	std::string link = jdata->at("Link").get<std::string>();
-	std::string name = jdata->at("Name").get<std::string>();
+	const std::string link = jdata->at("Link").get<std::string>();
+	auto name = jdata->at("Name").get<std::string>();
 
-	Dataref* dataref = new Dataref();
+	auto* dataref = new Dataref();
 	dataref->Load(link);
 
 	if (!jdata->contains("Type") || jdata->at("Name").is_null() ||
@@ -93,11 +93,11 @@ int RegisterDataref(json* jdata, CallbackManager* callback)
 	{
 		callback->Log("Type was not present in JSON data, using XPlane SDK to determine it");
 		Dataref::Type dType = dataref->LoadType();
-		callback->Log("Dataref Type is " + std::to_string((int)dType));
+		callback->Log("Dataref Type is " + std::to_string(static_cast<int>(dType)));
 	}
 	else
 	{
-		std::string type = jdata->at("Type").get<std::string>();
+		const std::string type = jdata->at("Type").get<std::string>();
 		dataref->SetType(type);
 	}
 	std::string conversionFactor;
@@ -110,7 +110,7 @@ int RegisterDataref(json* jdata, CallbackManager* callback)
 		callback->Log("ConversionFactor was not provided assuming 1.0f", Logger::Severity::WARNING);
 	}
 	dataref->SetConversionFactor(conversionFactor);
-	auto p_datarefMap = callback->GetNamedDataref();
+	const auto p_datarefMap = callback->GetNamedDataref();
 	p_datarefMap->emplace(name, dataref);
 	return 0;
 }
@@ -232,7 +232,7 @@ int GetDatarefValue(json* jdata, CallbackManager* callback)
 		jdata->at("Type").get<std::string>() == "UNKNWON")
 	{
 		Dataref::Type type = p_dataref->LoadType();
-		callback->Log("Dataref is of type '" + std::to_string((int)type) + "'");
+		callback->Log("Dataref is of type '" + std::to_string(static_cast<int>(type)) + "'");
 	}
 	else {
 		p_dataref->SetType(jdata->at("Type").get<std::string>());
@@ -260,10 +260,10 @@ int SetDatarefValue(json* jdata, CallbackManager* callback)
 	if(link.find("Aircraft") != std::string::npos && link.find(".") != std::string::npos)
     {
 		SharedValuesInterface* ff320 = callback->GetFF320Interface();
-        auto p_dataref = new FFDataref(ff320);
+		const auto p_dataref = new FFDataref(ff320);
 		p_dataref->Load(link);
 		FFDataref::Type dType = p_dataref->LoadType();
-		callback->Log("FFDataref Type is " + std::to_string((int)dType));
+		callback->Log("FFDataref Type is " + std::to_string(static_cast<int>(dType)));
 		jdata->emplace("ID", p_dataref->GetID());
 		jdata->emplace("Type", p_dataref->GetType());
 		jdata->emplace("Flag", p_dataref->GetFlag());
@@ -272,23 +272,24 @@ int SetDatarefValue(json* jdata, CallbackManager* callback)
 		callback->Log("1");
 		jdata->emplace("Description", p_dataref->GetDescription());
 		callback->Log("2");
-		callback->GetFFDataref()->push(p_dataref);
+		p_dataref->SetValue(value);
+		callback->AddFFDatarefToUpdate(p_dataref);
 		callback->Log("3");
     }
 	else
 	{
 		callback->Log("REGULAR DATAREF FOUND !");
-		auto p_dataref = new Dataref();
+		const auto p_dataref = new Dataref();
 		p_dataref->Load(link);
 		if (!jdata->contains("Type") || jdata->at("Type").is_null() ||
 			jdata->at("Type").type() != json::value_t::string ||
 			jdata->at("Type").get<std::string>() == "UNKNWON")
 		{
 			Dataref::Type type = p_dataref->LoadType();
-			callback->Log("Dataref is of type '" + std::to_string((int)type) + "'");
+			callback->Log("Dataref is of type '" + std::to_string(static_cast<int>(type)) + "'");
 		}
 		else {
-			std::string type = jdata->at("Type").get<std::string>();
+			const auto type = jdata->at("Type").get<std::string>();
 			p_dataref->SetType(type);
 		}
 		p_dataref->SetValue(value);
@@ -320,7 +321,6 @@ int LoadRegisterDataref(json* jdata, CallbackManager* callback)
 	csv_in.open(jdata->at("FileIn").get<std::string>());
 	if (!csv_in.is_open())
 	{
-		;
 		callback->Log("Error while opening file!\n", Logger::Severity::WARNING);
 		return 0x01;
 	}
@@ -363,7 +363,7 @@ int RegisterFFDataref(json* jdata, CallbackManager* callback)
 {
 	if (!callback->IsFF320InterfaceEnabled())
 	{
-		bool res = callback->InitFF320Interface();
+		callback->InitFF320Interface();
 		return 0x10; //Unable to execute interface;
 	}
 	SharedValuesInterface* ff320 = callback->GetFF320Interface();
@@ -375,15 +375,15 @@ int RegisterFFDataref(json* jdata, CallbackManager* callback)
 		callback->Log("RegisterFFDataref [DONE]");
 		return 0x01;
 	}
-	std::string link = jdata->at("Link").get<std::string>();
-	std::string name = jdata->at("Name").get<std::string>();
+	const auto link = jdata->at("Link").get<std::string>();
+	auto name = jdata->at("Name").get<std::string>();
 	callback->Log("Loading FFDataref '" + link + "' as '" + name + "'");
 
-	FFDataref* ffdataref = new FFDataref(ff320);
+	auto ffdataref = new FFDataref(ff320);
 	ffdataref->Load(link);
 	callback->Log("Loading type");
 	FFDataref::Type dType = ffdataref->LoadType();
-	callback->Log("FFDataref Type is " + std::to_string((int)dType));
+	callback->Log("FFDataref Type is " + std::to_string(static_cast<int>(dType)));
 	std::string conversionFactor;
 	if (jdata->contains("ConversionFactor") && !jdata->at("ConversionFactor").is_null())
 	{
@@ -402,7 +402,7 @@ int RegisterFFDataref(json* jdata, CallbackManager* callback)
 	jdata->emplace("Name", ffdataref->GetName());
 	jdata->emplace("Description", ffdataref->GetDescription());
 
-	auto p_datarefMap = callback->GetNamedDataref();
+	const auto p_datarefMap = callback->GetNamedDataref();
 	callback->Log("Adding FFDataref to map", Logger::Severity::DEBUG);
 	p_datarefMap->emplace(name, ffdataref);
 	callback->Log("RegisterFFDataref [DONE]");

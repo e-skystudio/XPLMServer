@@ -57,7 +57,7 @@ extern "C"{
 #endif
 		SOCKET m_socket{INVALID_SOCKET};
 		std::ofstream* m_logfile;
-		sockaddr_in m_si_other;
+		sockaddr_in m_si_other{};
 		int m_slen = sizeof(m_si_other);
 	private:
 		void Log(std::string const &data) const;

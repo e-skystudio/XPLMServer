@@ -52,7 +52,7 @@ int Beacon::SendData(std::string const &data) const
     int bytes = sendto(
         m_socket,
         data.c_str(),
-        data.length(),
+        static_cast<int>(data.length()),
         0x00,
         reinterpret_cast<const sockaddr*>(&m_si_other),
         m_slen);
