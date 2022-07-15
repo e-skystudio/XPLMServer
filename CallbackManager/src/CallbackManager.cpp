@@ -19,11 +19,8 @@ CallbackFunctionStruct::CallbackFunctionStruct(std::string operation, std::strin
 void FF320_Callback(double step, void* tag)
 {
 	const auto cm = static_cast<CallbackManager*>(tag);
-	cm->Log("0x11");
 	cm->ExecuteConstantDataref();
-	cm->Log("0x12");
 	cm->ExecuteFFDatarefsUpdate();
-	cm->Log("0x13");
 	// for(auto &dataref : *p_datarefs)
 	// {
 	// 	if(dataref.second->DatarefType == DatarefType::FFDataref)
@@ -123,13 +120,11 @@ int CallbackManager::LoadCallbackDLL(const std::string& inDllPath)
 		std::stringstream ss;
 		ss << "DLL : '" << inDllPath << "' WAS NOT FOUND !";
 		m_logger.Log(ss.str(), Logger::Severity::CRITICAL);
-		m_logger.Log(ss.str().c_str());
 		return -1;
 	}
 	std::stringstream ss;
 	ss << "DLL : '" << inDllPath << "' LOADED SUCESSFULLY !";
 	m_logger.Log(ss.str(), Logger::Severity::TRACE);
-	m_logger.Log(ss.str().c_str());
 	CallbackLoader loader;
 	#ifdef IBM
 		loader = reinterpret_cast<CallbackLoader>(GetProcAddress(m_hDLL, "GetCallbacks"));
@@ -151,22 +146,13 @@ int CallbackManager::LoadCallbackDLL(const std::string& inDllPath)
 	}
 	int size = 0;
 	loader(nullptr, &size);
-
-	ss = std::stringstream();
-	ss << "There is/are " << size << " callback(s) loadable";
-	m_logger.Log(ss.str().c_str());
-	m_logger.Log("Creating an array of CallbackFunction...");
 	std::vector<CallbackFunctionStruct*> vec_callbacks;
-	m_logger.Log("Creating an array of CallbackFunction...[DONE]\n");
-	m_logger.Log("Loading the callbacks...");
 	loader(&vec_callbacks, &size);
 	m_logger.Log("Loading the callbacks...[DONE]\n");
 	
 	for (std::size_t i(0); i < vec_callbacks.size(); i++)
 	{
-		m_logger.Log(("Loading callback " + std::to_string(i) + " / " + std::to_string(size - 1)).c_str());
 		CallbackFunctionStruct* callback1 = vec_callbacks[i];
-		m_logger.Log(("Trying to load '" + callback1->Function + "' as '" + callback1->Operation + "'...").c_str());
 		Callback p_callback;
 		#ifdef IBM
 		 	p_callback = reinterpret_cast<Callback>(GetProcAddress(m_hDLL, callback1->Function.c_str()));
@@ -178,11 +164,7 @@ int CallbackManager::LoadCallbackDLL(const std::string& inDllPath)
 			m_logger.Log("pointer callback is pointing to nullptr", Logger::Severity::WARNING);
 			continue;
 		}
-		else
-		{
-			m_logger.Log("pointer callback is valid");
-		}
-			int res = this->AppendCallback(std::string(callback1->Operation), p_callback);
+		int res = this->AppendCallback(std::string(callback1->Operation), p_callback);
 		if (res != EXIT_SUCCESS)
 		{
 			m_logger.Log("Appending Callback to list : [FAILED]", Logger::Severity::WARNING);
@@ -216,9 +198,7 @@ void CallbackManager::AddSubscribedDataref(const std::string& name)
 		return;
 	}
 	m_subscribedDatarefs->emplace(name, m_namedDatarefs->at(name));
-	m_logger.Log("namedDataref : '" + name + "' founded an added to the map!");
 	m_subscirbeDatarefCount++;
-	m_logger.Log("There is/are " + std::to_string(m_subscirbeDatarefCount) +  " dataref subscribed");
 }
 
 void CallbackManager::RemoveSubscribedDataref(const std::string& name)
@@ -229,9 +209,7 @@ void CallbackManager::RemoveSubscribedDataref(const std::string& name)
 		return;
 	}
 	m_subscribedDatarefs->erase(name);
-	m_logger.Log("m_subscribedDatarefs : '" + name + "' founded an removed from the map!");
 	m_subscirbeDatarefCount--;
-	m_logger.Log("There is/are " + std::to_string(m_subscirbeDatarefCount) + " dataref subscribed");
 }
 
 int CallbackManager::GetConstantDatarefCount() const
@@ -249,7 +227,6 @@ void CallbackManager::AddConstantDataref(const std::string& name, const std::str
 	//m_constDataref->
 	if (m_constDataref->contains(name))
 	{
-		m_logger.Log("Dataref " + name + "Exist and it's value is updated!");
 		m_constDataref->at(name).Value = value;
 		return;
 	}
@@ -260,7 +237,6 @@ void CallbackManager::AddConstantDataref(const std::string& name, const std::str
 	if(dataref == nullptr) return;
 	dr.Dataref = dataref;
 	m_constDataref->emplace(name, dr);
-	m_logger.Log("namedDataref : '" + name + "' founded an added to the map!");
 }
 
 void CallbackManager::RemoveConstantDataref(const std::string& name) const
@@ -337,16 +313,12 @@ bool CallbackManager::InitFF320Interface(){
 	}
 	m_logger.Log("FF320 plugin ID : " + std::to_string(ffPluginID));
 	XPLMSendMessageToPlugin(ffPluginID, XPLM_FF_MSG_GET_SHARED_INTERFACE, m_ff320);
-	m_logger.Log("Initalising FF320 Data Interface...3");
 	if (m_ff320->DataVersion == nullptr) {
 		m_logger.Log("[FF320API] Unable to load version!");
 		return false;
 	}
-	m_logger.Log("Initalising FF320 Data Interface...4");
 	const unsigned int ffAPIdataversion = m_ff320->DataVersion();
-	m_logger.Log("Initalising FF320 Data Interface...5");
 	m_logger.Log("[FF320API] Version : " + std::to_string(ffAPIdataversion));
-	m_logger.Log("Initalising FF320 Data Interface...6");
 
 	m_ff320->DataAddUpdate(FF320_Callback, this);
 	return true;
@@ -356,10 +328,4 @@ bool CallbackManager::IsFF320InterfaceEnabled() const
 {
 	return m_ff320->DataVersion != nullptr;
 }
-
-// void CallbackManager::BindFF320Callback(SharedDataUpdateProc callback)
-// {
-// 	if(!IsFF320InterfaceEnabled()) return;
-// 	m_ff320->DataAddUpdate(callback, this->m_ff320_datarefs);
-// }
 

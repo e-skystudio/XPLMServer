@@ -2,7 +2,9 @@
 
 Beacon::Beacon()
 {
-	m_logfile = new std::ofstream("XPLMServer_Network.log", std::ios::out);
+#if defined(_DEBUG) && defined(_DEBUG_BEACON)
+	m_logfile = new std::ofstream("XPLMServer_BeaconNetwork.log", std::ios::out);
+#endif
 	Log("Loging Started");
 }
 
@@ -73,10 +75,6 @@ int Beacon::SendData(std::string const &data) const
 
 void Beacon::Log(std::string const &data) const
 {
-#ifdef IBM
-    OutputDebugString(reinterpret_cast<LPCWSTR>(data.c_str()));
-#endif
-	*m_logfile << GetCurrentDateTime() << "\t" << "BEACON" << "\t" << data << "\n";
-	m_logfile->flush();
+    DebugLog(data, m_logfile);
 }
 
