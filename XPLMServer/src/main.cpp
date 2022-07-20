@@ -88,6 +88,7 @@ PLUGIN_API int XPluginStart(char* outName, char* outSig, char* outDesc)
 #endif
 	XPLMHostApplicationID hostId;
 	XPLMGetVersions(&XPLANE_VERSION, &XPLANE_SDK_VERSION, &hostId);
+	LOGGER.Log("XPluginStart Sucess !");
 	return 1;
 }
 
@@ -152,6 +153,7 @@ PLUGIN_API int XPluginEnable(void)
 	else {
 		LOGGER.Log("[XPLMServer]Missing Config['Server']['OutPort']... defaulting to 50555\n");
 	}
+	LOGGER.Log("---Server Init 2 ----");
 	if (PLUGIN_CONFIGURATION.contains("Server") && !PLUGIN_CONFIGURATION["Server"].is_null())
 	{
 		ConfigureBeacon();
@@ -166,6 +168,7 @@ PLUGIN_API int XPluginEnable(void)
 	acft_author = XPLMFindDataRef("sim/aircraft/view/acf_author");
 	acft_description = XPLMFindDataRef("sim/aircraft/view/acf_descrip");
 	acft_icao = XPLMFindDataRef("sim/aircraft/view/acf_ICAO");
+	LOGGER.Log("XPluginEnable Sucess !");
 	return 1;
 }
 
@@ -230,13 +233,14 @@ void ConfigureBeacon()
 // ReSharper disable once CppParameterNeverUsed
 float InitializerCallback(float elapsedSinceCall, float elapsedSinceLastTime, int inCounter, void* inRef)
 {
-
+	LOGGER.Log("Initalizer Start");
 	XPLMRegisterFlightLoopCallback(NetworkCallback, -1.0f, nullptr);
 	XPLMRegisterFlightLoopCallback(ExportSubscribedDataref, -1.0f, nullptr);
 	if(BEACON_ENABLED)
 	{
 		XPLMRegisterFlightLoopCallback(BeaconCallback, -1.0f, nullptr);
 	}
+	LOGGER.Log("Initalizer Finished");
  	return 0.0f;
 }
 
