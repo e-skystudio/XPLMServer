@@ -14,7 +14,7 @@ class AbstractDataref{
         virtual void SetValue(std::string value) = 0;
         virtual void SetConversionFactor(std::string conversionFactor) = 0;
         virtual bool Load(std::string path) = 0;
-    protected:
+    protected:  
         std::string m_link;
         std::string m_conversionFactor;
 };
