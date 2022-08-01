@@ -145,7 +145,29 @@ std::string Dataref::GetValue()
 		value = std::string(data).substr(0, strlen(data));
 		if(value.length() < lenght) //data contains multiples items separated by a 0
 		{
-			//TODO: find a way to parse those data
+			int start = 0;
+			int end = 0;
+			std::vector<std::string> outData;
+			for(int i(1); i < lenght; i++)
+			{
+				char* ptr = static_cast<char*>(data) + i;
+				if(ptr == nullptr || i - start >= 8)
+				{
+					end = i;
+					char* registration = (char*)malloc(end - start);
+					memset(registration, 0x00, 8);
+					memcpy(registration, ptr, end - start);
+					outData.emplace_back(registration);
+					start = i++;
+				}
+			}
+			std::stringstream val;
+			for (auto const &data: outData) 
+			{
+				val << data << ",";
+    		}
+			value = val.str();
+			value = value.substr(0, value.length() -1);
 		}
 		m_logger.Log("[GET DATA]" + m_link + " = " + data);
 		free(data);
