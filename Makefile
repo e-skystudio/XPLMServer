@@ -22,7 +22,7 @@ INCLUDES = \
 
 DEFINES = -DXPLM200=1 -DXPLM210=1 -DAPL=1 -D_DEBUG=1 
 #DEBUG:
-CFLAGS := $(DEFINES) $(INCLUDES) -std=c++20 -fPIC -fvisibility=hidden -arch x86_64 -g
+CFLAGS := $(DEFINES) $(INCLUDES) -std=c++2b -fPIC -fvisibility=hidden -arch x86_64 -g
 #RELEASE :
 # CFLAGS := $(DEFINES) $(INCLUDES) -std=c++20 -fPIC -fvisibility=hidden -arch x86_64
 ###XPLMServer

@@ -123,7 +123,11 @@ std::string FFDataref::GetValue()
 		m_ffapi->ValueGet(m_id, buffer);
 		auto str = (char*)malloc( lenght + 1);
 		memset(str, 0x00, lenght + 1);
+		#ifdef IBM
 		memcpy_s(str, lenght, buffer, lenght);
+		#else
+		memcpy(str, buffer, lenght);
+		#endif
 		m_logger.Log(str);
 		std::string value(str);
 		return value;
