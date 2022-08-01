@@ -39,6 +39,11 @@ std::vector<std::string> FindIp()
     }
     if (pAdapterInfo) free(pAdapterInfo);
     #endif
+    // if no  adapter we still work on localhost.
+    if(ips.empty())
+    {
+        ips.emplace_back("127.0.0.1");
+    }
     return ips;
 }
 
