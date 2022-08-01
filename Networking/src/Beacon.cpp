@@ -63,13 +63,13 @@ int Beacon::SendData(std::string const &data) const
         Log("ERROR WHILE SENDING BEACON : " + std::to_string(GETSOCKETERRNO()));
         return bytes;
     }
-	char log_buffer[4150];
-	#ifdef IBM
-	sprintf_s(log_buffer, 4150, "[BEACON]>>>'%s'(%d byte(s))", data.c_str(), bytes);
-	#else
-	sprintf(log_buffer, "[BEACON]>>>'%s'(%d byte(s))", data.c_str(), bytes);
-	#endif
-	Log(std::string(log_buffer));
+	//char log_buffer[4150];
+	//#ifdef IBM
+	//sprintf_s(log_buffer, 4150, "[BEACON]>>>'%s'(%d byte(s))", data.c_str(), bytes);
+	//#else
+	//sprintf(log_buffer, "[BEACON]>>>'%s'(%d byte(s))", data.c_str(), bytes);
+	//#endif
+	//Log(std::string(log_buffer));
 	return bytes;
 }
 
