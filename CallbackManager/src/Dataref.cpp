@@ -143,6 +143,10 @@ std::string Dataref::GetValue()
 		memset(data, 0x00, lenght);
 		XPLMGetDatab(m_dataref, (void*)data, 0, lenght);
 		value = std::string(data).substr(0, strlen(data));
+		if(value.length() < lenght) //data contains multiples items separated by a 0
+		{
+			//TODO: find a way to parse those data
+		}
 		m_logger.Log("[GET DATA]" + m_link + " = " + data);
 		free(data);
 		break;
