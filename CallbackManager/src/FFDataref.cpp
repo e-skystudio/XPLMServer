@@ -118,10 +118,14 @@ std::string FFDataref::GetValue()
 	case FFDataref::Type::String:
 	{
 		int lenght = m_ffapi->ValueGetSize(m_id);
-		char* buffer = new char[lenght];
-		m_ffapi->ValueGet(m_id, &buffer);
-		std::string value(buffer);
-		delete[] buffer;
+		if (lenght <= 0) return "";
+		void* buffer = malloc(sizeof(char));
+		m_ffapi->ValueGet(m_id, buffer);
+		auto str = (char*)malloc( lenght + 1);
+		memset(str, 0x00, lenght + 1);
+		memcpy_s(str, lenght, buffer, lenght);
+		m_logger.Log(str);
+		std::string value(str);
 		return value;
 	}
 	default:
