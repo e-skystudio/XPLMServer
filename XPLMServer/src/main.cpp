@@ -321,12 +321,11 @@ float BeaconCallback(float elapsedSinceCall, float elapsedSinceLastTime, int inC
 		{"SimulatorProtocol", "UDP"},
 		{"SimulatorReceive", SERVER->GetInboundPort()},
 		{"SimulatorEmit", SERVER->GetOutboundPort()},
-		{"SimulatorIp", SERVER->GetLocalIp()},
+		{"SimulatorIp", UdpServer::GetLocalIp()},
 		{"AircraftAuthor", aircraft_author},
 		{"AircraftDescription", aircraft_description},
 		{"AircraftICAO", aircraft_icao},
 	};
-	BroadCastData(jdataOut.dump());
 	int _ = BEACON->SendData(jdataOut.dump());
 	return 1.0f;
 }
