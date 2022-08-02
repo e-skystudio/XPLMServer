@@ -74,22 +74,20 @@ int LoadDll(json* jdata, CallbackManager* callbackManager)
 
 int RegisterDataref(json* jdata, CallbackManager* callback)
 {
-	if (!jdata->contains("Name") || jdata->at("Name").is_null() || !jdata->contains("Link") || jdata->at("Link").is_null())
+	std::string name = jdata->value("Name", "default");
+	std::string link = jdata->value("Link", "default");
+	std::string type = jdata->value("Type", "default");
+	std::string conversionFactor = jdata->value("ConversionFactor", "1.0");
+	if(name == "default" || link == "default")
 	{
 		callback->Log("Name and or Link are missings or null in JSON, abording",
-			Logger::Severity::CRITICAL);
+		Logger::Severity::CRITICAL);
 		callback->Log("RegisterDataref [DONE]");
 		return 0x01;
 	}
-	const std::string link = jdata->at("Link").get<std::string>();
-	auto name = jdata->at("Name").get<std::string>();
-
 	auto* dataref = new Dataref();
 	dataref->Load(link);
-
-	if (!jdata->contains("Type") || jdata->at("Name").is_null() ||
-		jdata->at("Type").type() != json::value_t::string || 
-		jdata->at("Type").get<std::string>() == "UNKNWON")
+	if (type == "default")
 	{
 		callback->Log("Type was not present in JSON data, using XPlane SDK to determine it");
 		Dataref::Type dType = dataref->LoadType();
@@ -97,17 +95,7 @@ int RegisterDataref(json* jdata, CallbackManager* callback)
 	}
 	else
 	{
-		const std::string type = jdata->at("Type").get<std::string>();
 		dataref->SetType(type);
-	}
-	std::string conversionFactor;
-	if (jdata->contains("ConversionFactor") && !jdata->at("ConversionFactor").is_null())
-	{
-		conversionFactor = jdata->at("ConversionFactor").get<std::string>();
-	}
-	else {
-		conversionFactor = "1.0f";
-		callback->Log("ConversionFactor was not provided assuming 1.0f", Logger::Severity::WARNING);
 	}
 	dataref->SetConversionFactor(conversionFactor);
 	const auto p_datarefMap = callback->GetNamedDataref();
@@ -117,14 +105,13 @@ int RegisterDataref(json* jdata, CallbackManager* callback)
 
 int UnregisterDataref(json* jdata, CallbackManager* callback)
 {
-	if (!jdata->contains("Name") || jdata->at("Name").is_null())
+	std::string name = jdata->value("Name", "default");
+	if (name == "default")
 	{
 		callback->Log("Missing mandatory JSON parameter 'Name'", Logger::Severity::CRITICAL);
 		return 0x01;
 	}
-	const std::string name = jdata->at("Name").get<std::string>();
 	callback->Log("Request deletion of dataref '" + name + "'");
-	//const auto p_datarefMap = callback->GetNamedDataref();
 	if (!callback->GetNamedDataref()->contains(name))
 	{
 		callback->Log("'" + name + "' no found in registered dataref");
@@ -143,34 +130,36 @@ int UnregisterDataref(json* jdata, CallbackManager* callback)
 
 int SubscribeDataref(json* jdata, CallbackManager* callback)
 {
-	if (!jdata->contains("Name") || jdata->at("Name").is_null())
+	std::string name = jdata->value("Name", "default");
+	if (name == "default")
 	{
-		callback->Log("SubscibeDataref : Missing mandatory JSON parameter 'Name'", Logger::Severity::CRITICAL);
+		callback->Log("Missing mandatory JSON parameter 'Name'", Logger::Severity::CRITICAL);
 		return 0x01;
 	}
-	callback->AddSubscribedDataref(jdata->at("Name").get<std::string>());
+	callback->AddSubscribedDataref(name);
 	return 0;
 }
 
 int UnsubscribeDataref(json* jdata, CallbackManager* callback)
 {
-	if (!jdata->contains("Name") || jdata->at("Name").is_null())
+	std::string name = jdata->value("Name", "default");
+	if (name == "default")
 	{
 		callback->Log("Missing mandatory JSON parameter 'Name'", Logger::Severity::CRITICAL);
 		return 0x01;
 	}
-	callback->RemoveSubscribedDataref(jdata->at("Name").get<std::string>());
+	callback->RemoveSubscribedDataref(name);
 	return 0;
 }
 
 int GetRegisterDatarefValue(json* jdata, CallbackManager* callback)
 {
-	if (!jdata->contains("Name") || jdata->at("Name").is_null())
+	std::string name = jdata->value("Name", "default");
+	if (name == "default")
 	{
-		callback->Log("Name properties missing from JSON", Logger::Severity::CRITICAL);
+		callback->Log("Missing mandatory JSON parameter 'Name'", Logger::Severity::CRITICAL);
 		return 0x01;
 	}
-	std::string name = jdata->at("Name").get<std::string>();
 	auto p_datarefMap = callback->GetNamedDataref();
 	if (!p_datarefMap->contains(name))
 	{
@@ -187,17 +176,12 @@ int GetRegisterDatarefValue(json* jdata, CallbackManager* callback)
 
 int SetRegisterDatarefValue(json* jdata, CallbackManager* callback)
 {
-	if (!jdata->contains("Name") || jdata->at("Name").is_null() || !jdata->contains("Value") || jdata->at("Value").is_null())
+	std::string name = jdata->value("Name", "default");
+	std::string value = jdata->value("Value", "default");
+	if (name == "default" || value == "default")
 	{
-		callback->Log("Name and/or Value properties missing from JSON", Logger::Severity::CRITICAL);
+		callback->Log("Missing mandatory JSON parameter 'Name' & 'Value'", Logger::Severity::CRITICAL);
 		return 0x01;
-	}
-	std::string name = jdata->at("Name").get<std::string>();
-	std::string value = ExtractJsonValue(jdata, "Value", callback);
-	if (value.length() <= 0)
-	{
-		callback->Log("ExtractJsonValue, returned an error !");
-		return 0x03;
 	}
 	auto p_datarefMap = callback->GetNamedDataref();
 	callback->Log("Obtaining the registered datarefs...[DONE]");
@@ -218,24 +202,23 @@ int SetRegisterDatarefValue(json* jdata, CallbackManager* callback)
 
 int GetDatarefValue(json* jdata, CallbackManager* callback)
 {
-	if (!jdata->contains("Link") || jdata->at("Link").is_null() || jdata->at("Link").type() != json::value_t::string)
+	std::string type = jdata->value("Type", "default");
+	std::string link = jdata->value("Link", "default");
+	if (link == "default")
 	{
-		callback->Log("Link propertie missing from JSON or the type is not string", Logger::Severity::CRITICAL);
+		callback->Log("Missing mandatory JSON parameter 'Link'", Logger::Severity::CRITICAL);
 		return 0x01;
 	}
-	std::string link = jdata->at("Link").get<std::string>();
 	callback->Log("Will be reading dataref at location :'" + link + "'");
 	auto p_dataref = new Dataref();
 	p_dataref->Load(link);
-	if (!jdata->contains("Type") || jdata->at("Type").is_null() ||
-		jdata->at("Type").type() != json::value_t::string ||
-		jdata->at("Type").get<std::string>() == "UNKNWON")
+	if (type == "default")
 	{
 		Dataref::Type type = p_dataref->LoadType();
 		callback->Log("Dataref is of type '" + std::to_string(static_cast<int>(type)) + "'");
 	}
 	else {
-		p_dataref->SetType(jdata->at("Type").get<std::string>());
+		p_dataref->SetType(type);
 	}
 	std::string val = p_dataref->GetValue();
 	jdata->operator[]("Value") = val;
@@ -244,18 +227,14 @@ int GetDatarefValue(json* jdata, CallbackManager* callback)
 
 int SetDatarefValue(json* jdata, CallbackManager* callback)
 {
-	if (!jdata->contains("Link") || jdata->at("Link").is_null() || !jdata->contains("Value") || jdata->at("Value").is_null())
+	std::string link = jdata->value("Link", "default");
+	std::string value = jdata->value("Value", "default");
+	std::string type = jdata->value("Type", "default");
+	if (link == "default" || value == "default")
 	{
-		callback->Log("Value and/or Link propertie(s) missing from JSON", Logger::Severity::CRITICAL);
+		callback->Log("Missing mandatory JSON parameter 'Link' & 'Value", Logger::Severity::CRITICAL);
 		return 0x01;
 	}
-	std::string value = ExtractJsonValue(jdata, "Value", callback);
-	if (value.length() <= 0)
-	{
-		callback->Log("ExtractJsonValue, returned an error !");
-		return 0x03;
-	}
-	std::string link = jdata->at("Link").get<std::string>();
 	callback->Log("Will be setting dataref at location :'" + link + "' to value + :'" + value + "'");
 	if(link.find("Aircraft") != std::string::npos && link.find(".") != std::string::npos)
     {
@@ -269,27 +248,21 @@ int SetDatarefValue(json* jdata, CallbackManager* callback)
 		jdata->emplace("Flag", p_dataref->GetFlag());
 		jdata->emplace("Unit", p_dataref->GetUnit());
 		jdata->emplace("Name", p_dataref->GetName());
-		callback->Log("1");
 		jdata->emplace("Description", p_dataref->GetDescription());
-		callback->Log("2");
 		p_dataref->SetValue(value);
 		callback->AddFFDatarefToUpdate(p_dataref);
-		callback->Log("3");
     }
 	else
 	{
 		callback->Log("REGULAR DATAREF FOUND !");
 		const auto p_dataref = new Dataref();
 		p_dataref->Load(link);
-		if (!jdata->contains("Type") || jdata->at("Type").is_null() ||
-			jdata->at("Type").type() != json::value_t::string ||
-			jdata->at("Type").get<std::string>() == "UNKNWON")
+		if (type == "default")
 		{
 			Dataref::Type type = p_dataref->LoadType();
 			callback->Log("Dataref is of type '" + std::to_string(static_cast<int>(type)) + "'");
 		}
 		else {
-			const auto type = jdata->at("Type").get<std::string>();
 			p_dataref->SetType(type);
 		}
 		p_dataref->SetValue(value);
@@ -299,7 +272,8 @@ int SetDatarefValue(json* jdata, CallbackManager* callback)
 
 int Speak(json* jdata, CallbackManager* callback)
 {
-	if(!jdata->contains("Text") || jdata->at("Text").is_null())
+	std::string text = jdata->value("Text", "default");
+	if(text == "default")
 		return 0x01;
 	XPLMSpeakString(jdata->at("Text").get<std::string>().c_str());
 	return 0;
@@ -307,11 +281,13 @@ int Speak(json* jdata, CallbackManager* callback)
 
 int AddConstantDataref(json* jdata, CallbackManager* callback)
 {
-	if (!jdata->contains("Name") || jdata->at("Name").is_null() || !jdata->contains("Value") || jdata->at("Value").is_null())
+	std::string name =  jdata->value("Name", "default");
+	std::string value =  jdata->value("Value", "default");
+	if (name ==  "default" || value ==  "default")
 	{
 		return 0x01;
 	}
-	callback->AddConstantDataref(jdata->at("Name").get<std::string>(), jdata->at("Value").get<std::string>());
+	callback->AddConstantDataref(name, value);
 	return 0;
 }
 
@@ -361,37 +337,29 @@ int InitFlightFactorA320(json* jdata, CallbackManager* callback)
 
 int RegisterFFDataref(json* jdata, CallbackManager* callback)
 {
+	std::string name = jdata->value("Name", "default");
+	std::string link = jdata->value("Link", "default");
+	std::string conversionFactor = jdata->value("ConversionFactor", "1.0");
+
 	if (!callback->IsFF320InterfaceEnabled() && !callback->InitFF320Interface())
 	{
 		return 0x10; //Unable to execute interface;
 	}
 	SharedValuesInterface* ff320 = callback->GetFF320Interface();
 	callback->Log("RegisterFFDataref [START]");
-	if (!jdata->contains("Name") || jdata->at("Name").is_null() || !jdata->contains("Link") || jdata->at("Link").is_null())
+	if (name == "default" || link == "default")
 	{
 		callback->Log("Name and or Link missing in JSON, abording",
 			Logger::Severity::CRITICAL);
 		callback->Log("RegisterFFDataref [DONE]");
 		return 0x01;
 	}
-	const auto link = jdata->at("Link").get<std::string>();
-	auto name = jdata->at("Name").get<std::string>();
 	callback->Log("Loading FFDataref '" + link + "' as '" + name + "'");
-
 	auto ffdataref = new FFDataref(ff320);
 	ffdataref->Load(link);
-	callback->Log("Loading type");
 	FFDataref::Type dType = ffdataref->LoadType();
 	callback->Log("FFDataref Type is " + std::to_string(static_cast<int>(dType)));
-	std::string conversionFactor;
-	if (jdata->contains("ConversionFactor") && !jdata->at("ConversionFactor").is_null())
-	{
-		conversionFactor = jdata->at("ConversionFactor").get<std::string>();
-	}
-	else {
-		conversionFactor = "1.0f";
-		callback->Log("ConversionFactor was not provided assuming 1.0f", Logger::Severity::WARNING);
-	}
+	
 	ffdataref->SetConversionFactor(conversionFactor);
 
 	jdata->emplace("ID", ffdataref->GetID());
