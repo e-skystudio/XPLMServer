@@ -1,6 +1,8 @@
 #pragma once
 #include "CallbackManager.h"
 #include "Dataref.h"
+
+#include <XPLMPlanes.h>
 #include <nlohmann/json.hpp>
 
 using json = nlohmann::json;
@@ -16,7 +18,6 @@ using json = nlohmann::json;
 
 constexpr int CallbackNumber = 12;
 
-std::string ExtractJsonValue(json* jdata, std::string fieldname, CallbackManager* callback);
 
 // 1
 ///<summary>
@@ -36,7 +37,7 @@ CALLBACK_FUNC void GetCallbacks(std::vector<CallbackFunctionStruct*>* callbacks,
 /// Default callback to load a DLL.
 /// This callback should be used carefully as DLLs shall not be thursted.
 ///</summary>
-CALLBACK_FUNC int LoadDll(json* jdata, CallbackManager* callbackManager);
+CALLBACK_FUNC int LoadDll(json& jdata, CallbackManager& callbackManager);
 
 // 3
 ///<summary>
@@ -47,7 +48,7 @@ CALLBACK_FUNC int LoadDll(json* jdata, CallbackManager* callbackManager);
 ///    - *Type: the type of the dataref (if not set, will be loaded from SDK)
 ///    - *ConversionFactor: the conversion factor of the dataref (if not set, will be set to 1.0)
 ///</summary>
-CALLBACK_FUNC int RegisterDataref(json* jdata, CallbackManager* callbackManager);
+CALLBACK_FUNC int RegisterDataref(json& jdata, CallbackManager& callbackManager);
 
 // 4
 ///<summary>
@@ -55,7 +56,7 @@ CALLBACK_FUNC int RegisterDataref(json* jdata, CallbackManager* callbackManager)
 /// JSON Should contains:
 ///    - Name: the name of the dataref
 ///</summary>
-CALLBACK_FUNC int UnregisterDataref(json* jdata, CallbackManager* callbackManager);
+CALLBACK_FUNC int UnregisterDataref(json& jdata, CallbackManager& callbackManager);
 
 // 5
 ///<summary>
@@ -68,7 +69,7 @@ CALLBACK_FUNC int UnregisterDataref(json* jdata, CallbackManager* callbackManage
 ///    - *Type : the type of the dataref(if not set, will be loaded from SDK)
 ///    - *ConversionFactor : the conversion factor of the dataref(if not set, will be set to 1.0)
 ///</summary>
-CALLBACK_FUNC int SubscribeDataref(json* jdata, CallbackManager* callbackManager);
+CALLBACK_FUNC int SubscribeDataref(json& jdata, CallbackManager& callbackManager);
 
 // 6
 ///<summary>
@@ -77,7 +78,7 @@ CALLBACK_FUNC int SubscribeDataref(json* jdata, CallbackManager* callbackManager
 /// JSON Should contains:
 ///    - Name: the name of the dataref
 ///</summary>
-CALLBACK_FUNC int UnsubscribeDataref(json* jdata, CallbackManager* callbackManager);
+CALLBACK_FUNC int UnsubscribeDataref(json& jdata, CallbackManager& callbackManager);
 
 // 7
 ///<summary>
@@ -85,7 +86,7 @@ CALLBACK_FUNC int UnsubscribeDataref(json* jdata, CallbackManager* callbackManag
 /// JSON Should contains:
 ///    - Name: the name of the dataref
 ///</summary>
-CALLBACK_FUNC int GetRegisterDatarefValue(json* jdata, CallbackManager* callbackManager);
+CALLBACK_FUNC int GetRegisterDatarefValue(json& jdata, CallbackManager& callbackManager);
 
 // 8
 ///<summary>
@@ -94,7 +95,7 @@ CALLBACK_FUNC int GetRegisterDatarefValue(json* jdata, CallbackManager* callback
 ///    - Name: the name of the dataref
 ///    - Value: the value of the dataref
 ///</summary>
-CALLBACK_FUNC int SetRegisterDatarefValue(json* jdata, CallbackManager* callbackManager);
+CALLBACK_FUNC int SetRegisterDatarefValue(json& jdata, CallbackManager& callbackManager);
 
 // 9
 ///<summary>
@@ -103,7 +104,7 @@ CALLBACK_FUNC int SetRegisterDatarefValue(json* jdata, CallbackManager* callback
 /// JSON Should contains:
 ///    - Name: the name of the dataref
 ///</summary>
-CALLBACK_FUNC int GetDatarefValue(json* jdata, CallbackManager* callbackManager);
+CALLBACK_FUNC int GetDatarefValue(json& jdata, CallbackManager& callbackManager);
 
 // 10
 ///<summary>
@@ -113,7 +114,7 @@ CALLBACK_FUNC int GetDatarefValue(json* jdata, CallbackManager* callbackManager)
 ///    - Name: the name of the dataref
 ///    - Value: the value of the dataref
 ///</summary>
-CALLBACK_FUNC int SetDatarefValue(json* jdata, CallbackManager* callbackManager);
+CALLBACK_FUNC int SetDatarefValue(json& jdata, CallbackManager& callbackManager);
 
 // 11
 ///<summary>
@@ -142,5 +143,8 @@ CALLBACK_FUNC int LoadRegisterDataref(json* jdata, CallbackManager* callback);
 ///    - *Type: the type of the dataref (if not set, will be loaded from SDK)
 ///    - *ConversionFactor: the conversion factor of the dataref (if not set, will be set to 1.0)
 ///</summary>
-CALLBACK_FUNC int InitFlightFactorA320(json* jdata, CallbackManager* callbackManager);
-CALLBACK_FUNC int RegisterFFDataref(json* jdata, CallbackManager* callbackManager);
+CALLBACK_FUNC int InitFlightFactorA320(json& jdata, CallbackManager& callbackManager);
+CALLBACK_FUNC int RegisterFFDataref(json& jdata, CallbackManager& callbackManager);
+
+CALLBACK_FUNC int OverrideTcas(json& jdata, CallbackManager& callbackManager);
+CALLBACK_FUNC int UpdateTraffic(json& jdata, CallbackManager& callbackManager);

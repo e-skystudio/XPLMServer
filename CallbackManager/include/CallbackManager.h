@@ -25,6 +25,8 @@
 
 using json = nlohmann::json;
 
+class CallbackManager;
+
 #pragma region DLLManagement
 struct CallbackFunctionStruct {
 	std::string Operation; ///The json Operation value to execute the callback
@@ -36,7 +38,7 @@ struct CallbackFunctionStruct {
 };
 
 typedef void(*CallbackLoader)(std::vector<CallbackFunctionStruct*>*, int*);
-typedef int(*Callback)(json* json, void* CallbackManager); ///The callback reference
+typedef int(*Callback)(json& json, CallbackManager& CallbackManager); ///The callback reference
 
 struct ConstantDataref {
 	std::string Name;
@@ -78,7 +80,7 @@ public:
 	/// <param name="operation"> The name of the callback</param>
 	/// <param name="jsonData"> The json object and argument to be passed to the function</param>
 	/// <returns>EXIT_SUCESS if the execution was sucessful</returns>
-	int ExecuteCallback(json* jsonData);
+	int ExecuteCallback(json& jsonData);
 	/// <summary>
 	///  Return the full map of stored named Dataref(s)
 	/// </summary>
@@ -125,26 +127,29 @@ public:
 	/// Return the number of subcibded Datarefs
 	/// </summary>
 	int GetSubscribedDatarefCount() const;
-	void AddSubscribedDataref(const std::string& name);
-	void RemoveSubscribedDataref(const std::string& name);
+	bool AddSubscribedDataref(const std::string& name);
+	bool RemoveSubscribedDataref(const std::string& name);
 	int GetConstantDatarefCount() const;
-	void AddConstantDataref(const std::string& name, const std::string& value);
-	void RemoveConstantDataref(const std::string& name) const;
+	bool AddConstantDataref(const std::string& name, const std::string& value);
+	bool RemoveConstantDataref(const std::string& name) const;
 	void ExecuteConstantDataref() const;
 	int ExecuteFFDatarefsUpdate();
 	void AddFFDatarefToUpdate(FFDataref* dataref);
 	SharedValuesInterface* GetFF320Interface() const;
 	bool InitFF320Interface();
 	bool IsFF320InterfaceEnabled() const;
-	// void BindFF320Callback(SharedDataUpdateProc callback);
+	//bool AddNamedDataref(const std::string name, const AbstractDataref* dataref);
+	bool AddNamedDataref(const std::string name, AbstractDataref* dataref);
+	bool RemovedNamedDataref(const std::string& name);
+	AbstractDataref* GetDatarefByName(const std::string& name);
+	std::string GetDatarefValue(const std::string& name);
+	bool SetDatarefValue(const std::string& name, const std::string& value);
 protected:
 	std::map<std::string, Callback>* m_callbacks;
 	std::map<std::string, AbstractDataref*>* m_namedDatarefs; //The datarefs stored while plugin is in used
-	// std::map<std::string, FFDataref*>* m_namedFFDatarefs;
 	std::map<std::string, AbstractDataref*>* m_subscribedDatarefs; //The datarefs that value is returned per timed basis
 	std::map<std::string, ConstantDataref>* m_constDataref; //Datarefs set as constant (value are copied from the key)
 	std::map<unsigned int, std::string>* m_subscribedEvent;
-	// std::queue<ConstantDataref>* m_ff320_const_datarefs;
 	std::queue<FFDataref*> m_ff320_datarefs;
 	Logger m_logger; /* The logger */
 	unsigned int m_subscirbeDatarefCount;
