@@ -243,7 +243,7 @@ float NetworkCallback(float elapsedSinceCall, float elapsedSinceLastTime, int in
 		return -1.0f;
 	json operation = json::parse(data);
 	CALLBACK_MANAGER->ExecuteCallback(operation);
-	BroadCastData(operation.dump());
+	SERVER->SendData(operation.dump(), cli);
 	
 	bool foundClient = false;
 	for (const auto& [ip, port] : CLIENTS)
