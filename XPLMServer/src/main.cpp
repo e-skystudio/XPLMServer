@@ -136,24 +136,9 @@ PLUGIN_API int XPluginEnable(void)
 	CALLBACK_MANAGER = new CallbackManager();
 	int res = CALLBACK_MANAGER->LoadCallbackDLL(dllPath);
 	LOGGER.Log("---Server Init----");
-	unsigned short portIn(50555);
-	unsigned short portOut(50556);
 
-	if (PLUGIN_CONFIGURATION["Server"].contains("InPort"))
-	{
-		portIn = PLUGIN_CONFIGURATION["Server"]["InPort"].get<unsigned short>();
-	}
-	else {
-		LOGGER.Log("[XPLMServer]Missing Config['Server']['InPort']... defaulting to 50556\n");
-	}
-	if (PLUGIN_CONFIGURATION["Server"].contains("OutPort"))
-	{
-		portOut = PLUGIN_CONFIGURATION["Server"]["OutPort"].get<unsigned short>();
-	}
-	else {
-		LOGGER.Log("[XPLMServer]Missing Config['Server']['OutPort']... defaulting to 50555\n");
-	}
-	LOGGER.Log("---Server Init 2 ----");
+	unsigned short portIn = PLUGIN_CONFIGURATION["Server"].value("InPort", 50555);
+	unsigned short portOut = PLUGIN_CONFIGURATION["Server"].value("OutPort", 50555);
 	if (PLUGIN_CONFIGURATION.contains("Server") && !PLUGIN_CONFIGURATION["Server"].is_null())
 	{
 		ConfigureBeacon();
@@ -190,14 +175,15 @@ void ConfigureBeacon()
 	if (PLUGIN_CONFIGURATION["Server"].contains("Beacon") && !PLUGIN_CONFIGURATION["Server"]["Beacon"].is_null())
 	{
 		json beaconConfig = PLUGIN_CONFIGURATION["Server"]["Beacon"];
-		if (beaconConfig.contains("Enabled") && !beaconConfig["Enabled"].is_null() && beaconConfig["Enabled"].get<bool>())
+		if(beaconConfig.value("Enabled", false))
 		{
-			if (!beaconConfig.contains("Port") || beaconConfig["Port"].is_null()) {
+			const auto beaconPort = beaconConfig.value("Port", 0);
+			if (beaconPort == 0)
+			{
 				XPLMDebugString("BEACON CONFIG FAILED -- MISSING PORT");
 				return;
 			}
-			const auto beaconPort = beaconConfig["Port"].get<unsigned short>();
-			if (beaconConfig.contains("Broadcast") && !beaconConfig["Broadcast"].is_null() && beaconConfig["Broadcast"].get<bool>())
+			if(beaconConfig.value("BroadCast", false))
 			{
 				XPLMDebugString(std::string("BEACON IS BROADCAST ON " + std::to_string(beaconPort) + "\n").c_str());
 				BEACON = new Beacon();
@@ -207,12 +193,12 @@ void ConfigureBeacon()
 				}
 				return;
 			}
-			if (!beaconConfig.contains("Ip") || beaconConfig["Ip"].is_null()) 
+			const auto beaconIp = beaconConfig.value("Ip", "default");
+			if(beaconIp == "default")
 			{
 				XPLMDebugString(std::string("BEACON IP FAILED\n").c_str());
 				return;
 			}
-			const auto beaconIp = beaconConfig["Ip"].get<std::string>();
 			BEACON = new Beacon();
 			if (BEACON->Configure(beaconIp, beaconPort, false) == 0) BEACON_ENABLED = true;
 			else{
@@ -256,7 +242,7 @@ float NetworkCallback(float elapsedSinceCall, float elapsedSinceLastTime, int in
 	if (data.length() < 1)
 		return -1.0f;
 	json operation = json::parse(data);
-	CALLBACK_MANAGER->ExecuteCallback(&operation);
+	CALLBACK_MANAGER->ExecuteCallback(operation);
 	BroadCastData(operation.dump());
 	
 	bool foundClient = false;
