@@ -10,6 +10,9 @@ Working with UDP on port 50555 (for inbound requests) and 50556 (for outbound me
 This behavour can be changed throught the pluginConfig.json file to be edited in the ``` [X-Plane root]/Resources/plugins/XPLMServer/ ```
 
 ## Default Callbacks Operations
+## InDevelopement
+- TcasOverride : Override the TCAS
+- UpdateTcas : Send traffic information to update traffic.
 - LoadDLL to load other callbacks. **TEST PENDING**
 - RegisterDatarefs to save a datarefs with a unique name (example : ``` sim/flightmodels/position/latitude ``` as latitude). To be used when you need to access those datarefs a lot as it skip ```XPLMFindDataref()```. **TEST PASS SUCESSFULLY**
 - UnregisterDatarefs : to remove a dataref from the RegisterDatarefs.
