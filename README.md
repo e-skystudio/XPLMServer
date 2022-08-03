@@ -16,7 +16,7 @@ This behavour can be changed throught the pluginConfig.json file to be edited in
 - LoadDLL to load other callbacks. **TEST PENDING**
 - RegisterDatarefs to save a datarefs with a unique name (example : ``` sim/flightmodels/position/latitude ``` as latitude). To be used when you need to access those datarefs a lot as it skip ```XPLMFindDataref()```. **TEST PASS SUCESSFULLY**
 - UnregisterDatarefs : to remove a dataref from the RegisterDatarefs.
-- (Un)SubscribeDataref: Mark a registered dataref to be exported every 0.25s. SubscribeDataref: **TEST PASS SUCESSFULLY** | UnSubscribeDataref:  **TEST PENDING**
+- (Un)SubscribeDataref: Mark a registered dataref to be exported every 0.25s. SubscribeDataref: **TEST PASS SUCESSFULLY** | UnSubscribeDataref:   **TEST PASS SUCESSFULLY**
 - GetDatarefValue / SetDatarefValue: Get/Set the value of a dataref (only with non-registered dataref).  **TEST PASS SUCESSFULLY**
 - GetRegisteredDatarefValue / SetRegisteredDatarefValue: Get/Set the value of a registered dataref  **TEST PASS SUCESSFULLY**
 - Speak : Speak a message in X-Plane  **TEST PASS SUCESSFULLY**
