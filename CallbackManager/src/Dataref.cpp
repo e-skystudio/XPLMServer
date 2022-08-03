@@ -148,13 +148,14 @@ std::string Dataref::GetValue()
 			int start = 0;
 			int end = 0;
 			std::vector<std::string> outData;
-			for(int i(1); i < lenght; i++)
+			outData.emplace_back(value);
+			for(int i(1 ); i < lenght; i++)
 			{
 				char* ptr = static_cast<char*>(data) + i;
 				if(ptr == nullptr || i - start >= 8)
 				{
 					end = i;
-					char* registration = (char*)malloc(end - start);
+					auto registration = static_cast<char*>(malloc(end - start));
 					memset(registration, 0x00, 8);
 					memcpy(registration, ptr, end - start);
 					outData.emplace_back(registration);
